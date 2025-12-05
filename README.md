@@ -1,2 +1,2 @@
 # ae-lens
-Algorithmic HTML based object eraser and image upscaler tool [ Alpha ]
+Algorithmic Eraser — HTML based object eraser and image upscaler tool [ Alpha ]
