@@ -90,6 +90,7 @@
             box-sizing: border-box;
             gap: 20px;
             width: 100%;
+            height: calc(100vh - 60px); 
         }
 
         .left-panel-wrapper {
@@ -99,7 +100,8 @@
             width: 95vmin;
             max-width: 100%;
             flex-shrink: 0;
-            transition: width 0.3s;
+            transition: width 0.3s, height 0.3s;
+            position: relative;
         }
 
         .frame {
@@ -157,17 +159,22 @@
             align-items: center;
             overflow: hidden;
             background-color: #050505;
+            transform-origin: center center;
         }
         
-        #main-image, #mask-canvas, #preview-canvas {
+        #original-image, #main-image, #mask-canvas, #preview-canvas {
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(1);
             max-width: none;
             max-height: none;
             pointer-events: none;
+            transform-origin: center center;
         }
+        
+        #original-image { z-index: 0; display: none; }
+        #main-image { z-index: 1; display: none; transition: opacity 0.1s; }
         
         #mask-canvas { 
             pointer-events: auto; 
@@ -178,7 +185,6 @@
         }
         
         #preview-canvas { z-index: 10; }
-        #main-image { z-index: 1; display: none; }
 
         .status-pill {
             position: absolute;
@@ -291,8 +297,9 @@
         .tool-popup {
             position: absolute;
             left: 0;
-            top: 100%; 
-            margin-top: 5px;
+            bottom: 100%; 
+            top: auto;
+            margin-bottom: 5px;
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -449,23 +456,34 @@
             align-items: flex-start;
             justify-content: center;
             gap: 20px;
+            height: calc(100vh - 60px);
+            overflow: hidden;
         }
         .main-container.side-by-side-layout .left-panel-wrapper {
             flex: 1;
             width: auto;
-            max-width: 60vw;
+            height: 100%;
+            max-width: none;
+        }
+        .main-container.side-by-side-layout .frame {
+            width: 100%;
+            height: 100%;
+            max-height: none;
+            aspect-ratio: auto;
         }
         .main-container.side-by-side-layout #advanced-settings-panel {
-            flex: 1;
-            width: auto;
-            max-width: 40vw;
+            flex: 0 0 400px;
+            width: 400px;
+            height: 100%;
+            max-height: none;
             margin-top: 0;
         }
 
         @media (max-width: 991px) {
-            .main-container.side-by-side-layout { flex-direction: column; }
+            .main-container.side-by-side-layout { flex-direction: column; height: auto; overflow-y: auto; }
             .main-container.side-by-side-layout .left-panel-wrapper,
-            .main-container.side-by-side-layout #advanced-settings-panel { width: 95vw; max-width: 500px; }
+            .main-container.side-by-side-layout #advanced-settings-panel { width: 95vw; max-width: 500px; height: auto; }
+            .main-container.side-by-side-layout .frame { aspect-ratio: 1/1; height: 90vmin; }
         }
         
         .placeholder-text {
@@ -522,7 +540,7 @@
     <div class="header">
         <div class="header-left">
             <button id="layout-button">Fit</button>
-            <button id="compare-button" title="Hold to Compare" disabled>⊖</button>
+            <button id="compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
         </div>
         <div class="header-branding">
             <div class="brand-main">A/E LENS</div>
@@ -540,7 +558,7 @@
 
                 <div class="action-buttons" id="canvas-actions">
                     <button id="revert-button" title="Revert to Original">✖</button>
-                    <button id="compare-button" title="Hold to Compare" disabled>⊖</button>
+                    <button id="canvas-compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
                 </div>
                 
                 <button id="fullscreen-button" class="fullscreen-btn">⛶</button>
@@ -549,20 +567,21 @@
                     <div class="tool-selector-container">
                         <button id="fs-main-tool-button">Tool: Pan</button>
                         <div id="fs-tool-popup" class="tool-popup">
-                            <button data-tool="pan">Pan</button>
-                            <button data-tool="brush">Brush</button>
-                            <button data-tool="eraser">Eraser</button>
-                            <button data-tool="lasso">Lasso</button>
-                            <button data-tool="auto-lasso">Auto Lasso</button>
-                            <button data-tool="fill">Fill</button>
+                            <button data-tool="pan">Pan (Space)</button>
+                            <button data-tool="brush">Brush (B)</button>
+                            <button data-tool="eraser">Eraser (E)</button>
+                            <button data-tool="lasso">Lasso (L)</button>
+                            <button data-tool="auto-lasso">Auto Lasso (A)</button>
+                            <button data-tool="fill">Fill (F)</button>
                             <button data-tool="magic">Magic Brush</button>
-                            <button data-tool="wand">Auto Select</button>
-                            <button data-tool="smart-mask">Mesh Lasso</button>
+                            <button data-tool="wand">Auto Select (S)</button>
+                            <button data-tool="smart-mask">Mesh Lasso (M)</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="canvas-container" id="canvas-container">
+                    <img id="original-image" src="" alt="">
                     <img id="main-image" src="" alt="">
                     <canvas id="preview-canvas" style="display:none;"></canvas>
                     <canvas id="mask-canvas"></canvas>
@@ -578,15 +597,15 @@
                 <div class="tool-selector-container">
                     <button id="main-tool-button">Tool: Pan</button>
                     <div id="tool-popup" class="tool-popup">
-                        <button data-tool="pan">Pan</button>
-                        <button data-tool="brush">Brush</button>
-                        <button data-tool="eraser">Eraser</button>
-                        <button data-tool="lasso">Lasso</button>
-                        <button data-tool="auto-lasso">Auto Lasso</button>
-                        <button data-tool="fill">Fill</button>
+                        <button data-tool="pan">Pan (Space)</button>
+                        <button data-tool="brush">Brush (B)</button>
+                        <button data-tool="eraser">Eraser (E)</button>
+                        <button data-tool="lasso">Lasso (L)</button>
+                        <button data-tool="auto-lasso">Auto Lasso (A)</button>
+                        <button data-tool="fill">Fill (F)</button>
                         <button data-tool="magic">Magic Brush</button>
-                        <button data-tool="wand">Auto Select</button>
-                        <button data-tool="smart-mask">Mesh Lasso</button>
+                        <button data-tool="wand">Auto Select (S)</button>
+                        <button data-tool="smart-mask">Mesh Lasso (M)</button>
                     </div>
                 </div>
 
@@ -605,8 +624,8 @@
             <div class="settings-header">
                 <h3>Settings</h3>
                 <div class="header-controls">
-                    <button id="undo-button" class="header-btn">&lt;</button>
-                    <button id="redo-button" class="header-btn">&gt;</button>
+                    <button id="undo-button" class="header-btn" title="Undo (Ctrl+Z)">&lt;</button>
+                    <button id="redo-button" class="header-btn" title="Redo (Ctrl+Shift+Z)">&gt;</button>
                     <button id="theme-toggle-button" class="header-btn">月</button>
                 </div>
             </div>
@@ -695,11 +714,24 @@
 
                     <div class="setting-group" id="upscale-settings" style="display:none;">
                         <h4>Upscale Settings</h4>
-                        <p class="desc-text">Smart Enhance: Detail Recovery & Edge Refinement.</p>
+                        <select id="upscale-algo" style="width: 100%; padding: 8px; margin-bottom: 5px;">
+                            <option value="general" selected>General (Enhance)</option>
+                            <option value="sharp">Sharp (Detail Focus)</option>
+                            <option value="smooth">Smooth (Denoise)</option>
+                            <option value="artistic">Artistic (Stylized)</option>
+                        </select>
+                        <p class="desc-text" id="upscale-algo-desc">General: Balanced enhancement, clarity, and denoising. Best for most images.</p>
+
                         <div class="slider-input-group" style="margin-top: 15px;">
                             <label for="upscale-scale">Target Scale:</label>
                             <input type="range" id="upscale-scale" min="1.0" max="4.0" step="0.5" value="2.0">
                             <span id="upscale-scale-val">2.0x</span>
+                        </div>
+                        
+                        <div class="slider-input-group">
+                            <label>Results Count:</label>
+                            <input type="range" id="upscale-result-count" min="1" max="5" value="1">
+                            <span id="upscale-result-count-val">1</span>
                         </div>
                     </div>
                 </div>
@@ -712,10 +744,14 @@
     <script id="worker-code" type="javascript/worker">
         self.onmessage = function(e) {
             const { command, imageData, maskData, options } = e.data;
-            if (command === 'inpaint') processInpaintSmart(imageData, maskData, options);
-            else if (command === 'upscale') processUpscaleSmart(imageData, options);
-            else if (command === 'autolasso') processAutoLasso(imageData, options);
-            else if (command === 'smartmask') processSmartMask(imageData, options);
+            try {
+                if (command === 'inpaint') processInpaintSmart(imageData, maskData, options);
+                else if (command === 'upscale') processUpscaleSmart(imageData, options);
+                else if (command === 'autolasso') processAutoLasso(imageData, options);
+                else if (command === 'smartmask') processSmartMask(imageData, options);
+            } catch (err) {
+                self.postMessage({ type: 'error', message: err.message });
+            }
         };
 
         function processSmartMask(imgData, options) {
@@ -1186,106 +1222,171 @@
 
         function processUpscaleSmart(imgData, options) {
             const scale = options.scale || 2.0;
+            const algo = options.algo || 'general';
+            const count = options.count || 1;
             const w = imgData.width;
             const h = imgData.height;
             const newW = Math.floor(w * scale);
             const newH = Math.floor(h * scale);
             
-            const src = imgData.data;
+            const src = new Uint8ClampedArray(imgData.data);
             
-            self.postMessage({ type: 'status', message: 'Analyzing Details...' });
-            
-            const base = new Uint8ClampedArray(w * h * 4);
-            for(let y=0; y<h; y++) {
-                for(let x=0; x<w; x++) {
-                    let r=0, g=0, b=0, c=0;
-                    for(let dy=-1; dy<=1; dy++) {
-                        for(let dx=-1; dx<=1; dx++) {
-                            const nx=x+dx, ny=y+dy;
-                            if(nx>=0 && nx<w && ny>=0 && ny<h) {
-                                const idx = (ny*w+nx)*4;
-                                r+=src[idx]; g+=src[idx+1]; b+=src[idx+2]; c++;
+            function bicubicResize(src, w, h, newW, newH) {
+                const dest = new Uint8ClampedArray(newW * newH * 4);
+                const ratioW = w / newW;
+                const ratioH = h / newH;
+
+                function cubic(v0, v1, v2, v3, x) {
+                    return v1 + 0.5 * x * (v2 - v0 + x * (2.0 * v0 - 5.0 * v1 + 4.0 * v2 - v3 + x * (3.0 * (v1 - v2) + v3 - v0)));
+                }
+
+                for (let y = 0; y < newH; y++) {
+                    if(y % 50 === 0) self.postMessage({ type: 'progress', message: `Resampling ${(y/newH*50).toFixed(0)}%` });
+                    const srcY = y * ratioH;
+                    const y0 = Math.floor(srcY);
+                    const dy = srcY - y0;
+
+                    for (let x = 0; x < newW; x++) {
+                        const srcX = x * ratioW;
+                        const x0 = Math.floor(srcX);
+                        const dx = srcX - x0;
+
+                        let r=0, g=0, b=0, a=255;
+                        
+                        const col = [];
+                        for(let c=0; c<3; c++) {
+                            const rows = [];
+                            for(let iy=-1; iy<=2; iy++) {
+                                const py = Math.max(0, Math.min(h-1, y0+iy));
+                                const rowP = [];
+                                for(let ix=-1; ix<=2; ix++) {
+                                    const px = Math.max(0, Math.min(w-1, x0+ix));
+                                    rowP.push(src[(py*w+px)*4 + c]);
+                                }
+                                rows.push(cubic(rowP[0], rowP[1], rowP[2], rowP[3], dx));
                             }
+                            col.push(cubic(rows[0], rows[1], rows[2], rows[3], dy));
                         }
+                        
+                        const idx = (y * newW + x) * 4;
+                        dest[idx] = Math.max(0, Math.min(255, col[0]));
+                        dest[idx+1] = Math.max(0, Math.min(255, col[1]));
+                        dest[idx+2] = Math.max(0, Math.min(255, col[2]));
+                        dest[idx+3] = 255;
                     }
-                    const i = (y*w+x)*4;
-                    base[i] = r/c; base[i+1] = g/c; base[i+2] = b/c; base[i+3] = src[i+3];
                 }
+                return dest;
             }
 
-            self.postMessage({ type: 'status', message: 'Scaling Base...' });
-            const upscaledBase = new Uint8ClampedArray(newW * newH * 4);
-            
-            function cubic(v0, v1, v2, v3, x) {
-                return v1 + 0.5 * x * (v2 - v0 + x * (2.0 * v0 - 5.0 * v1 + 4.0 * v2 - v3 + x * (3.0 * (v1 - v2) + v3 - v0)));
-            }
-            
-            function getPixel(arr, w, h, x, y) {
-                x = Math.max(0, Math.min(w - 1, x));
-                y = Math.max(0, Math.min(h - 1, y));
-                const i = (y * w + x) * 4;
-                return [arr[i], arr[i+1], arr[i+2], arr[i+3]];
-            }
-
-            function cubicInterp(arr, srcW, srcH, x, y) {
-                const grid = [];
-                for (let dy = -1; dy <= 2; dy++) {
-                    const row = [];
-                    for (let dx = -1; dx <= 2; dx++) {
-                        row.push(getPixel(arr, srcW, srcH, Math.floor(x) + dx, Math.floor(y) + dy));
+            function applyUnsharpMask(data, w, h, amount, radius) {
+                const output = new Uint8ClampedArray(data);
+                const side = radius * 2 + 1;
+                
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const idx = (y*w+x)*4;
+                        for(let c=0; c<3; c++) {
+                            let sum = 0;
+                            let count = 0;
+                            for(let ky=-radius; ky<=radius; ky++) {
+                                for(let kx=-radius; kx<=radius; kx++) {
+                                    const py = Math.min(h-1, Math.max(0, y+ky));
+                                    const px = Math.min(w-1, Math.max(0, x+kx));
+                                    sum += data[(py*w+px)*4+c];
+                                    count++;
+                                }
+                            }
+                            const blurred = sum / count;
+                            const orig = data[idx+c];
+                            const sharp = orig + (orig - blurred) * amount;
+                            output[idx+c] = Math.max(0, Math.min(255, sharp));
+                        }
+                        output[idx+3] = data[idx+3];
                     }
-                    grid.push(row);
                 }
-                const colRes = [];
-                for(let c=0; c<4; c++){ 
-                    const rows = [];
-                    for(let i=0; i<4; i++) rows.push(cubic(grid[i][0][c], grid[i][1][c], grid[i][2][c], grid[i][3][c], x % 1));
-                    colRes.push(cubic(rows[0], rows[1], rows[2], rows[3], y % 1));
-                }
-                return colRes.map(v => Math.max(0, Math.min(255, v)));
+                return output;
             }
 
-            for (let y = 0; y < newH; y++) {
-                for (let x = 0; x < newW; x++) {
-                    const gx = x / scale;
-                    const gy = y / scale;
-                    const color = cubicInterp(base, w, h, gx, gy);
-                    const idx = (y * newW + x) * 4;
-                    upscaledBase[idx] = color[0]; upscaledBase[idx+1] = color[1]; upscaledBase[idx+2] = color[2]; upscaledBase[idx+3] = 255;
+            function applyMedianFilter(data, w, h) {
+                const output = new Uint8ClampedArray(data);
+                for(let y=1; y<h-1; y++) {
+                    for(let x=1; x<w-1; x++) {
+                        const idx = (y*w+x)*4;
+                        for(let c=0; c<3; c++) {
+                            const vals = [];
+                            for(let dy=-1; dy<=1; dy++) {
+                                for(let dx=-1; dx<=1; dx++) {
+                                    vals.push(data[((y+dy)*w+(x+dx))*4+c]);
+                                }
+                            }
+                            vals.sort((a,b)=>a-b);
+                            output[idx+c] = vals[4];
+                        }
+                        output[idx+3] = data[idx+3];
+                    }
                 }
+                return output;
             }
 
-            self.postMessage({ type: 'status', message: 'Refining Edges...' });
-            const upscaledSharp = new Uint8ClampedArray(newW * newH * 4);
-            for (let y = 0; y < newH; y++) {
-                if (y % 50 === 0) self.postMessage({ type: 'progress', message: `Refining ${(y/newH*100).toFixed(0)}%` });
-                for (let x = 0; x < newW; x++) {
-                    const gx = x / scale;
-                    const gy = y / scale;
-                    const color = cubicInterp(src, w, h, gx, gy);
-                    const idx = (y * newW + x) * 4;
-                    upscaledSharp[idx] = color[0]; upscaledSharp[idx+1] = color[1]; upscaledSharp[idx+2] = color[2]; upscaledSharp[idx+3] = 255;
+            function surfaceBlur(data, w, h, radius, threshold) {
+                const output = new Uint8ClampedArray(data);
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        const idx = (y * w + x) * 4;
+                        for (let c = 0; c < 3; c++) {
+                            let sum = 0;
+                            let count = 0;
+                            const center = data[idx + c];
+                            for (let ky = -radius; ky <= radius; ky++) {
+                                for (let kx = -radius; kx <= radius; kx++) {
+                                    const ny = y + ky;
+                                    const nx = x + kx;
+                                    if (ny >= 0 && ny < h && nx >= 0 && nx < w) {
+                                        const val = data[(ny * w + nx) * 4 + c];
+                                        if (Math.abs(val - center) < threshold) {
+                                            sum += val;
+                                            count++;
+                                        }
+                                    }
+                                }
+                            }
+                            output[idx + c] = sum / count;
+                        }
+                        output[idx + 3] = data[idx + 3];
+                    }
                 }
+                return output;
             }
 
-            const strength = 0.6; 
-            const final = new Uint8ClampedArray(newW * newH * 4);
-            
-            for(let i=0; i<final.length; i+=4) {
-                const sharpR = upscaledSharp[i], sharpG = upscaledSharp[i+1], sharpB = upscaledSharp[i+2];
-                const baseR = upscaledBase[i], baseG = upscaledBase[i+1], baseB = upscaledBase[i+2];
+            self.postMessage({ type: 'status', message: 'Resampling...' });
+            let processed = bicubicResize(src, w, h, newW, newH);
+
+            for(let n=0; n<count; n++) {
+                self.postMessage({ type: 'status', message: `Refining ${n+1}/${count}` });
                 
-                const detailR = sharpR - baseR;
-                const detailG = sharpG - baseG;
-                const detailB = sharpB - baseB;
+                let result;
                 
-                final[i] = Math.max(0, Math.min(255, sharpR + detailR * strength));
-                final[i+1] = Math.max(0, Math.min(255, sharpG + detailG * strength));
-                final[i+2] = Math.max(0, Math.min(255, sharpB + detailB * strength));
-                final[i+3] = 255;
-            }
+                if (algo === 'general') {
+                    const denoised = surfaceBlur(processed, newW, newH, 2, 25);
+                    result = applyUnsharpMask(denoised, newW, newH, 1.0 + (n*0.1), 1);
+                } else if (algo === 'sharp') {
+                    result = applyUnsharpMask(processed, newW, newH, 2.0 + (n*0.2), 1);
+                } else if (algo === 'smooth') {
+                    const denoised = applyMedianFilter(processed, newW, newH);
+                    result = applyUnsharpMask(denoised, newW, newH, -0.2, 1); 
+                } else if (algo === 'artistic') {
+                    result = new Uint8ClampedArray(processed);
+                    for(let i=0; i<result.length; i+=4) {
+                        result[i] = Math.round(result[i]/32)*32;
+                        result[i+1] = Math.round(result[i+1]/32)*32;
+                        result[i+2] = Math.round(result[i+2]/32)*32;
+                    }
+                } else {
+                    result = new Uint8ClampedArray(processed);
+                }
 
-            self.postMessage({ type: 'result', buffer: final.buffer, width: newW, height: newH, index: 0 });
+                self.postMessage({ type: 'result', buffer: result.buffer, width: newW, height: newH, index: n }, [result.buffer]);
+            }
             self.postMessage({ type: 'complete' });
         }
     </script>
@@ -1293,6 +1394,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const mainImage = document.getElementById('main-image');
+            const originalImage = document.getElementById('original-image');
             const maskCanvas = document.getElementById('mask-canvas');
             const previewCanvas = document.getElementById('preview-canvas');
             const frame = document.querySelector('.frame');
@@ -1311,6 +1413,7 @@
             const statusPill = document.getElementById('status-pill');
             const advPanel = document.getElementById('advanced-settings-panel');
             const compareBtn = document.getElementById('compare-button');
+            const canvasCompareBtn = document.getElementById('canvas-compare-button');
             const scaleSlider = document.getElementById('upscale-scale');
             const scaleVal = document.getElementById('upscale-scale-val');
             const resultCountSlider = document.getElementById('result-count');
@@ -1323,6 +1426,11 @@
             const effortSlider = document.getElementById('search-effort');
             const effortVal = document.getElementById('search-effort-val');
             const invertCheck = document.getElementById('invert-mask-check');
+
+            const upscaleAlgoSelect = document.getElementById('upscale-algo');
+            const upscaleAlgoDesc = document.getElementById('upscale-algo-desc');
+            const upscaleResultCountSlider = document.getElementById('upscale-result-count');
+            const upscaleResultCountVal = document.getElementById('upscale-result-count-val');
 
             const undoBtn = document.getElementById('undo-button');
             const redoBtn = document.getElementById('redo-button');
@@ -1352,6 +1460,7 @@
             const fsToolOptions = fsToolPopup.querySelectorAll('button');
 
             let currentTool = 'pan';
+            let previousTool = 'pan';
             let isDrawing = false;
             let brushSize = 20;
             let magicTolerance = 30;
@@ -1359,6 +1468,7 @@
             let isProcessing = false;
             let currentMode = 'inpaint';
             
+            let originalFileName = "image.png";
             let originalImageBlob = null; 
             let history = [];
             let historyStep = -1;
@@ -1368,6 +1478,7 @@
             let magicWandSeed = null;
             let lassoPoints = [];
             let lastMaskState = null; 
+            let zoomScale = 1.0;
 
             const workerBlob = new Blob([document.getElementById('worker-code').textContent], { type: 'text/javascript' });
             const workerUrl = URL.createObjectURL(workerBlob);
@@ -1457,6 +1568,10 @@
                 resultCountSlider.addEventListener('input', (e) => {
                     resultCountVal.innerText = e.target.value;
                 });
+                
+                upscaleResultCountSlider.addEventListener('input', (e) => {
+                    upscaleResultCountVal.innerText = e.target.value;
+                });
 
                 patchSizeSlider.addEventListener('input', (e) => {
                     patchSizeVal.innerText = e.target.value + "px";
@@ -1475,6 +1590,16 @@
                         'smart_remove': 'Mesh: Optimized for removing text, fences, or thin grids.'
                     };
                     algoDesc.innerText = descs[e.target.value];
+                });
+
+                upscaleAlgoSelect.addEventListener('change', (e) => {
+                    const descs = {
+                        'general': 'General: Balanced enhancement, clarity, and denoising. Best for most images.',
+                        'sharp': 'Sharp: Enhances edges and recovers detail. Best for photos.',
+                        'smooth': 'Smooth: Reduces noise and softens artifacts. Good for old photos.',
+                        'artistic': 'Artistic: Stylized upscaling with posterization effect.'
+                    };
+                    upscaleAlgoDesc.innerText = descs[e.target.value];
                 });
                 
                 toleranceSlider.addEventListener('input', (e) => {
@@ -1518,6 +1643,8 @@
                         advPanel.style.display = 'none';
                     } else {
                         checkLayout();
+                        zoomScale = 1.0;
+                        updateZoom();
                     }
                     setTimeout(resizeCanvas, 50);
                 });
@@ -1537,29 +1664,26 @@
                 
                 const showOriginal = () => {
                     if(originalImageBitmap) {
-                        previewCanvas.width = mainImage.naturalWidth;
-                        previewCanvas.height = mainImage.naturalHeight;
-                        previewCanvas.getContext('2d').drawImage(mainImage, 0, 0); 
-                        mainImage.src = URL.createObjectURL(originalImageBlob);
+                        mainImage.style.opacity = '0';
                         compareBtn.classList.add('compare-active');
+                        canvasCompareBtn.classList.add('compare-active');
                     }
                 };
                 const showResult = () => {
                    if (currentImageBitmap) {
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = currentImageBitmap.width;
-                        tempCanvas.height = currentImageBitmap.height;
-                        tempCanvas.getContext('2d').drawImage(currentImageBitmap, 0, 0);
-                        mainImage.src = tempCanvas.toDataURL();
+                        mainImage.style.opacity = '1';
                         compareBtn.classList.remove('compare-active');
+                        canvasCompareBtn.classList.remove('compare-active');
                    }
                 };
                 
-                compareBtn.addEventListener('mousedown', showOriginal);
-                compareBtn.addEventListener('mouseup', showResult);
-                compareBtn.addEventListener('mouseleave', showResult);
-                compareBtn.addEventListener('touchstart', (e) => { e.preventDefault(); showOriginal(); });
-                compareBtn.addEventListener('touchend', (e) => { e.preventDefault(); showResult(); });
+                [compareBtn, canvasCompareBtn].forEach(btn => {
+                    btn.addEventListener('mousedown', showOriginal);
+                    btn.addEventListener('mouseup', showResult);
+                    btn.addEventListener('mouseleave', showResult);
+                    btn.addEventListener('touchstart', (e) => { e.preventDefault(); showOriginal(); });
+                    btn.addEventListener('touchend', (e) => { e.preventDefault(); showResult(); });
+                });
                 
                 modeEraserBtn.addEventListener('click', () => setMode('inpaint'));
                 modeUpscalerBtn.addEventListener('click', () => setMode('upscale'));
@@ -1572,7 +1696,12 @@
                     if(!mainImage.src || mainImage.style.display === 'none') return;
                     const a = document.createElement('a');
                     a.href = mainImage.src;
-                    a.download = 'AE.png';
+                    
+                    const nameParts = originalFileName.split('.');
+                    const ext = nameParts.pop();
+                    const name = nameParts.join('.') + "-ae.lens." + ext;
+                    
+                    a.download = name;
                     a.click();
                 });
                 
@@ -1584,6 +1713,63 @@
                         document.getElementById('tab-' + e.target.dataset.tab).classList.add('active');
                     });
                 });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+                        e.preventDefault();
+                        if (e.shiftKey) redo(); else undo();
+                    }
+                    
+                    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+                    
+                    if (e.key === ' ' && currentTool !== 'pan') {
+                        previousTool = currentTool;
+                        setTool('pan');
+                    }
+
+                    if (e.key === 'Alt') {
+                        e.preventDefault();
+                        showOriginal();
+                    }
+                    
+                    switch(e.key.toLowerCase()) {
+                        case 'b': setTool('brush'); break;
+                        case 'l': setTool('lasso'); break;
+                        case 'f': setTool('fill'); break;
+                        case 'a': setTool('auto-lasso'); break;
+                        case 's': setTool('wand'); break;
+                        case 'e': setTool('eraser'); break;
+                        case 'm': setTool('smart-mask'); break;
+                    }
+                });
+
+                document.addEventListener('keyup', (e) => {
+                    if (e.key === ' ' && previousTool !== 'pan') {
+                        setTool(previousTool);
+                        previousTool = 'pan';
+                    }
+                    if (e.key === 'Alt') {
+                        e.preventDefault();
+                        showResult();
+                    }
+                });
+
+                container.addEventListener('wheel', (e) => {
+                    if (frame.classList.contains('fullscreen-active')) {
+                        e.preventDefault();
+                        const delta = e.deltaY * -0.001;
+                        zoomScale = Math.min(Math.max(0.1, zoomScale + delta), 5);
+                        updateZoom();
+                    }
+                });
+            }
+
+            function updateZoom() {
+                const transform = `translate(-50%, -50%) scale(${zoomScale})`;
+                mainImage.style.transform = transform;
+                originalImage.style.transform = transform;
+                maskCanvas.style.transform = transform;
+                previewCanvas.style.transform = transform;
             }
 
             function setMode(mode) {
@@ -1671,6 +1857,7 @@
                 const file = e.target.files[0];
                 if (!file) return;
 
+                originalFileName = file.name;
                 originalImageBlob = file;
                 const bmp = await createImageBitmap(file);
                 originalImageBitmap = bmp;
@@ -1678,6 +1865,7 @@
                 
                 const url = URL.createObjectURL(file);
                 compareBtn.disabled = true;
+                canvasCompareBtn.disabled = true;
                 
                 generatedResults = [];
                 resultsBar.innerHTML = '';
@@ -1687,6 +1875,8 @@
                 
                 mainImage.onload = () => {
                     mainImage.style.display = 'block';
+                    originalImage.src = url;
+                    originalImage.style.display = 'block';
                     emptyStateText.style.display = 'none';
                     canvasActions.style.display = 'flex';
                     
@@ -1715,6 +1905,7 @@
                 mainImage.src = canvas.toDataURL();
                 
                 compareBtn.disabled = true;
+                canvasCompareBtn.disabled = true;
                 resultsBar.classList.remove('active');
                 resultsBar.innerHTML = '';
                 rerunBtn.style.display = 'none';
@@ -1742,12 +1933,12 @@
                     renderH = renderW / imgRatio;
                 }
 
-                [mainImage, maskCanvas, previewCanvas].forEach(c => {
+                [mainImage, originalImage, maskCanvas, previewCanvas].forEach(c => {
                     c.style.width = `${renderW}px`;
                     c.style.height = `${renderH}px`;
                     c.style.top = `50%`;
                     c.style.left = `50%`;
-                    c.style.transform = `translate(-50%, -50%)`;
+                    c.style.transform = `translate(-50%, -50%) scale(${zoomScale})`;
                 });
             }
 
@@ -2162,9 +2353,9 @@
                     imageData: imgData,
                     maskData: maskData,
                     options: {
-                        count: parseInt(resultCountSlider.value),
+                        count: currentMode === 'inpaint' ? parseInt(resultCountSlider.value) : parseInt(upscaleResultCountSlider.value),
                         scale: parseFloat(scaleSlider.value),
-                        algo: algoSelect.value,
+                        algo: currentMode === 'inpaint' ? algoSelect.value : upscaleAlgoSelect.value,
                         patchSize: parseInt(patchSizeSlider.value),
                         effort: parseInt(effortSlider.value),
                         invert: invertCheck.checked
@@ -2229,6 +2420,7 @@
                 mainImage.src = url;
                 currentImageBitmap = await createImageBitmap(generatedResults[index].blob);
                 compareBtn.disabled = false;
+                canvasCompareBtn.disabled = false;
                 
                 if(currentMode === 'inpaint') {
                     clearMask();
@@ -2287,4 +2479,4 @@
         });
     </script>
 </body>
-    </html>
+</html>
