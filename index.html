@@ -56,7 +56,7 @@
         .header-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
         .header-branding {
@@ -79,6 +79,16 @@
             opacity: 0.7;
             line-height: 1;
             margin-top: 4px;
+        }
+
+        .ascii-anim {
+            font-family: var(--font-family);
+            font-size: 14px;
+            white-space: pre;
+            color: var(--text-color);
+            opacity: 0.8;
+            min-width: 60px;
+            text-align: center;
         }
 
         .main-container {
@@ -574,10 +584,11 @@
             opacity: 0.6;
         }
         .mode-toggles button.active {
-            background: var(--frame-color);
+            background: #000080;
             color: var(--bg-color);
             opacity: 1;
             font-weight: bold;
+            color: white;
         }
 
         #magnifier {
@@ -733,8 +744,8 @@
 
     <div class="header">
         <div class="header-left">
-            <button id="layout-button">Fit</button>
             <button id="compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
+            <div class="ascii-anim" id="ascii-anim">(=.=)</div>
         </div>
         <div class="header-branding">
             <div class="brand-main">A/E LENS</div>
@@ -1023,7 +1034,7 @@
                         <h4>Editor</h4>
                         <div class="sub-tab-bar">
                             <button class="sub-tab-link active" data-subtab="filters">Filters</button>
-                            <button class="sub-tab-link" data-subtab="settings">Settings</button>
+                            <button class="sub-tab-link" data-subtab="settings" id="editor-settings-tab-link" style="display:none;">Settings</button>
                             <button class="sub-tab-link" data-subtab="dither">Dither</button>
                             <button class="sub-tab-link" data-subtab="adjustments">Adjustments</button>
                         </div>
@@ -1122,6 +1133,35 @@
                                         <label>Levels:</label>
                                         <input type="range" id="posterize-levels" min="2" max="32" value="4">
                                         <input type="number" id="posterize-levels-num" value="4" min="2" max="32">
+                                    </div>
+                                </div>
+                                
+                                <div class="dynamic-setting-group" data-for="solarize">
+                                     <div class="slider-input-group">
+                                        <label>Threshold:</label>
+                                        <input type="range" id="solarize-threshold" min="0" max="255" value="128">
+                                        <input type="number" id="solarize-threshold-num" value="128" min="0" max="255">
+                                    </div>
+                                </div>
+                                
+                                <div class="dynamic-setting-group" data-for="emboss">
+                                     <div class="slider-input-group">
+                                        <label>Strength:</label>
+                                        <input type="range" id="emboss-strength" min="0" max="100" value="100">
+                                        <input type="number" id="emboss-strength-num" value="100" min="0" max="100">
+                                    </div>
+                                </div>
+                                
+                                <div class="dynamic-setting-group" data-for="vignette">
+                                     <div class="slider-input-group">
+                                        <label>Amount:</label>
+                                        <input type="range" id="vignette-amount" min="0" max="100" value="50">
+                                        <input type="number" id="vignette-amount-num" value="50" min="0" max="100">
+                                    </div>
+                                     <div class="slider-input-group">
+                                        <label>Size:</label>
+                                        <input type="range" id="vignette-size" min="0" max="100" value="50">
+                                        <input type="number" id="vignette-size-num" value="50" min="0" max="100">
                                     </div>
                                 </div>
 
@@ -1666,7 +1706,7 @@
         }
 
         function processUpscaleSmart(imgData, options) {
-            const scale = options.scale || 1.0, algo = options.algo || 'general', debug = options.debug || false, aa = options.aa || false;
+            const scale = options.scale || 1.0, algo = options.algo || 'general', debug = options.debug || false, aa = options.antialiasing || false;
             let strength = 5, denoiseLevel = 0, blurFlatLevel = 0, detailLevel = 2, saturationLevel = 0, edgeCrisp = 5, edgeAlgo = 'sobel', lpStrength = 0, hpStrength = 0, invStrength = 0, temp = 0, tint = 0, useDenoise = false, useBlurFlat = false, pseudo = false, wiener = false;
             if (algo === 'custom') {
                 strength = options.strength; useDenoise = options.denoise > 0; denoiseLevel = options.denoise; detailLevel = options.detail; saturationLevel = options.saturation; edgeCrisp = options.edgeCrisp; edgeAlgo = options.edgeAlgo; lpStrength = options.lowpass; hpStrength = options.highpass; invStrength = options.invertpass; temp = options.temp; tint = options.tint; useBlurFlat = options.blurFlat > 0; blurFlatLevel = options.blurFlat;
@@ -2238,7 +2278,6 @@
             const confirmBtn = document.getElementById('confirm-button');
             const revertBtn = document.getElementById('revert-button');
             const advSettingsBtn = document.getElementById('advanced-settings-button');
-            const layoutBtn = document.getElementById('layout-button');
             const imageInput = document.getElementById('image-input');
             const loadingOverlay = document.getElementById('loading-overlay');
             const statusPill = document.getElementById('status-pill');
@@ -2402,6 +2441,14 @@
                         });
                     }
                 });
+                
+                // ASCII Animation
+                let animIdx = 0;
+                const frames = ['(=.=)', '(>.<)', '(=.=)', '(>.<)', '(=.=)', '(>.<)', '(=.=)'];
+                setInterval(() => {
+                    document.getElementById('ascii-anim').innerText = frames[animIdx];
+                    animIdx = (animIdx + 1) % frames.length;
+                }, 1000);
             }
 
             function handleEmptyState() {
@@ -2575,7 +2622,9 @@
                     advPanel.style.display = advPanel.style.display === 'none' ? 'flex' : 'none';
                 });
 
-                layoutBtn.addEventListener('click', toggleManualLayout);
+                // Removed toggleManualLayout logic for fit button, now just checkLayout
+                // layoutBtn.addEventListener('click', toggleManualLayout); -> Replaced with ASCII anim, no click handler needed
+                
                 window.addEventListener('resize', () => {
                     if (Math.abs(window.innerWidth - lastWindowWidth) > 50) {
                         checkLayout();
@@ -2718,6 +2767,18 @@
                         if(specific) specific.classList.add('active');
                         else if(common && activeEditorFilter !== 'none') common.classList.add('active');
                         
+                        // Hide settings subtab link if None
+                        const settingsTabLink = document.getElementById('editor-settings-tab-link');
+                        if (activeEditorFilter === 'none') {
+                            settingsTabLink.style.display = 'none';
+                            // If settings tab was active, switch to filters or adjustments
+                            if (settingsTabLink.classList.contains('active')) {
+                                document.querySelector('[data-subtab="filters"]').click();
+                            }
+                        } else {
+                            settingsTabLink.style.display = 'block';
+                        }
+
                         runProcess(false);
                     });
                 });
@@ -3698,6 +3759,11 @@
                     editorOptions.pixelateSize = parseInt(document.getElementById('pixelate-size').value);
                     editorOptions.noiseAmount = parseInt(document.getElementById('noise-amount').value);
                     editorOptions.posterizeLevels = parseInt(document.getElementById('posterize-levels').value);
+                    
+                    editorOptions.solarizeThreshold = parseInt(document.getElementById('solarize-threshold').value);
+                    editorOptions.embossStrength = parseInt(document.getElementById('emboss-strength').value);
+                    editorOptions.vignetteAmount = parseInt(document.getElementById('vignette-amount').value);
+                    editorOptions.vignetteSize = parseInt(document.getElementById('vignette-size').value);
                 }
 
                 worker.postMessage({
