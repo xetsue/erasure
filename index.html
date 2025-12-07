@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -344,20 +344,14 @@
             position: relative;
         }
 
-        #run-ai-button, #rerun-button, #confirm-button, #run-ai-button-2, #custom-confirm, #fs-save-button {
+        #run-ai-button, #rerun-button, #confirm-button, #run-ai-button-2, #fs-save-button, #upscale-load-preset, #upscale-export-preset {
             background-color: var(--text-color);
             color: var(--bg-color);
             font-weight: bold;
             border-color: var(--text-color);
         }
-        #run-ai-button:disabled, #rerun-button:disabled, #confirm-button:disabled, #run-ai-button-2:disabled, #custom-confirm:disabled { opacity: 0.5; cursor: not-allowed; }
+        #run-ai-button:disabled, #rerun-button:disabled, #confirm-button:disabled, #run-ai-button-2:disabled { opacity: 0.5; cursor: not-allowed; }
         
-        #custom-cancel {
-            background-color: #ff4444;
-            border-color: #ff4444;
-            color: white;
-        }
-
         #run-ai-button.cancel-mode, #run-ai-button-2.cancel-mode {
             background-color: #ff4444;
             border-color: #ff4444;
@@ -448,7 +442,7 @@
         
         input[type="range"] { flex-grow: 1; height: 3px; background: var(--slider-track); -webkit-appearance: none; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; background: var(--slider-thumb); border-radius: 50%; cursor: pointer;}
-        input[type="number"], select, input[type="text"], input[type="color"] { background-color: var(--number-input-bg); border: 1px solid var(--number-input-outline-color); color: var(--text-color); padding: 4px; border-radius: 3px; }
+        input[type="number"], select, input[type="text"], input[type="color"] { background-color: var(--number-input-bg); border: 1px solid var(--number-input-outline-color); color: var(--text-color); padding: 4px; border-radius: 3px; width: 60px; }
 
         #loading-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -675,6 +669,11 @@
             font-weight: bold;
         }
         
+        .filter-option:not(.active):nth-child(4n+1) { background-color: rgba(255, 255, 255, 0.03); }
+        .filter-option:not(.active):nth-child(4n+2) { background-color: rgba(255, 255, 255, 0.06); }
+        .filter-option:not(.active):nth-child(4n+3) { background-color: rgba(255, 255, 255, 0.09); }
+        .filter-option:not(.active):nth-child(4n+4) { background-color: rgba(255, 255, 255, 0.12); }
+        
         .sub-tab-bar {
             display: flex;
             border-bottom: 1px solid var(--settings-outline);
@@ -827,57 +826,12 @@
             </div>
             
             <div class="tab-bar">
-                <button class="tab-link active" data-tab="brush">Brush</button>
-                <button class="tab-link" data-tab="models">Process</button>
+                <button class="tab-link active" data-tab="models">Process</button>
+                <button class="tab-link" data-tab="brush">Brush</button>
             </div>
 
             <div class="settings-content-scrollable">
-                <div id="tab-brush" class="tab-content active">
-                    <div class="setting-group">
-                        <h4>Drawing</h4>
-                        <div class="slider-input-group">
-                            <label for="brush-size">Size:</label>
-                            <input type="range" id="brush-size" min="1" max="100" value="15">
-                            <input type="number" id="brush-size-num" value="15" min="1" max="100" style="width: 50px;">
-                        </div>
-                        <div class="slider-input-group">
-                            <label for="brush-opacity">Mask Opacity:</label>
-                            <input type="range" id="brush-opacity" min="0.1" max="1.0" step="0.1" value="0.6">
-                            <span id="brush-opacity-val">0.6</span>
-                        </div>
-                        <div class="setting-group">
-                            <label>Brush Color:</label>
-                            <div class="radio-group">
-                                <label class="radio-option"><input type="radio" name="brush-color" value="white"> White</label>
-                                <label class="radio-option"><input type="radio" name="brush-color" value="black"> Black</label>
-                                <label class="radio-option"><input type="radio" name="brush-color" value="red"> Red</label>
-                                <label class="radio-option"><input type="radio" name="brush-color" value="negative" checked> Negative</label>
-                            </div>
-                            <p class="desc-text">All colors add to mask. Negative visually inverts image for contrast.</p>
-                        </div>
-                        <div class="slider-input-group" id="tolerance-group" style="display:none;">
-                            <label for="magic-tolerance">Tolerance:</label>
-                            <input type="range" id="magic-tolerance" min="0" max="100" value="30">
-                            <span id="magic-tolerance-val">30</span>
-                        </div>
-                        
-                        <div class="setting-group">
-                            <h4>Magnifier</h4>
-                            <div class="slider-input-group">
-                                <label for="magnifier-zoom">Zoom:</label>
-                                <input type="range" id="magnifier-zoom" min="1" max="10" step="0.5" value="1.5">
-                                <span id="magnifier-zoom-val">1.5x</span>
-                            </div>
-                            <div class="slider-input-group">
-                                <label for="magnifier-offset">Offset:</label>
-                                <input type="range" id="magnifier-offset" min="10" max="200" step="5" value="45">
-                                <span id="magnifier-offset-val">45px</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-models" class="tab-content">
+                <div id="tab-models" class="tab-content active">
                     <div class="setting-group">
                         <h4>Operation Mode</h4>
                         <div class="mode-toggles">
@@ -912,13 +866,13 @@
                         <div class="slider-input-group">
                             <label>Patch Size:</label>
                             <input type="range" id="patch-size" min="1" max="20" step="1" value="5">
-                            <span id="patch-size-val">5px</span>
+                            <input type="number" id="patch-size-num" value="5" min="1" max="20">
                         </div>
                         
                         <div class="slider-input-group">
                             <label>Results Count:</label>
                             <input type="range" id="result-count" min="1" max="30" value="3">
-                            <span id="result-count-val">3</span>
+                            <input type="number" id="result-count-num" value="3" min="1" max="30">
                         </div>
 
                          <div class="slider-input-group">
@@ -941,24 +895,33 @@
                         </select>
                         <p class="desc-text" id="upscale-algo-desc" style="display:block;">General: Balanced enhancement, clarity, and denoising. Best for most images.</p>
                         
+                        <div style="margin-bottom: 15px;">
+                            <label class="radio-option"><input type="checkbox" id="upscale-aa" checked> Anti-aliasing</label>
+                        </div>
+
                         <div id="upscale-standard-actions">
                              <button id="run-ai-button-2" style="width: 100%; margin-bottom: 20px;">RUN PROCESS</button>
                         </div>
                         
                         <div id="custom-upscale-actions" style="display: none;">
-                             <button id="custom-confirm">Confirm</button>
-                             <button id="custom-cancel" style="background-color: #ff4444; border-color: #ff4444;">Cancel</button>
+                             <button id="upscale-load-preset">Load JSON</button>
+                             <button id="upscale-export-preset">Export JSON</button>
+                             <input type="file" id="upscale-preset-input" accept=".json" style="display: none;">
                         </div>
 
                         <div class="slider-input-group" style="margin-top: 20px;">
                             <label for="upscale-scale">Target Scale:</label>
-                            <input type="range" id="upscale-scale" min="1.0" max="4.0" step="0.5" value="2.0">
-                            <span id="upscale-scale-val">2.0x</span>
+                            <input type="range" id="upscale-scale" min="1.0" max="4.0" step="0.5" value="1.0">
+                            <span id="upscale-scale-val">1.0x</span>
                         </div>
                         
                         <div id="upscale-custom-options-container" style="display: none; margin-bottom: 20px; border-bottom: 1px solid var(--settings-outline); padding-bottom: 10px;">
-                             <label class="radio-option"><input type="checkbox" id="upscale-experimental"> Experimental</label>
-                             <br><br>
+                             <div class="radio-group">
+                                 <label class="radio-option"><input type="checkbox" id="upscale-experimental"> Experimental</label>
+                                 <label class="radio-option"><input type="checkbox" id="upscale-pseudo"> Pseudo-inverted Filter</label>
+                                 <label class="radio-option"><input type="checkbox" id="upscale-wiener"> Wiener Pass</label>
+                             </div>
+                             <br>
                              <label>Edge Detection:</label>
                              <select id="upscale-edge-algo" style="width: 100%; padding: 5px; margin-top: 5px;">
                                  <option value="sobel" selected>Sobel</option>
@@ -971,7 +934,7 @@
                             <div class="slider-input-group">
                                 <label for="upscale-strength" id="label-strength">Sharpen:</label>
                                 <input type="range" id="upscale-strength" min="0" max="50" value="5">
-                                <span id="upscale-strength-val">5</span>
+                                <input type="number" id="upscale-strength-num" value="5" min="0" max="50">
                             </div>
                         </div>
 
@@ -982,7 +945,7 @@
                             <div class="slider-input-group" id="upscale-denoise-slider-group" style="display:none;">
                                 <label for="upscale-denoise">Level:</label>
                                 <input type="range" id="upscale-denoise" min="0" max="20" value="2">
-                                <span id="upscale-denoise-val">2</span>
+                                <input type="number" id="upscale-denoise-num" value="2" min="0" max="20">
                             </div>
                         </div>
 
@@ -993,15 +956,15 @@
                             <div class="slider-input-group" id="upscale-blur-flat-slider-group" style="display:none;">
                                 <label for="upscale-blur-flat">Blur:</label>
                                 <input type="range" id="upscale-blur-flat" min="0" max="10" value="2">
-                                <span id="upscale-blur-flat-val">2</span>
+                                <input type="number" id="upscale-blur-flat-num" value="2" min="0" max="10">
                             </div>
                         </div>
 
                         <div class="upscale-control-group" id="group-detail">
                             <div class="slider-input-group">
                                 <label for="upscale-detail">Detail:</label>
-                                <input type="range" id="upscale-detail" min="0" max="20" value="2">
-                                <span id="upscale-detail-val">2</span>
+                                <input type="range" id="upscale-detail" min="0" max="100" value="2">
+                                <input type="number" id="upscale-detail-num" value="2" min="0" max="100">
                             </div>
                         </div>
 
@@ -1009,7 +972,7 @@
                             <div class="slider-input-group">
                                 <label for="upscale-saturation">Vibrance:</label>
                                 <input type="range" id="upscale-saturation" min="0" max="20" value="0">
-                                <span id="upscale-saturation-val">0</span>
+                                <input type="number" id="upscale-saturation-num" value="0" min="0" max="20">
                             </div>
                         </div>
                         
@@ -1017,12 +980,12 @@
                             <div class="slider-input-group">
                                 <label for="upscale-temp">Temp:</label>
                                 <input type="range" id="upscale-temp" min="-20" max="20" value="0">
-                                <span id="upscale-temp-val">0</span>
+                                <input type="number" id="upscale-temp-num" value="0" min="-20" max="20">
                             </div>
                              <div class="slider-input-group">
                                 <label for="upscale-tint">Tint:</label>
                                 <input type="range" id="upscale-tint" min="-20" max="20" value="0">
-                                <span id="upscale-tint-val">0</span>
+                                <input type="number" id="upscale-tint-num" value="0" min="-20" max="20">
                             </div>
                         </div>
 
@@ -1030,29 +993,29 @@
                              <div class="slider-input-group">
                                 <label for="upscale-edge-crisp">Edge Crispness:</label>
                                 <input type="range" id="upscale-edge-crisp" min="1" max="10" value="5">
-                                <span id="upscale-edge-crisp-val">5</span>
+                                <input type="number" id="upscale-edge-crisp-num" value="5" min="1" max="10">
                             </div>
                              <div class="slider-input-group">
                                 <label for="upscale-lowpass">Low Pass:</label>
                                 <input type="range" id="upscale-lowpass" min="0" max="10" value="0">
-                                <span id="upscale-lowpass-val">0</span>
+                                <input type="number" id="upscale-lowpass-num" value="0" min="0" max="10">
                             </div>
                              <div class="slider-input-group">
                                 <label for="upscale-highpass">High Pass:</label>
                                 <input type="range" id="upscale-highpass" min="0" max="10" value="0">
-                                <span id="upscale-highpass-val">0</span>
+                                <input type="number" id="upscale-highpass-num" value="0" min="0" max="10">
                             </div>
                              <div class="slider-input-group">
                                 <label for="upscale-inv">Invert Pass:</label>
                                 <input type="range" id="upscale-inv" min="0" max="10" value="0">
-                                <span id="upscale-inv-val">0</span>
+                                <input type="number" id="upscale-inv-num" value="0" min="0" max="10">
                             </div>
                         </div>
                         
                         <div class="slider-input-group" id="group-result-count">
                             <label>Results Count:</label>
                             <input type="range" id="upscale-result-count" min="1" max="5" value="1">
-                            <span id="upscale-result-count-val">1</span>
+                            <input type="number" id="upscale-result-count-num" value="1" min="1" max="5">
                         </div>
                     </div>
 
@@ -1067,6 +1030,7 @@
 
                         <div id="subtab-filters" class="sub-tab-content active">
                             <div class="filter-list-box" id="editor-filter-list">
+                                <button class="filter-option active" data-filter="none">None</button>
                                 <button class="filter-option" data-filter="ascii">ASCII</button>
                                 <button class="filter-option" data-filter="crt">CRT Shader</button>
                                 <button class="filter-option" data-filter="edge">Edge Detect</button>
@@ -1078,6 +1042,9 @@
                                 <button class="filter-option" data-filter="posterize">Posterize</button>
                                 <button class="filter-option" data-filter="rgb">RGB Pixels</button>
                                 <button class="filter-option" data-filter="sepia">Sepia</button>
+                                <button class="filter-option" data-filter="solarize">Solarize</button>
+                                <button class="filter-option" data-filter="emboss">Emboss</button>
+                                <button class="filter-option" data-filter="vignette">Vignette</button>
                                 <button class="filter-option" data-filter="wes">Wes Anderson</button>
                             </div>
                         </div>
@@ -1094,7 +1061,7 @@
                                     <div class="slider-input-group">
                                         <label>Block Size:</label>
                                         <input type="range" id="ascii-size" min="2" max="32" value="8">
-                                        <span id="ascii-size-val">8</span>
+                                        <input type="number" id="ascii-size-num" value="8" min="2" max="32">
                                     </div>
                                     <label>Characters:</label>
                                     <input type="text" id="ascii-chars" value="@%#*+=-:. " style="width:100%;">
@@ -1111,7 +1078,7 @@
                                     <div class="slider-input-group">
                                         <label>Sensitivity:</label>
                                         <input type="range" id="edge-sensitivity" min="1" max="20" value="5">
-                                        <span id="edge-sensitivity-val">5</span>
+                                        <input type="number" id="edge-sensitivity-num" value="5" min="1" max="20">
                                     </div>
                                 </div>
 
@@ -1125,12 +1092,12 @@
                                     <div class="slider-input-group">
                                         <label>Amount:</label>
                                         <input type="range" id="glitch-amount" min="0" max="50" value="10">
-                                        <span id="glitch-amount-val">10</span>
+                                        <input type="number" id="glitch-amount-num" value="10" min="0" max="50">
                                     </div>
                                     <div class="slider-input-group">
                                         <label>Seed:</label>
                                         <input type="range" id="glitch-seed" min="0" max="100" value="0">
-                                        <span id="glitch-seed-val">0</span>
+                                        <input type="number" id="glitch-seed-num" value="0" min="0" max="100">
                                     </div>
                                 </div>
                                 
@@ -1138,7 +1105,7 @@
                                      <div class="slider-input-group">
                                         <label>Block Size:</label>
                                         <input type="range" id="pixelate-size" min="2" max="64" value="8">
-                                        <span id="pixelate-size-val">8</span>
+                                        <input type="number" id="pixelate-size-num" value="8" min="2" max="64">
                                     </div>
                                 </div>
                                 
@@ -1146,7 +1113,7 @@
                                      <div class="slider-input-group">
                                         <label>Amount:</label>
                                         <input type="range" id="noise-amount" min="0" max="100" value="20">
-                                        <span id="noise-amount-val">20</span>
+                                        <input type="number" id="noise-amount-num" value="20" min="0" max="100">
                                     </div>
                                 </div>
                                 
@@ -1154,7 +1121,7 @@
                                      <div class="slider-input-group">
                                         <label>Levels:</label>
                                         <input type="range" id="posterize-levels" min="2" max="32" value="4">
-                                        <span id="posterize-levels-val">4</span>
+                                        <input type="number" id="posterize-levels-num" value="4" min="2" max="32">
                                     </div>
                                 </div>
 
@@ -1162,7 +1129,7 @@
                                     <div class="slider-input-group">
                                         <label>Strength:</label>
                                         <input type="range" id="editor-strength" min="0" max="100" value="100">
-                                        <span id="editor-strength-val">100</span>
+                                        <input type="number" id="editor-strength-num" value="100" min="0" max="100">
                                     </div>
                                 </div>
                             </div>
@@ -1183,17 +1150,17 @@
                             <div class="slider-input-group">
                                 <label>Strength:</label>
                                 <input type="range" id="dither-strength" min="0" max="400" value="100">
-                                <span id="dither-strength-val">100</span>
+                                <input type="number" id="dither-strength-num" value="100" min="0" max="400">
                             </div>
                             <div class="slider-input-group">
                                 <label>Pattern Size:</label>
                                 <input type="range" id="dither-pattern-size" min="1" max="16" value="1">
-                                <span id="dither-pattern-size-val">1</span>
+                                <input type="number" id="dither-pattern-size-num" value="1" min="1" max="16">
                             </div>
                             <div class="slider-input-group">
                                 <label>Color Levels:</label>
                                 <input type="range" id="dither-levels" min="2" max="16" value="4">
-                                <span id="dither-levels-val">4</span>
+                                <input type="number" id="dither-levels-num" value="4" min="2" max="16">
                             </div>
                             
                             <label>Color Map:</label>
@@ -1215,32 +1182,92 @@
                             <div class="slider-input-group">
                                 <label>Brightness:</label>
                                 <input type="range" id="adj-bright" min="-100" max="100" value="0">
-                                <span id="adj-bright-val">0</span>
+                                <input type="number" id="adj-bright-num" value="0" min="-100" max="100">
                             </div>
                             <div class="slider-input-group">
                                 <label>Contrast:</label>
                                 <input type="range" id="adj-contrast" min="-100" max="100" value="0">
-                                <span id="adj-contrast-val">0</span>
+                                <input type="number" id="adj-contrast-num" value="0" min="-100" max="100">
                             </div>
                             <div class="slider-input-group">
                                 <label>Saturation:</label>
                                 <input type="range" id="adj-sat" min="-100" max="100" value="0">
-                                <span id="adj-sat-val">0</span>
+                                <input type="number" id="adj-sat-num" value="0" min="-100" max="100">
                             </div>
                             <div class="slider-input-group">
                                 <label>Hue:</label>
                                 <input type="range" id="adj-hue" min="-180" max="180" value="0">
-                                <span id="adj-hue-val">0</span>
+                                <input type="number" id="adj-hue-num" value="0" min="-180" max="180">
                             </div>
                             <div class="slider-input-group">
                                 <label>Blur:</label>
                                 <input type="range" id="adj-blur" min="0" max="20" value="0">
-                                <span id="adj-blur-val">0</span>
+                                <input type="number" id="adj-blur-num" value="0" min="0" max="20">
                             </div>
                             <div class="slider-input-group">
                                 <label>Sharpen:</label>
                                 <input type="range" id="adj-sharp" min="0" max="20" value="0">
-                                <span id="adj-sharp-val">0</span>
+                                <input type="number" id="adj-sharp-num" value="0" min="0" max="20">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Grain:</label>
+                                <input type="range" id="adj-grain" min="0" max="100" value="0">
+                                <input type="number" id="adj-grain-num" value="0" min="0" max="100">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Bloom:</label>
+                                <input type="range" id="adj-bloom" min="0" max="100" value="0">
+                                <input type="number" id="adj-bloom-num" value="0" min="0" max="100">
+                            </div>
+                             <div class="slider-input-group">
+                                <label>Haze:</label>
+                                <input type="range" id="adj-haze" min="0" max="100" value="0">
+                                <input type="number" id="adj-haze-num" value="0" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab-brush" class="tab-content">
+                    <div class="setting-group">
+                        <h4>Drawing</h4>
+                        <div class="slider-input-group">
+                            <label for="brush-size">Size:</label>
+                            <input type="range" id="brush-size" min="1" max="100" value="15">
+                            <input type="number" id="brush-size-num" value="15" min="1" max="100" style="width: 50px;">
+                        </div>
+                        <div class="slider-input-group">
+                            <label for="brush-opacity">Mask Opacity:</label>
+                            <input type="range" id="brush-opacity" min="0.1" max="1.0" step="0.1" value="0.6">
+                            <input type="number" id="brush-opacity-num" value="0.6" min="0.1" max="1.0" step="0.1">
+                        </div>
+                        <div class="setting-group">
+                            <label>Brush Color:</label>
+                            <div class="radio-group">
+                                <label class="radio-option"><input type="radio" name="brush-color" value="white"> White</label>
+                                <label class="radio-option"><input type="radio" name="brush-color" value="black"> Black</label>
+                                <label class="radio-option"><input type="radio" name="brush-color" value="red"> Red</label>
+                                <label class="radio-option"><input type="radio" name="brush-color" value="negative" checked> Negative</label>
+                            </div>
+                            <p class="desc-text">All colors add to mask. Negative visually inverts image for contrast.</p>
+                        </div>
+                        <div class="slider-input-group" id="tolerance-group" style="display:none;">
+                            <label for="magic-tolerance">Tolerance:</label>
+                            <input type="range" id="magic-tolerance" min="0" max="100" value="30">
+                            <input type="number" id="magic-tolerance-num" value="30" min="0" max="100">
+                        </div>
+                        
+                        <div class="setting-group">
+                            <h4>Magnifier</h4>
+                            <div class="slider-input-group">
+                                <label for="magnifier-zoom">Zoom:</label>
+                                <input type="range" id="magnifier-zoom" min="1" max="10" step="0.5" value="1.5">
+                                <input type="number" id="magnifier-zoom-num" value="1.5" min="1" max="10" step="0.5">
+                            </div>
+                            <div class="slider-input-group">
+                                <label for="magnifier-offset">Offset:</label>
+                                <input type="range" id="magnifier-offset" min="10" max="200" step="5" value="45">
+                                <input type="number" id="magnifier-offset-num" value="45" min="10" max="200" step="5">
                             </div>
                         </div>
                     </div>
@@ -1333,6 +1360,56 @@
                 g: a.g + (b.g - a.g) * t,
                 b: a.b + (b.b - a.b) * t
             };
+        }
+
+        function applyGaussianBlur(data, w, h, radius) {
+            const size = w * h * 4;
+            const dest = new Float32Array(size);
+            const sigma = radius / 2;
+            const kSize = Math.ceil(radius * 2) + 1;
+            const kernel = new Float32Array(kSize);
+            const half = Math.floor(kSize / 2);
+            let sum = 0;
+            for(let i=0; i<kSize; i++) {
+                const x = i - half;
+                kernel[i] = Math.exp(-(x*x)/(2*sigma*sigma));
+                sum += kernel[i];
+            }
+            for(let i=0; i<kSize; i++) kernel[i] /= sum;
+
+            const temp = new Float32Array(size);
+            for (let y = 0; y < h; y++) {
+                const yOff = y * w * 4;
+                for (let x = 0; x < w; x++) {
+                    let r = 0, g = 0, b = 0;
+                    for (let k = 0; k < kSize; k++) {
+                        const px = Math.min(w - 1, Math.max(0, x + k - half));
+                        const off = yOff + px * 4;
+                        const weight = kernel[k];
+                        r += data[off] * weight;
+                        g += data[off+1] * weight;
+                        b += data[off+2] * weight;
+                    }
+                    const dOff = yOff + x * 4;
+                    temp[dOff] = r; temp[dOff+1] = g; temp[dOff+2] = b; temp[dOff+3] = data[dOff+3];
+                }
+            }
+            for (let x = 0; x < w; x++) {
+                for (let y = 0; y < h; y++) {
+                    let r = 0, g = 0, b = 0;
+                    for (let k = 0; k < kSize; k++) {
+                        const py = Math.min(h - 1, Math.max(0, y + k - half));
+                        const off = (py * w + x) * 4;
+                        const weight = kernel[k];
+                        r += temp[off] * weight;
+                        g += temp[off+1] * weight;
+                        b += temp[off+2] * weight;
+                    }
+                    const dOff = (y * w + x) * 4;
+                    dest[dOff] = r; dest[dOff+1] = g; dest[dOff+2] = b; dest[dOff+3] = temp[dOff+3];
+                }
+            }
+            return dest;
         }
 
         self.onmessage = function(e) {
@@ -1589,11 +1666,12 @@
         }
 
         function processUpscaleSmart(imgData, options) {
-            const scale = options.scale || 1.0, algo = options.algo || 'general', debug = options.debug || false;
-            let strength = 5, denoiseLevel = 0, blurFlatLevel = 0, detailLevel = 2, saturationLevel = 0, edgeCrisp = 5, edgeAlgo = 'sobel', lpStrength = 0, hpStrength = 0, invStrength = 0, temp = 0, tint = 0, useDenoise = false, useBlurFlat = false;
+            const scale = options.scale || 1.0, algo = options.algo || 'general', debug = options.debug || false, aa = options.aa || false;
+            let strength = 5, denoiseLevel = 0, blurFlatLevel = 0, detailLevel = 2, saturationLevel = 0, edgeCrisp = 5, edgeAlgo = 'sobel', lpStrength = 0, hpStrength = 0, invStrength = 0, temp = 0, tint = 0, useDenoise = false, useBlurFlat = false, pseudo = false, wiener = false;
             if (algo === 'custom') {
                 strength = options.strength; useDenoise = options.denoise > 0; denoiseLevel = options.denoise; detailLevel = options.detail; saturationLevel = options.saturation; edgeCrisp = options.edgeCrisp; edgeAlgo = options.edgeAlgo; lpStrength = options.lowpass; hpStrength = options.highpass; invStrength = options.invertpass; temp = options.temp; tint = options.tint; useBlurFlat = options.blurFlat > 0; blurFlatLevel = options.blurFlat;
-            } else if (algo === 'sharp') { strength = 15; useDenoise = false; detailLevel = 4; }
+                pseudo = options.pseudo; wiener = options.wiener;
+            } else if (algo === 'sharp') { strength = 15; useDenoise = false; detailLevel = 30; }
             else if (algo === 'smooth') { strength = 2; useDenoise = true; denoiseLevel = 5; detailLevel = 1; useBlurFlat = true; blurFlatLevel = 3; }
             else if (algo === 'restore_color') { strength = 5; useDenoise = false; saturationLevel = 10; }
             else { strength = 5; useDenoise = false; detailLevel = 2; }
@@ -1614,7 +1692,7 @@
                     for (let y = 0; y < h; y++) {
                         let r = 0, g = 0, b = 0, a = 0; const yOff = y * w * 4;
                         for (const wgt of weights) { const off = yOff + wgt.idx * 4; r += src[off] * wgt.w; g += src[off+1] * wgt.w; b += src[off+2] * wgt.w; a += src[off+3] * wgt.w; }
-                        const tOff = (y * destW + x) * 4; temp[tOff] = r; temp[tOff+1] = g; temp[tOff+2] = b; temp[tOff+3] = a;
+                        const tOff = (y * destW + x) * 4; temp[tOff] = Math.max(0, Math.min(255, r)); temp[tOff+1] = Math.max(0, Math.min(255, g)); temp[tOff+2] = Math.max(0, Math.min(255, b)); temp[tOff+3] = a;
                     }
                 }
                 const ratioH = h / destH;
@@ -1627,7 +1705,7 @@
                     for (let x = 0; x < destW; x++) {
                         let r = 0, g = 0, b = 0, a = 0;
                         for (const wgt of weights) { const off = (wgt.idx * destW + x) * 4; r += temp[off] * wgt.w; g += temp[off+1] * wgt.w; b += temp[off+2] * wgt.w; a += temp[off+3] * wgt.w; }
-                        const dOff = (y * destW + x) * 4; dest[dOff] = r; dest[dOff+1] = g; dest[dOff+2] = b; dest[dOff+3] = a;
+                        const dOff = (y * destW + x) * 4; dest[dOff] = Math.max(0, Math.min(255, r)); dest[dOff+1] = Math.max(0, Math.min(255, g)); dest[dOff+2] = Math.max(0, Math.min(255, b)); dest[dOff+3] = a;
                     }
                 }
                 cachedResizeBuffer = new Float32Array(dest); cachedResizeW = destW; cachedResizeH = destH; return dest;
@@ -1655,9 +1733,13 @@
             }
             function applyWienerFilter(data, w, h, noiseEstimate) {
                 const mean = applyBoxBlur(data, w, h, 2), meanSq = applyBoxBlur(data.map(v => v*v), w, h, 2), result = new Float32Array(data.length);
+                const epsilon = 1e-5;
+                const safeNoiseEst = Math.max(epsilon, noiseEstimate);
                 for(let i=0; i<data.length; i+=4) {
-                     const varR = Math.max(0, meanSq[i] - mean[i]*mean[i]), varG = Math.max(0, meanSq[i+1] - mean[i+1]*mean[i+1]), varB = Math.max(0, meanSq[i+2] - mean[i+2]*mean[i+2]);
-                     const kR = varR / (varR + noiseEstimate), kG = varG / (varG + noiseEstimate), kB = varB / (varB + noiseEstimate);
+                     const varianceR = Math.max(0, meanSq[i] - mean[i]*mean[i]);
+                     const varianceG = Math.max(0, meanSq[i+1] - mean[i+1]*mean[i+1]);
+                     const varianceB = Math.max(0, meanSq[i+2] - mean[i+2]*mean[i+2]);
+                     const kR = varianceR / (varianceR + safeNoiseEst), kG = varianceG / (varianceG + safeNoiseEst), kB = varianceB / (varianceB + safeNoiseEst);
                      result[i] = mean[i] + kR * (data[i] - mean[i]); result[i+1] = mean[i+1] + kG * (data[i+1] - mean[i+1]); result[i+2] = mean[i+2] + kB * (data[i+2] - mean[i+2]); result[i+3] = data[i+3];
                 }
                 return result;
@@ -1682,7 +1764,7 @@
             }
             if (useDenoise && denoiseLevel > 0) { const dThresh = denoiseLevel * 25; current = applySmartBlur(current, newW, newH, 2, dThresh); if (debug) sendDebug(new Uint8ClampedArray(current), newW, newH, "Denoised"); }
             let lpData, hpData, invData;
-            if (lpStrength > 0 || hpStrength > 0 || invStrength > 0 || debug) {
+            if (lpStrength > 0 || hpStrength > 0 || invStrength > 0 || debug || pseudo || wiener) {
                  lpData = applyBoxBlur(current, newW, newH, 2);
                  if (debug && lpStrength > 0) sendDebug(new Uint8ClampedArray(lpData), newW, newH, "Low Pass");
                  hpData = new Float32Array(current.length); for(let i=0; i<current.length; i++) hpData[i] = current[i] - lpData[i];
@@ -1697,16 +1779,19 @@
             }
             if (lpStrength > 0) { const factor = lpStrength / 10.0; for(let i=0; i<current.length; i++) current[i] = current[i]*(1-factor) + lpData[i]*factor; }
             if (hpStrength > 0) {
-                 const noiseEst = denoiseLevel * 100; const wienerHp = applyWienerFilter(hpData, newW, newH, noiseEst);
+                 const factor = hpStrength / 2.0; for(let i=0; i<current.length; i+=4) { current[i] += hpData[i] * factor; current[i+1] += hpData[i+1] * factor; current[i+2] += hpData[i+2] * factor; }
+            }
+            if (wiener) {
+                 const noiseEst = (denoiseLevel || 2) * 100; const wienerHp = applyWienerFilter(hpData, newW, newH, noiseEst);
                  if (debug) {
                      const wVis = new Uint8ClampedArray(current.length);
                      for(let i=0; i<current.length; i+=4) { wVis[i] = Math.min(255, Math.max(0, wienerHp[i] + 128)); wVis[i+1] = Math.min(255, Math.max(0, wienerHp[i+1] + 128)); wVis[i+2] = Math.min(255, Math.max(0, wienerHp[i+2] + 128)); wVis[i+3] = 255; }
                      sendDebug(wVis, newW, newH, "Wiener");
                  }
-                 const factor = hpStrength / 2.0; for(let i=0; i<current.length; i+=4) { current[i] += wienerHp[i] * factor; current[i+1] += wienerHp[i+1] * factor; current[i+2] += wienerHp[i+2] * factor; }
+                 for(let i=0; i<current.length; i+=4) { current[i] += wienerHp[i] * 0.5; current[i+1] += wienerHp[i+1] * 0.5; current[i+2] += wienerHp[i+2] * 0.5; }
             }
-            if (invStrength > 0) {
-                 const factor = invStrength / 20.0; const diff = new Float32Array(current.length); for(let i=0; i<current.length; i++) diff[i] = current[i] - invData[i];
+            if (invStrength > 0 || pseudo) {
+                 const factor = (pseudo ? 5 : invStrength) / 20.0; const diff = new Float32Array(current.length); for(let i=0; i<current.length; i++) diff[i] = current[i] - invData[i];
                  const wienerDiff = applyWienerFilter(diff, newW, newH, 500); 
                  for(let i=0; i<current.length; i+=4) { current[i] += wienerDiff[i] * 0.1 * factor; current[i+1] += wienerDiff[i+1] * 0.1 * factor; current[i+2] += wienerDiff[i+2] * 0.1 * factor; }
             }
@@ -1715,8 +1800,22 @@
                 const blurredSmall = applyBoxBlur(current, newW, newH, 1); const blurredLarge = applyBoxBlur(current, newW, newH, 4); 
                 const blurredFlat = useBlurFlat ? applyBoxBlur(current, newW, newH, blurFlatLevel) : null;
                 const finalPass = new Uint8ClampedArray(current.length);
+                const haloLimit = 30; 
                 for(let i=0; i<current.length; i+=4) {
                      const cR = current[i], cG = current[i+1], cB = current[i+2];
+                     
+                     let minR=cR, maxR=cR, minG=cG, maxG=cG, minB=cB, maxB=cB;
+                     const y = Math.floor(i/4/newW), x = (i/4)%newW;
+                     for(let ky=-1; ky<=1; ky++) {
+                         for(let kx=-1; kx<=1; kx++) {
+                             if(kx===0 && ky===0) continue;
+                             const idx = (Math.min(newH-1, Math.max(0, y+ky))*newW + Math.min(newW-1, Math.max(0, x+kx)))*4;
+                             minR = Math.min(minR, current[idx]); maxR = Math.max(maxR, current[idx]);
+                             minG = Math.min(minG, current[idx+1]); maxG = Math.max(maxG, current[idx+1]);
+                             minB = Math.min(minB, current[idx+2]); maxB = Math.max(maxB, current[idx+2]);
+                         }
+                     }
+
                      const fineR = cR - blurredSmall[i], fineG = cG - blurredSmall[i+1], fineB = cB - blurredSmall[i+2];
                      const detR = cR - blurredLarge[i], detG = cG - blurredLarge[i+1], detB = cB - blurredLarge[i+2];
                      const pIdx = i/4; const edgeVal = edgeMap[pIdx];
@@ -1724,9 +1823,13 @@
                      let addR = (fineR * strMult * areaWeight) + (detR * dtlMult * noiseGate);
                      let addG = (fineG * strMult * areaWeight) + (detG * dtlMult * noiseGate);
                      let addB = (fineB * strMult * areaWeight) + (detB * dtlMult * noiseGate);
-                     const limit = 50 + (strength * 2); 
-                     addR = Math.max(-limit, Math.min(limit, addR)); addG = Math.max(-limit, Math.min(limit, addG)); addB = Math.max(-limit, Math.min(limit, addB));
+                     
                      let baseR = cR + addR, baseG = cG + addG, baseB = cB + addB;
+                     
+                     baseR = Math.max(minR - haloLimit, Math.min(maxR + haloLimit, baseR));
+                     baseG = Math.max(minG - haloLimit, Math.min(maxG + haloLimit, baseG));
+                     baseB = Math.max(minB - haloLimit, Math.min(maxB + haloLimit, baseB));
+
                      if (useBlurFlat && edgeVal < 0.1) {
                          const mix = (1.0 - (edgeVal * 10)) * 0.8; 
                          baseR = baseR * (1-mix) + blurredFlat[i] * mix; baseG = baseG * (1-mix) + blurredFlat[i+1] * mix; baseB = baseB * (1-mix) + blurredFlat[i+2] * mix;
@@ -1735,6 +1838,18 @@
                 }
                 processed = finalPass; 
             } else { processed = new Uint8ClampedArray(current); }
+            
+            if (aa) {
+                const aaEdges = createEdgeMap(processed, newW, newH, 10, 'sobel'); 
+                const aaBlur = applyGaussianBlur(processed, newW, newH, 1.0);
+                for(let i=0; i<processed.length; i+=4) {
+                    const edge = Math.min(1.0, aaEdges[i/4] > 0.1 ? aaEdges[i/4] * 2.0 : 0); 
+                    processed[i] = processed[i]*(1-edge) + aaBlur[i]*edge;
+                    processed[i+1] = processed[i+1]*(1-edge) + aaBlur[i+1]*edge;
+                    processed[i+2] = processed[i+2]*(1-edge) + aaBlur[i+2]*edge;
+                }
+            }
+            
             if (saturationLevel > 0) applyVibranceSmart(processed, saturationLevel);
             self.postMessage({ type: 'result', buffer: processed.buffer, width: newW, height: newH, index: 0 }, [processed.buffer]);
             self.postMessage({ type: 'complete' });
@@ -1745,8 +1860,11 @@
             const src = new Float32Array(imgData.data);
             
             const adj = options.adjustments || {};
-            if (adj.brightness || adj.contrast || adj.saturation || adj.hue || adj.blur || adj.sharp) {
-                const b = (adj.brightness || 0) / 100, c = ((adj.contrast || 0) + 100) / 100, s = ((adj.saturation || 0) + 100) / 100, hue = adj.hue || 0;
+            if (adj.brightness || adj.contrast || adj.saturation || adj.hue || adj.blur || adj.sharp || adj.grain || adj.bloom || adj.haze) {
+                const bright = (adj.brightness || 0) / 100;
+                const c = ((adj.contrast || 0) + 100) / 100;
+                const s = ((adj.saturation || 0) + 100) / 100;
+                const hue = adj.hue || 0;
                 
                 if (adj.blur > 0) {
                     const blurred = applyBoxBlur(src, w, h, adj.blur);
@@ -1761,12 +1879,45 @@
                         src[i+2] += (src[i+2] - blurred[i+2]) * factor;
                     }
                 }
+                if (adj.bloom > 0) {
+                    const thresh = 200; 
+                    const bloomMap = new Float32Array(src.length);
+                    for(let i=0; i<src.length; i+=4) {
+                         const lum = src[i]*0.299 + src[i+1]*0.587 + src[i+2]*0.114;
+                         if(lum > thresh) {
+                             bloomMap[i] = src[i]; bloomMap[i+1] = src[i+1]; bloomMap[i+2] = src[i+2];
+                         }
+                    }
+                    const blurredBloom = applyBoxBlur(bloomMap, w, h, 10);
+                    const bloomStr = adj.bloom / 100.0;
+                    for(let i=0; i<src.length; i+=4) {
+                        src[i] = Math.min(255, src[i] + blurredBloom[i] * bloomStr);
+                        src[i+1] = Math.min(255, src[i+1] + blurredBloom[i+1] * bloomStr);
+                        src[i+2] = Math.min(255, src[i+2] + blurredBloom[i+2] * bloomStr);
+                    }
+                }
+                if (adj.haze > 0) {
+                    const hStr = adj.haze / 100.0;
+                    const hColor = 200;
+                    for(let i=0; i<src.length; i+=4) {
+                        src[i] = src[i] * (1-hStr) + hColor * hStr;
+                        src[i+1] = src[i+1] * (1-hStr) + hColor * hStr;
+                        src[i+2] = src[i+2] * (1-hStr) + hColor * hStr;
+                    }
+                }
+                if (adj.grain > 0) {
+                     const gStr = adj.grain * 0.5;
+                     for(let i=0; i<src.length; i+=4) {
+                         const noise = (Math.random() - 0.5) * gStr;
+                         src[i] += noise; src[i+1] += noise; src[i+2] += noise;
+                     }
+                }
 
                 for (let i = 0; i < src.length; i += 4) {
                     let r = src[i], g = src[i+1], b = src[i+2];
-                    r = ((r/255 - 0.5) * c + 0.5) * 255 + (b * 255);
-                    g = ((g/255 - 0.5) * c + 0.5) * 255 + (b * 255);
-                    b = ((b/255 - 0.5) * c + 0.5) * 255 + (b * 255);
+                    r = ((r/255 - 0.5) * c + 0.5) * 255 + (bright * 255);
+                    g = ((g/255 - 0.5) * c + 0.5) * 255 + (bright * 255);
+                    b = ((b/255 - 0.5) * c + 0.5) * 255 + (bright * 255);
                     
                     if (s !== 1) {
                         const gray = 0.299*r + 0.587*g + 0.114*b;
@@ -1949,6 +2100,46 @@
                         }
                     }
                 }
+            } else if (filter === 'solarize') {
+                for(let i=0; i<src.length; i+=4) {
+                    const r = src[i], g = src[i+1], b = src[i+2];
+                    const thresh = 128;
+                    dest[i] = r > thresh ? 255 - r : r;
+                    dest[i+1] = g > thresh ? 255 - g : g;
+                    dest[i+2] = b > thresh ? 255 - b : b;
+                    dest[i+3] = src[i+3];
+                }
+            } else if (filter === 'emboss') {
+                const kernel = [ -2, -1, 0, -1, 1, 1, 0, 1, 2 ];
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        let r = 0, g = 0, b = 0;
+                        for(let ky=-1; ky<=1; ky++) {
+                            for(let kx=-1; kx<=1; kx++) {
+                                const px = Math.min(w-1, Math.max(0, x+kx));
+                                const py = Math.min(h-1, Math.max(0, y+ky));
+                                const idx = (py*w + px)*4;
+                                const k = kernel[(ky+1)*3 + (kx+1)];
+                                r += src[idx]*k; g += src[idx+1]*k; b += src[idx+2]*k;
+                            }
+                        }
+                        const i = (y*w+x)*4;
+                        dest[i] = Math.min(255, Math.max(0, r + 128));
+                        dest[i+1] = Math.min(255, Math.max(0, g + 128));
+                        dest[i+2] = Math.min(255, Math.max(0, b + 128));
+                        dest[i+3] = src[i+3];
+                    }
+                }
+            } else if (filter === 'vignette') {
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        const dx = (x / w) - 0.5; const dy = (y / h) - 0.5;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        const vig = Math.max(0, 1 - dist * 1.5);
+                        dest[i] = src[i] * vig; dest[i+1] = src[i+1] * vig; dest[i+2] = src[i+2] * vig; dest[i+3] = src[i+3];
+                    }
+                }
             } else if (filter === 'posterize') {
                 const levels = Math.max(2, options.posterizeLevels || 4);
                 const step = 255 / (levels - 1);
@@ -2039,8 +2230,9 @@
             const uploadBtn = document.getElementById('upload-button');
             const runAiBtn = document.getElementById('run-ai-button');
             const runAiBtn2 = document.getElementById('run-ai-button-2');
-            const customConfirmBtn = document.getElementById('custom-confirm');
-            const customCancelBtn = document.getElementById('custom-cancel');
+            const upscaleLoadBtn = document.getElementById('upscale-load-preset');
+            const upscaleExportBtn = document.getElementById('upscale-export-preset');
+            const upscalePresetInput = document.getElementById('upscale-preset-input');
             
             const rerunBtn = document.getElementById('rerun-button');
             const confirmBtn = document.getElementById('confirm-button');
@@ -2056,12 +2248,10 @@
             const scaleSlider = document.getElementById('upscale-scale');
             const scaleVal = document.getElementById('upscale-scale-val');
             const resultCountSlider = document.getElementById('result-count');
-            const resultCountVal = document.getElementById('result-count-val');
             
             const algoSelect = document.getElementById('inpaint-algo');
             const algoDesc = document.getElementById('algo-desc');
             const patchSizeSlider = document.getElementById('patch-size');
-            const patchSizeVal = document.getElementById('patch-size-val');
             const effortSlider = document.getElementById('search-effort');
             const effortVal = document.getElementById('search-effort-val');
             const precisionDesc = document.getElementById('precision-desc');
@@ -2071,34 +2261,25 @@
             const upscaleAlgoSelect = document.getElementById('upscale-algo');
             const upscaleAlgoDesc = document.getElementById('upscale-algo-desc');
             const upscaleResultCountSlider = document.getElementById('upscale-result-count');
-            const upscaleResultCountVal = document.getElementById('upscale-result-count-val');
             const upscaleStrengthSlider = document.getElementById('upscale-strength');
-            const upscaleStrengthVal = document.getElementById('upscale-strength-val');
             const upscaleStrengthLabel = document.getElementById('label-strength');
             const upscaleDenoiseSlider = document.getElementById('upscale-denoise');
-            const upscaleDenoiseVal = document.getElementById('upscale-denoise-val');
             const upscaleDenoiseCheck = document.getElementById('upscale-denoise-check');
             const upscaleBlurFlatSlider = document.getElementById('upscale-blur-flat');
-            const upscaleBlurFlatVal = document.getElementById('upscale-blur-flat-val');
             const upscaleBlurFlatCheck = document.getElementById('upscale-blur-flat-check');
             const upscaleDetailSlider = document.getElementById('upscale-detail');
-            const upscaleDetailVal = document.getElementById('upscale-detail-val');
             const upscaleSaturationSlider = document.getElementById('upscale-saturation');
-            const upscaleSaturationVal = document.getElementById('upscale-saturation-val');
             const upscaleExperimentalCheck = document.getElementById('upscale-experimental');
+            const upscalePseudoCheck = document.getElementById('upscale-pseudo');
+            const upscaleWienerCheck = document.getElementById('upscale-wiener');
+            const upscaleAACheck = document.getElementById('upscale-aa');
             const upscaleEdgeCrispSlider = document.getElementById('upscale-edge-crisp');
-            const upscaleEdgeCrispVal = document.getElementById('upscale-edge-crisp-val');
             const upscaleEdgeAlgoSelect = document.getElementById('upscale-edge-algo');
             const upscaleLowPassSlider = document.getElementById('upscale-lowpass');
-            const upscaleLowPassVal = document.getElementById('upscale-lowpass-val');
             const upscaleHighPassSlider = document.getElementById('upscale-highpass');
-            const upscaleHighPassVal = document.getElementById('upscale-highpass-val');
             const upscaleInvPassSlider = document.getElementById('upscale-inv');
-            const upscaleInvPassVal = document.getElementById('upscale-inv-val');
             const upscaleTempSlider = document.getElementById('upscale-temp');
-            const upscaleTempVal = document.getElementById('upscale-temp-val');
             const upscaleTintSlider = document.getElementById('upscale-tint');
-            const upscaleTintVal = document.getElementById('upscale-tint-val');
             
             const upscaleStandardActions = document.getElementById('upscale-standard-actions');
             const customUpscaleActions = document.getElementById('custom-upscale-actions');
@@ -2123,14 +2304,12 @@
             const toolOptions = toolPopup.querySelectorAll('button');
             const toleranceGroup = document.getElementById('tolerance-group');
             const toleranceSlider = document.getElementById('magic-tolerance');
-            const toleranceVal = document.getElementById('magic-tolerance-val');
             
             const modeEraserBtn = document.getElementById('mode-eraser');
             const modeUpscalerBtn = document.getElementById('mode-upscaler');
             const modeEditorBtn = document.getElementById('mode-editor');
             const editorFilterList = document.getElementById('editor-filter-list');
             const editorStrengthSlider = document.getElementById('editor-strength');
-            const editorStrengthVal = document.getElementById('editor-strength-val');
             
             const fsMainToolBtn = document.getElementById('fs-main-tool-button');
             const fsToolPopup = document.getElementById('fs-tool-popup');
@@ -2143,9 +2322,7 @@
             const magnifierCtx = magnifierCanvas.getContext('2d', { willReadFrequently: true });
             const magnifierCrosshair = document.getElementById('magnifier-crosshair');
             const magnifierZoomSlider = document.getElementById('magnifier-zoom');
-            const magnifierZoomVal = document.getElementById('magnifier-zoom-val');
             const magnifierOffsetSlider = document.getElementById('magnifier-offset');
-            const magnifierOffsetVal = document.getElementById('magnifier-offset-val');
 
             let currentTool = 'pan';
             let previousTool = 'pan';
@@ -2179,7 +2356,7 @@
             let magnifierOffset = 45;
             
             let preCustomImageSrc = null; 
-            let activeEditorFilter = null;
+            let activeEditorFilter = 'none';
 
             const workerBlob = new Blob([document.getElementById('worker-code').textContent], { type: 'text/javascript' });
             const workerUrl = URL.createObjectURL(workerBlob);
@@ -2214,6 +2391,17 @@
                 updatePrecisionDesc(3);
                 updateUpscaleControlsVisibility();
                 debugModeCheck.checked = true;
+                
+                document.querySelectorAll('input[type="range"]').forEach(range => {
+                    const numInput = document.getElementById(range.id + '-num');
+                    if(numInput) {
+                        range.addEventListener('input', () => numInput.value = range.value);
+                        numInput.addEventListener('input', () => {
+                            range.value = numInput.value;
+                            range.dispatchEvent(new Event('input'));
+                        });
+                    }
+                });
             }
 
             function handleEmptyState() {
@@ -2273,82 +2461,29 @@
 
                 const sizeSlider = document.getElementById('brush-size');
                 const sizeNum = document.getElementById('brush-size-num');
-                sizeSlider.addEventListener('input', (e) => { brushSize = parseInt(e.target.value); sizeNum.value = brushSize; });
-                sizeNum.addEventListener('input', (e) => { brushSize = parseInt(e.target.value); sizeSlider.value = brushSize; });
+                sizeSlider.addEventListener('input', (e) => { brushSize = parseInt(e.target.value); });
+                sizeNum.addEventListener('input', (e) => { brushSize = parseInt(e.target.value); });
 
                 document.getElementById('brush-opacity').addEventListener('input', (e) => {
                     maskCanvas.style.opacity = e.target.value;
-                    document.getElementById('brush-opacity-val').innerText = e.target.value;
                 });
                 
                 scaleSlider.addEventListener('input', (e) => {
                    scaleVal.innerText = e.target.value + 'x';
                 });
 
-                resultCountSlider.addEventListener('input', (e) => {
-                    resultCountVal.innerText = e.target.value;
-                });
-
-                patchSizeSlider.addEventListener('input', (e) => {
-                    patchSizeVal.innerText = e.target.value + "px";
-                });
-                
-                effortSlider.addEventListener('input', (e) => {
-                    const vals = ["Low", "Low", "Med", "High", "Max"];
-                    effortVal.innerText = vals[e.target.value - 1] || "Med";
-                    updatePrecisionDesc(e.target.value);
-                });
-                
-                upscaleStrengthSlider.addEventListener('input', (e) => {
-                    upscaleStrengthVal.innerText = e.target.value;
-                });
-
-                upscaleDenoiseSlider.addEventListener('input', (e) => {
-                    upscaleDenoiseVal.innerText = e.target.value;
-                });
-                
                 upscaleDenoiseCheck.addEventListener('change', (e) => {
                     document.getElementById('upscale-denoise-slider-group').style.display = e.target.checked ? 'flex' : 'none';
                 });
 
-                upscaleBlurFlatSlider.addEventListener('input', (e) => {
-                    upscaleBlurFlatVal.innerText = e.target.value;
-                });
-                
                 upscaleBlurFlatCheck.addEventListener('change', (e) => {
                     document.getElementById('upscale-blur-flat-slider-group').style.display = e.target.checked ? 'flex' : 'none';
                 });
 
-                upscaleDetailSlider.addEventListener('input', (e) => {
-                    upscaleDetailVal.innerText = e.target.value;
-                });
-
-                upscaleSaturationSlider.addEventListener('input', (e) => {
-                    upscaleSaturationVal.innerText = e.target.value;
-                });
-
-                upscaleEdgeCrispSlider.addEventListener('input', (e) => {
-                    upscaleEdgeCrispVal.innerText = e.target.value;
-                });
-
-                upscaleLowPassSlider.addEventListener('input', (e) => {
-                    upscaleLowPassVal.innerText = e.target.value;
-                });
-
-                upscaleHighPassSlider.addEventListener('input', (e) => {
-                    upscaleHighPassVal.innerText = e.target.value;
-                });
-                
-                upscaleInvPassSlider.addEventListener('input', (e) => {
-                    upscaleInvPassVal.innerText = e.target.value;
-                });
-                
-                upscaleTempSlider.addEventListener('input', (e) => {
-                    upscaleTempVal.innerText = e.target.value;
-                });
-                
-                upscaleTintSlider.addEventListener('input', (e) => {
-                    upscaleTintVal.innerText = e.target.value;
+                effortSlider.addEventListener('input', (e) => {
+                    const vals = ["Low", "Low", "Med", "High", "Max"];
+                    effortVal.innerText = vals[e.target.value - 1] || "Med";
+                    updatePrecisionDesc(e.target.value);
                 });
                 
                 algoSelect.addEventListener('change', (e) => {
@@ -2381,7 +2516,6 @@
                 
                 toleranceSlider.addEventListener('input', (e) => {
                     magicTolerance = parseInt(e.target.value);
-                    toleranceVal.innerText = magicTolerance;
                     if (currentTool === 'wand' && magicWandSeed) {
                          undo(); 
                          magicSelect(magicWandSeed.x, magicWandSeed.y, true); 
@@ -2398,12 +2532,10 @@
                 
                 magnifierZoomSlider.addEventListener('input', (e) => {
                     magnifierZoom = parseFloat(e.target.value);
-                    magnifierZoomVal.innerText = magnifierZoom + 'x';
                 });
 
                 magnifierOffsetSlider.addEventListener('input', (e) => {
                     magnifierOffset = parseInt(e.target.value);
-                    magnifierOffsetVal.innerText = magnifierOffset + 'px';
                 });
 
                 maskCanvas.addEventListener('mousedown', startDrawing);
@@ -2432,6 +2564,8 @@
                     } else {
                         checkLayout();
                         zoomScale = 1.0;
+                        panX = 0;
+                        panY = 0;
                         updateZoom();
                     }
                     setTimeout(resizeCanvas, 50);
@@ -2480,17 +2614,71 @@
                 runAiBtn.addEventListener('click', () => runProcess(false));
                 runAiBtn2.addEventListener('click', () => runProcess(false));
                 
-                customConfirmBtn.addEventListener('click', () => {
-                    preCustomImageSrc = null; 
-                    saveState();
+                upscaleExportBtn.addEventListener('click', () => {
+                    const settings = {
+                        strength: upscaleStrengthSlider.value,
+                        denoise: upscaleDenoiseCheck.checked ? upscaleDenoiseSlider.value : 0,
+                        blurFlat: upscaleBlurFlatCheck.checked ? upscaleBlurFlatSlider.value : 0,
+                        detail: upscaleDetailSlider.value,
+                        saturation: upscaleSaturationSlider.value,
+                        temp: upscaleTempSlider.value,
+                        tint: upscaleTintSlider.value,
+                        edgeCrisp: upscaleEdgeCrispSlider.value,
+                        edgeAlgo: upscaleEdgeAlgoSelect.value,
+                        lowpass: upscaleLowPassSlider.value,
+                        highpass: upscaleHighPassSlider.value,
+                        invertpass: upscaleInvPassSlider.value,
+                        experimental: upscaleExperimentalCheck.checked,
+                        pseudo: upscalePseudoCheck.checked,
+                        wiener: upscaleWienerCheck.checked,
+                        aa: upscaleAACheck.checked
+                    };
+                    const blob = new Blob([JSON.stringify(settings)], {type: 'application/json'});
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'upscale_preset.json';
+                    a.click();
                 });
-                
-                customCancelBtn.addEventListener('click', () => {
-                    if(preCustomImageSrc) {
-                        mainImage.src = preCustomImageSrc;
-                        preCustomImageSrc = null;
-                        if (originalImageBitmap) currentImageBitmap = originalImageBitmap;
-                    }
+
+                upscaleLoadBtn.addEventListener('click', () => {
+                    upscalePresetInput.click();
+                });
+
+                upscalePresetInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (re) => {
+                        try {
+                            const s = JSON.parse(re.target.result);
+                            upscaleStrengthSlider.value = s.strength;
+                            upscaleDenoiseSlider.value = s.denoise;
+                            upscaleDenoiseCheck.checked = s.denoise > 0;
+                            upscaleBlurFlatSlider.value = s.blurFlat;
+                            upscaleBlurFlatCheck.checked = s.blurFlat > 0;
+                            upscaleDetailSlider.value = s.detail;
+                            upscaleSaturationSlider.value = s.saturation;
+                            upscaleTempSlider.value = s.temp;
+                            upscaleTintSlider.value = s.tint;
+                            upscaleEdgeCrispSlider.value = s.edgeCrisp;
+                            upscaleEdgeAlgoSelect.value = s.edgeAlgo;
+                            upscaleLowPassSlider.value = s.lowpass;
+                            upscaleHighPassSlider.value = s.highpass;
+                            upscaleInvPassSlider.value = s.invertpass;
+                            upscaleExperimentalCheck.checked = s.experimental;
+                            upscalePseudoCheck.checked = s.pseudo;
+                            upscaleWienerCheck.checked = s.wiener;
+                            upscaleAACheck.checked = s.aa;
+                            
+                            document.querySelectorAll('input[type="range"]').forEach(r => r.dispatchEvent(new Event('input')));
+                            
+                            updateUpscaleControlsVisibility();
+                            runProcess(false);
+                        } catch(err) {
+                            alert("Invalid preset file");
+                        }
+                    };
+                    reader.readAsText(file);
                 });
                 
                 fsSaveBtn.addEventListener('click', downloadImage);
@@ -2528,7 +2716,7 @@
                         const specific = document.querySelector(`.dynamic-setting-group[data-for="${activeEditorFilter}"]`);
                         const common = document.querySelector(`.dynamic-setting-group[data-for="common"]`);
                         if(specific) specific.classList.add('active');
-                        else if(common) common.classList.add('active');
+                        else if(common && activeEditorFilter !== 'none') common.classList.add('active');
                         
                         runProcess(false);
                     });
@@ -2536,8 +2724,6 @@
                 
                 document.querySelectorAll('#editor-settings input, #editor-settings select').forEach(el => {
                     el.addEventListener('input', () => {
-                        const span = document.getElementById(el.id + '-val');
-                        if(span) span.innerText = el.value;
                         if(activeEditorFilter) runProcess(false);
                     });
                 });
@@ -3491,7 +3677,10 @@
                         saturation: parseInt(document.getElementById('adj-sat').value),
                         hue: parseInt(document.getElementById('adj-hue').value),
                         blur: parseInt(document.getElementById('adj-blur').value),
-                        sharp: parseInt(document.getElementById('adj-sharp').value)
+                        sharp: parseInt(document.getElementById('adj-sharp').value),
+                        grain: parseInt(document.getElementById('adj-grain').value),
+                        bloom: parseInt(document.getElementById('adj-bloom').value),
+                        haze: parseInt(document.getElementById('adj-haze').value)
                     };
 
                     editorOptions.asciiMode = document.getElementById('ascii-mode').value;
@@ -3530,11 +3719,14 @@
                         edgeAlgo: upscaleEdgeAlgoSelect.value,
                         lowpass: parseInt(upscaleLowPassSlider.value),
                         highpass: parseInt(upscaleHighPassSlider.value),
-                        invertpass: parseInt(upscaleInvPassSlider.value),
+                        invertpass: upscaleInvPassSlider.value,
                         temp: parseInt(upscaleTempSlider.value),
                         tint: parseInt(upscaleTintSlider.value),
                         invert: invertCheck.checked,
                         debug: debugMode,
+                        pseudo: upscalePseudoCheck.checked,
+                        wiener: upscaleWienerCheck.checked,
+                        aa: upscaleAACheck.checked,
                         ...editorOptions
                     }
                 }, [imgData.data.buffer, maskData ? maskData.buffer : new ArrayBuffer(0)]);
