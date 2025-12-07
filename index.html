@@ -222,6 +222,19 @@
             white-space: nowrap;
         }
 
+        .corner-indicator {
+            position: flex;
+            bottom: 15px;
+            right: 15px;
+            font-family: var(--font-family);
+            font-size: 24px;
+            color: #fff;
+            text-shadow: 0 0 4px #000;
+            z-index: 20000;
+            display: none;
+            pointer-events: none;
+        }
+
         .results-bar {
             width: 100%;
             height: 0;
@@ -727,9 +740,84 @@
             padding: 0;
             border: 1px solid var(--settings-outline);
         }
+
+        .dither-color-stops {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+            align-items: center;
+        }
+        
+        .color-stop-preview {
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--settings-outline);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .color-stop-preview:hover::after {
+            content: 'x';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            font-size: 12px;
+        }
+        
+        .add-stop-btn {
+            width: 30px;
+            height: 30px;
+            border: 1px dashed var(--settings-outline);
+            background: none;
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            border-radius: 3px;
+            padding: 0;
+        }
+        .add-stop-btn:hover {
+            border-color: var(--frame-color);
+            background: rgba(255,255,255,0.1);
+        }
+
+        #tooltip-popup {
+            position: fixed;
+            background: var(--settings-bg);
+            border: 1px solid var(--settings-outline);
+            padding: 5px;
+            border-radius: 3px;
+            z-index: 20002;
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #tooltip-popup button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            text-align: left;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #tooltip-popup button:hover {
+            background: var(--settings-outline);
+        }
     </style>
 </head>
 <body>
+    <div id="tooltip-popup">
+        <button id="tooltip-edit">Edit</button>
+        <button id="tooltip-delete">Delete</button>
+    </div>
     <div id="confirm-modal" class="confirm-modal-overlay">
         <div class="confirm-modal">
             <h4>Revert Image?</h4>
@@ -750,6 +838,7 @@
         <div class="header-left">
             <button id="compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
             <div class="ascii-frame" id="ascii-anim">( =.=)</div>
+            <br><p id="message1" style="font-size:  9px;font-color: #333333;">Files Processed Offline <br>[ Privacy Matters ] </p>
         </div>
         <div class="header-branding">
             <div class="brand-main">A/E LENS</div>
@@ -763,11 +852,13 @@
                 <div id="loading-overlay"><div class="spinner"></div></div>
                 <div class="placeholder-text" id="empty-state-text">NO IMAGE LOADED</div>
                 
+                
                 <div id="status-pill" class="status-pill">Ready</div>
 
                 <div class="action-buttons" id="canvas-actions">
                     <button id="revert-button" title="Revert to Original">✖</button>
                     <button id="canvas-compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
+                    <div id="corner-indicator" class="corner-indicator"></div>
                 </div>
                 
                 <button id="fullscreen-button" class="fullscreen-btn">⛶</button>
@@ -911,7 +1002,22 @@
                         <p class="desc-text" id="upscale-algo-desc" style="display:block;">General: Balanced enhancement, clarity, and denoising. Best for most images.</p>
                         
                         <div style="margin-bottom: 15px;">
-                            <label class="radio-option"><input type="checkbox" id="upscale-aa" checked> Anti-aliasing</label>
+                            <label>Anti-aliasing:</label>
+                            <select id="upscale-aa-type" style="width: 100%; padding: 5px; margin-top: 5px;">
+                                <option value="none">None</option>
+                                <option value="legacy" selected>Legacy (Standard)</option>
+                                <option value="smart">Smart (Edge-based)</option>
+                                <option value="smooth">Smooth (Gaussian)</option>
+                            </select>
+                        </div>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <label>Edge Detection:</label>
+                            <select id="upscale-edge-algo" style="width: 100%; padding: 5px; margin-top: 5px;">
+                                <option value="sobel" selected>Sobel</option>
+                                <option value="prewitt">Prewitt</option>
+                                <option value="canny">Canny</option>
+                            </select>
                         </div>
 
                         <div id="upscale-standard-actions">
@@ -936,13 +1042,6 @@
                                  <label class="radio-option"><input type="checkbox" id="upscale-pseudo"> Pseudo-inverted Filter</label>
                                  <label class="radio-option"><input type="checkbox" id="upscale-wiener"> Wiener Pass</label>
                              </div>
-                             <br>
-                             <label>Edge Detection:</label>
-                             <select id="upscale-edge-algo" style="width: 100%; padding: 5px; margin-top: 5px;">
-                                 <option value="sobel" selected>Sobel</option>
-                                 <option value="prewitt">Prewitt</option>
-                                 <option value="canny">Canny</option>
-                             </select>
                         </div>
                         
                         <div class="upscale-control-group visible" id="group-strength">
@@ -1065,6 +1164,10 @@
                                 <button class="filter-option" data-filter="threshold">Threshold</button>
                                 <button class="filter-option" data-filter="gamma">Gamma</button>
                                 <button class="filter-option" data-filter="chromatic">Chromatic</button>
+                                <button class="filter-option" data-filter="kuwahara">Kuwahara (Oil)</button>
+                                <button class="filter-option" data-filter="tiltshift">Tilt Shift</button>
+                                <button class="filter-option" data-filter="kaleidoscope">Kaleidoscope</button>
+                                <button class="filter-option" data-filter="swirl">Swirl</button>
                             </div>
                         </div>
 
@@ -1250,6 +1353,53 @@
                                     </div>
                                 </div>
 
+                                <div class="dynamic-setting-group" data-for="kuwahara">
+                                     <div class="slider-input-group">
+                                        <label>Radius:</label>
+                                        <input type="range" id="kuwahara-radius" min="2" max="10" value="3">
+                                        <input type="number" id="kuwahara-radius-num" value="3" min="2" max="10">
+                                    </div>
+                                </div>
+
+                                <div class="dynamic-setting-group" data-for="tiltshift">
+                                     <div class="slider-input-group">
+                                        <label>Blur Radius:</label>
+                                        <input type="range" id="tilt-blur" min="0" max="20" value="5">
+                                        <input type="number" id="tilt-blur-num" value="5" min="0" max="20">
+                                    </div>
+                                    <div class="slider-input-group">
+                                        <label>Position:</label>
+                                        <input type="range" id="tilt-pos" min="0" max="100" value="50">
+                                        <input type="number" id="tilt-pos-num" value="50" min="0" max="100">
+                                    </div>
+                                    <div class="slider-input-group">
+                                        <label>Area Size:</label>
+                                        <input type="range" id="tilt-area" min="0" max="100" value="30">
+                                        <input type="number" id="tilt-area-num" value="30" min="0" max="100">
+                                    </div>
+                                </div>
+
+                                <div class="dynamic-setting-group" data-for="kaleidoscope">
+                                     <div class="slider-input-group">
+                                        <label>Segments:</label>
+                                        <input type="range" id="kal-segments" min="2" max="12" value="6">
+                                        <input type="number" id="kal-segments-num" value="6" min="2" max="12">
+                                    </div>
+                                </div>
+
+                                <div class="dynamic-setting-group" data-for="swirl">
+                                     <div class="slider-input-group">
+                                        <label>Angle:</label>
+                                        <input type="range" id="swirl-angle" min="-10" max="10" step="0.1" value="3">
+                                        <input type="number" id="swirl-angle-num" value="3" min="-10" max="10" step="0.1">
+                                    </div>
+                                    <div class="slider-input-group">
+                                        <label>Radius:</label>
+                                        <input type="range" id="swirl-radius" min="0" max="100" value="50">
+                                        <input type="number" id="swirl-radius-num" value="50" min="0" max="100">
+                                    </div>
+                                </div>
+
                                 <div class="dynamic-setting-group" data-for="common">
                                     <div class="slider-input-group">
                                         <label>Strength:</label>
@@ -1264,14 +1414,16 @@
                             <label class="radio-option" style="margin-bottom:10px;">
                                 <input type="checkbox" id="dither-enable"> Enable Dither
                             </label>
+                            
                             <label>Algorithm:</label>
-                            <select id="dither-algo" style="width:100%; margin-bottom:10px;">
-                                <option value="bayer">Bayer</option>
-                                <option value="crosshatch">Crosshatch</option>
-                                <option value="halftone">Halftone</option>
-                                <option value="contour">Contour</option>
-                                <option value="legacy">Legacy</option>
-                            </select>
+                            <div class="filter-list-box" id="dither-algo-list" style="margin-bottom: 10px;">
+                                <button class="filter-option active" data-dither="bayer">Bayer</button>
+                                <button class="filter-option" data-dither="crosshatch">Crosshatch</button>
+                                <button class="filter-option" data-dither="halftone">Halftone</button>
+                                <button class="filter-option" data-dither="contour">Contour</button>
+                                <button class="filter-option" data-dither="legacy">Legacy</button>
+                            </div>
+                            
                             <div class="slider-input-group">
                                 <label>Strength:</label>
                                 <input type="range" id="dither-strength" min="0" max="400" value="100">
@@ -1295,11 +1447,10 @@
                             </select>
                             
                             <div id="dither-gradient-controls" style="display:none;">
-                                <div class="gradient-editor">
-                                    <input type="color" id="dither-color1" value="#000000">
-                                    <span>to</span>
-                                    <input type="color" id="dither-color2" value="#ffffff">
+                                <div class="dither-color-stops" id="dither-gradient-stops">
+                                    
                                 </div>
+                                <button id="dither-add-stop" class="add-stop-btn" title="Add Stop">+</button>
                             </div>
                         </div>
 
@@ -1400,26 +1551,36 @@
             </div>
         </div>
     </div>
+    
+    <footer style="z-index: 0; text-align: center; margin-top:15px; color: #555; padding: 10px; position: relative;"><span id="revealTrigger" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; z-index: 15; opacity: 0; pointer-events: none;"></span><a href="https://xetsue.github.io/" target="_blank" rel="noopener noreferrer" id="targetLink" style="color: inherit; text-decoration: none; opacity: 1; pointer-events: auto; transition: opacity 0.5s ease-in-out; z-index: 10;">xetsue.github.io</a></footer>
+    <script>document.addEventListener('DOMContentLoaded', function() { const trigger = document.getElementById('revealTrigger'); const link = document.getElementById('targetLink'); const hideLink = () => { link.style.opacity = '0'; link.style.pointerEvents = 'none'; trigger.style.opacity = '1'; trigger.style.pointerEvents = 'auto'; }; setTimeout(hideLink, 1500); trigger.addEventListener('click', function() { link.style.opacity = '1'; link.style.pointerEvents = 'auto'; trigger.style.opacity = '0'; trigger.style.pointerEvents = 'none'; setTimeout(hideLink, 2000); }); });</script>
+    
+    
+    <script> setTimeout(function() {
+            document.getElementById('message1').style.display = 'none';
+        }, 3000);
+    </script>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;">
-
     <script id="worker-code" type="javascript/worker">
         let cachedResizeBuffer = null;
         let cachedResizeW = 0;
         let cachedResizeH = 0;
+        let cachedSourceImage = null;
 
         function applyBoxBlur(data, w, h, radius) {
             const size = w * h * 4;
-            const temp = new Float32Array(size);
             const dest = new Float32Array(size);
+            const temp = new Float32Array(size);
+            
             for (let y = 0; y < h; y++) {
                 const yOff = y * w * 4;
                 for (let x = 0; x < w; x++) {
-                    let r = 0, g = 0, b = 0;
-                    let count = 0;
-                    for (let k = -radius; k <= radius; k++) {
-                        const px = Math.min(w - 1, Math.max(0, x + k));
-                        const off = yOff + px * 4;
+                    let r = 0, g = 0, b = 0, count = 0;
+                    const minK = Math.max(0, x - radius);
+                    const maxK = Math.min(w - 1, x + radius);
+                    for (let k = minK; k <= maxK; k++) {
+                        const off = yOff + k * 4;
                         r += data[off]; g += data[off+1]; b += data[off+2]; count++;
                     }
                     const dOff = yOff + x * 4;
@@ -1428,11 +1589,11 @@
             }
             for (let x = 0; x < w; x++) {
                 for (let y = 0; y < h; y++) {
-                    let r = 0, g = 0, b = 0;
-                    let count = 0;
-                    for (let k = -radius; k <= radius; k++) {
-                        const py = Math.min(h - 1, Math.max(0, y + k));
-                        const off = (py * w + x) * 4;
+                    let r = 0, g = 0, b = 0, count = 0;
+                    const minK = Math.max(0, y - radius);
+                    const maxK = Math.min(h - 1, y + radius);
+                    for (let k = minK; k <= maxK; k++) {
+                        const off = (k * w + x) * 4;
                         r += temp[off]; g += temp[off+1]; b += temp[off+2]; count++;
                     }
                     const dOff = (y * w + x) * 4;
@@ -1487,6 +1648,17 @@
             };
         }
 
+        function getColorFromGradient(colors, t) {
+            if (!colors || colors.length < 2) return hexToRgb('#000000');
+            const len = colors.length - 1;
+            const pos = t * len;
+            const idx = Math.floor(pos);
+            const amt = pos - idx;
+            const c1 = hexToRgb(colors[Math.min(len, idx)]);
+            const c2 = hexToRgb(colors[Math.min(len, idx+1)]);
+            return lerpColor(c1, c2, amt);
+        }
+
         function applyGaussianBlur(data, w, h, radius) {
             const size = w * h * 4;
             const dest = new Float32Array(size);
@@ -1537,15 +1709,45 @@
             return dest;
         }
 
+        function applyMedianFilter(data, w, h) {
+            const dest = new Float32Array(data.length);
+            for(let y=0; y<h; y++) {
+                for(let x=0; x<w; x++) {
+                    const idx = (y*w+x)*4;
+                    const r=[], g=[], b=[];
+                    for(let ky=-1; ky<=1; ky++) {
+                        for(let kx=-1; kx<=1; kx++) {
+                            const py = Math.min(h-1, Math.max(0, y+ky));
+                            const px = Math.min(w-1, Math.max(0, x+kx));
+                            const off = (py*w+px)*4;
+                            r.push(data[off]); g.push(data[off+1]); b.push(data[off+2]);
+                        }
+                    }
+                    r.sort((a,b)=>a-b); g.sort((a,b)=>a-b); b.sort((a,b)=>a-b);
+                    dest[idx] = r[4]; dest[idx+1] = g[4]; dest[idx+2] = b[4]; dest[idx+3] = data[idx+3];
+                }
+            }
+            return dest;
+        }
+
         self.onmessage = function(e) {
             const { command, imageData, maskData, options } = e.data;
             try {
-                if (command === 'inpaint') {
+                if (command === 'setImage') {
+                    cachedSourceImage = new Float32Array(new Uint8Array(e.data.imageData));
+                    cachedResizeBuffer = null;
+                }
+                else if (command === 'inpaint') {
                     cachedResizeBuffer = null; 
                     processInpaintSmart(imageData, maskData, options);
                 }
                 else if (command === 'upscale') processUpscaleSmart(imageData, options);
-                else if (command === 'editor') processEditor(imageData, options);
+                else if (command === 'editor') {
+                    const source = cachedSourceImage || (imageData ? new Float32Array(new Uint8Array(imageData.data.buffer)) : null);
+                    if (!source) throw new Error("No image data");
+                    const dims = imageData || { width: options.width, height: options.height };
+                    processEditor({ data: source, width: dims.width, height: dims.height }, options);
+                }
                 else if (command === 'autolasso') processAutoLasso(imageData, options);
                 else if (command === 'smartmask') processSmartMask(imageData, options);
             } catch (err) {
@@ -1964,15 +2166,27 @@
                 processed = finalPass; 
             } else { processed = new Uint8ClampedArray(current); }
             
-            if (aa) {
-                const aaEdges = createEdgeMap(processed, newW, newH, 10, 'sobel'); 
-                const aaBlur = applyGaussianBlur(processed, newW, newH, 1.0);
-                for(let i=0; i<processed.length; i+=4) {
-                    const edge = Math.min(1.0, aaEdges[i/4] > 0.1 ? aaEdges[i/4] * 2.0 : 0); 
-                    processed[i] = processed[i]*(1-edge) + aaBlur[i]*edge;
-                    processed[i+1] = processed[i+1]*(1-edge) + aaBlur[i+1]*edge;
-                    processed[i+2] = processed[i+2]*(1-edge) + aaBlur[i+2]*edge;
+            if (options.aa && options.aa !== 'none') {
+                let aaResult;
+                if (options.aa === 'smooth') aaResult = applyGaussianBlur(processed, newW, newH, 1.0);
+                else if (options.aa === 'smart') {
+                    const aaEdges = createEdgeMap(processed, newW, newH, 10, 'sobel'); 
+                    const aaBlur = applyGaussianBlur(processed, newW, newH, 1.0);
+                    aaResult = new Float32Array(processed.length);
+                    for(let i=0; i<processed.length; i+=4) {
+                        const edge = Math.min(1.0, aaEdges[i/4] > 0.1 ? aaEdges[i/4] * 2.0 : 0); 
+                        aaResult[i] = processed[i]*(1-edge) + aaBlur[i]*edge;
+                        aaResult[i+1] = processed[i+1]*(1-edge) + aaBlur[i+1]*edge;
+                        aaResult[i+2] = processed[i+2]*(1-edge) + aaBlur[i+2]*edge;
+                        aaResult[i+3] = processed[i+3];
+                    }
+                } else if (options.aa === 'legacy') {
+                    aaResult = applyBoxBlur(processed, newW, newH, 1);
+                } else {
+                    aaResult = processed; 
                 }
+                
+                for(let i=0; i<processed.length; i++) processed[i] = aaResult[i];
             }
             
             if (saturationLevel > 0) applyVibranceSmart(processed, saturationLevel);
@@ -2286,8 +2500,8 @@
                 }
             } else if (filter === 'duotone') {
                 function hexToRgb(h){if(!h)return{r:0,g:0,b:0};const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return{r,g,b};}
-                const c1 = hexToRgb(options.ditherColor1 || '#000000'); 
-                const c2 = hexToRgb(options.ditherColor2 || '#ffffff');
+                const c1 = hexToRgb(options.duotoneColor1 || '#000000'); 
+                const c2 = hexToRgb(options.duotoneColor2 || '#ffffff');
                 for(let i=0; i<src.length; i+=4) {
                     const lum = (src[i]*0.299 + src[i+1]*0.587 + src[i+2]*0.114) / 255;
                     dest[i] = c1.r + (c2.r - c1.r) * lum;
@@ -2331,6 +2545,114 @@
                         dest[i+3] = src[i+3];
                     }
                 }
+            } else if (filter === 'kuwahara') {
+                const rad = Math.max(2, options.kuwaharaRadius || 3);
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                         const means = [], variances = [];
+                         for(let i=0; i<4; i++) {
+                             let rSum=0, gSum=0, bSum=0, rSq=0, gSq=0, bSq=0, cnt=0;
+                             
+                             const xStart = (i === 0 || i === 2) ? x - rad : x;
+                             const xEnd = (i === 0 || i === 2) ? x : x + rad;
+                             const yStart = (i === 0 || i === 1) ? y - rad : y;
+                             const yEnd = (i === 0 || i === 1) ? y : y + rad;
+                             
+                             for(let vy=yStart; vy<=yEnd; vy++) {
+                                 for(let vx=xStart; vx<=xEnd; vx++) {
+                                     if(vx>=0 && vx<w && vy>=0 && vy<h) {
+                                         const idx = (vy*w+vx)*4;
+                                         const r=src[idx], g=src[idx+1], b=src[idx+2];
+                                         rSum+=r; gSum+=g; bSum+=b;
+                                         rSq+=r*r; gSq+=g*g; bSq+=b*b;
+                                         cnt++;
+                                     }
+                                 }
+                             }
+                             if (cnt > 0) {
+                                 const rMean = rSum/cnt, gMean = gSum/cnt, bMean = bSum/cnt;
+                                 const variance = (rSq/cnt - rMean*rMean) + (gSq/cnt - gMean*gMean) + (bSq/cnt - bMean*bMean);
+                                 means.push({r:rMean, g:gMean, b:bMean});
+                                 variances.push(Math.abs(variance));
+                             } else {
+                                 means.push({r:0, g:0, b:0}); variances.push(999999);
+                             }
+                         }
+                         
+                         let minVar = variances[0], minIdx = 0;
+                         for(let i=1; i<4; i++) if(variances[i] < minVar) { minVar = variances[i]; minIdx = i; }
+                         const i = (y*w+x)*4;
+                         dest[i] = means[minIdx].r; dest[i+1] = means[minIdx].g; dest[i+2] = means[minIdx].b; dest[i+3] = src[i+3];
+                    }
+                }
+            } else if (filter === 'tiltshift') {
+                const blurR = options.tiltBlur || 5;
+                const pos = (options.tiltPos || 50) / 100;
+                const area = (options.tiltArea || 30) / 100;
+                const blurred = applyBoxBlur(src, w, h, blurR);
+                for(let y=0; y<h; y++) {
+                    const normY = y / h;
+                    const dist = Math.abs(normY - pos);
+                    const blurAmt = Math.min(1, Math.max(0, (dist - area*0.5) * 5));
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        dest[i] = src[i]*(1-blurAmt) + blurred[i]*blurAmt;
+                        dest[i+1] = src[i+1]*(1-blurAmt) + blurred[i+1]*blurAmt;
+                        dest[i+2] = src[i+2]*(1-blurAmt) + blurred[i+2]*blurAmt;
+                        dest[i+3] = src[i+3];
+                    }
+                }
+            } else if (filter === 'kaleidoscope') {
+                 const segments = options.kalSegments || 6;
+                 const cx = w/2, cy = h/2;
+                 for(let y=0; y<h; y++) {
+                     for(let x=0; x<w; x++) {
+                         const dx = x - cx, dy = y - cy;
+                         let r = Math.sqrt(dx*dx + dy*dy);
+                         let theta = Math.atan2(dy, dx);
+                         const segmentAngle = 2 * Math.PI / segments;
+                         theta = Math.abs(theta % segmentAngle);
+                         if (theta > segmentAngle/2) theta = segmentAngle - theta;
+                         
+                         const nx = cx + r * Math.cos(theta);
+                         const ny = cy + r * Math.sin(theta);
+                         
+                         const ix = Math.min(w-1, Math.max(0, Math.floor(nx)));
+                         const iy = Math.min(h-1, Math.max(0, Math.floor(ny)));
+                         const sIdx = (iy*w+ix)*4;
+                         const dIdx = (y*w+x)*4;
+                         
+                         dest[dIdx] = src[sIdx]; dest[dIdx+1] = src[sIdx+1]; dest[dIdx+2] = src[sIdx+2]; dest[dIdx+3] = src[sIdx+3];
+                     }
+                 }
+            } else if (filter === 'swirl') {
+                 const angle = options.swirlAngle || 3;
+                 const radius = options.swirlRadius || 50;
+                 const cx = w/2, cy = h/2;
+                 const maxR = Math.min(w,h)/2;
+                 const rScale = maxR * (radius/50);
+                 
+                 for(let y=0; y<h; y++) {
+                     for(let x=0; x<w; x++) {
+                         const dx = x - cx, dy = y - cy;
+                         const r = Math.sqrt(dx*dx + dy*dy);
+                         
+                         let srcX = x, srcY = y;
+                         
+                         if(r < rScale) {
+                             const theta = Math.atan2(dy, dx) + angle * (1 - r/rScale);
+                             srcX = cx + r * Math.cos(theta);
+                             srcY = cy + r * Math.sin(theta);
+                         }
+                         
+                         const ix = Math.min(w-1, Math.max(0, Math.floor(srcX)));
+                         const iy = Math.min(h-1, Math.max(0, Math.floor(srcY)));
+                         const sIdx = (iy*w+ix)*4;
+                         const dIdx = (y*w+x)*4;
+                         
+                         dest[dIdx] = src[sIdx]; dest[dIdx+1] = src[sIdx+1]; dest[dIdx+2] = src[sIdx+2]; dest[dIdx+3] = src[sIdx+3];
+                     }
+                 }
             } else {
                 dest.set(src);
             }
@@ -2346,11 +2668,9 @@
                 const bayer = [ [ 0, 8, 2, 10 ], [ 12, 4, 14, 6 ], [ 3, 11, 1, 9 ], [ 15, 7, 13, 5 ] ];
                 const cross = [ [ 12, 5, 6, 13 ], [ 4, 11, 10, 7 ], [ 8, 9, 3, 0 ], [ 1, 2, 15, 14 ] ];
                 
-                function hexToRgb(h){if(!h)return{r:0,g:0,b:0};const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return{r,g,b};}
                 function lerp(a,b,t){return a+(b-a)*t;}
                 
-                const col1 = options.ditherColor1 ? hexToRgb(options.ditherColor1) : {r:0,g:0,b:0};
-                const col2 = options.ditherColor2 ? hexToRgb(options.ditherColor2) : {r:255,g:255,b:255};
+                const gradientColors = options.ditherGradient || ['#000000', '#ffffff'];
 
                 for(let i=0; i<dest.length; i+=4) {
                     const x = (i/4)%w; const y = Math.floor((i/4)/w);
@@ -2377,9 +2697,8 @@
                     let quant = Math.round(val / 255 * lM1) / lM1; 
                     
                     if (mapType === 'gradient') {
-                        dest[i] = lerp(col1.r, col2.r, quant);
-                        dest[i+1] = lerp(col1.g, col2.g, quant);
-                        dest[i+2] = lerp(col1.b, col2.b, quant);
+                        const c = getColorFromGradient(gradientColors, quant);
+                        dest[i] = c.r; dest[i+1] = c.g; dest[i+2] = c.b;
                     } else {
                         quant *= 255;
                         if (gray > 0) {
@@ -2423,6 +2742,7 @@
             const imageInput = document.getElementById('image-input');
             const loadingOverlay = document.getElementById('loading-overlay');
             const statusPill = document.getElementById('status-pill');
+            const cornerIndicator = document.getElementById('corner-indicator');
             const advPanel = document.getElementById('advanced-settings-panel');
             const compareBtn = document.getElementById('compare-button');
             const canvasCompareBtn = document.getElementById('canvas-compare-button');
@@ -2453,7 +2773,7 @@
             const upscaleExperimentalCheck = document.getElementById('upscale-experimental');
             const upscalePseudoCheck = document.getElementById('upscale-pseudo');
             const upscaleWienerCheck = document.getElementById('upscale-wiener');
-            const upscaleAACheck = document.getElementById('upscale-aa');
+            const upscaleAACheck = document.getElementById('upscale-aa-type');
             const upscaleEdgeCrispSlider = document.getElementById('upscale-edge-crisp');
             const upscaleEdgeAlgoSelect = document.getElementById('upscale-edge-algo');
             const upscaleLowPassSlider = document.getElementById('upscale-lowpass');
@@ -2479,6 +2799,9 @@
             const modal = document.getElementById('confirm-modal');
             const modalCancel = document.getElementById('modal-cancel');
             const modalConfirm = document.getElementById('modal-confirm');
+            const tooltipPopup = document.getElementById('tooltip-popup');
+            const tooltipEdit = document.getElementById('tooltip-edit');
+            const tooltipDelete = document.getElementById('tooltip-delete');
             
             const mainToolBtn = document.getElementById('main-tool-button');
             const toolPopup = document.getElementById('tool-popup');
@@ -2490,7 +2813,10 @@
             const modeUpscalerBtn = document.getElementById('mode-upscaler');
             const modeEditorBtn = document.getElementById('mode-editor');
             const editorFilterList = document.getElementById('editor-filter-list');
+            const ditherAlgoList = document.getElementById('dither-algo-list');
             const editorStrengthSlider = document.getElementById('editor-strength');
+            const ditherAddStopBtn = document.getElementById('dither-add-stop');
+            const ditherGradientContainer = document.getElementById('dither-gradient-stops');
             
             const fsMainToolBtn = document.getElementById('fs-main-tool-button');
             const fsToolPopup = document.getElementById('fs-tool-popup');
@@ -2538,6 +2864,9 @@
             
             let preCustomImageSrc = null; 
             let activeEditorFilter = 'none';
+            let activeDitherAlgo = 'bayer';
+            let ditherGradientColors = ['#000000', '#ffffff'];
+            let activeColorStopIndex = -1;
 
             const workerBlob = new Blob([document.getElementById('worker-code').textContent], { type: 'text/javascript' });
             const workerUrl = URL.createObjectURL(workerBlob);
@@ -2547,6 +2876,9 @@
             let isDarkTheme = true;
             let lastWindowWidth = window.innerWidth;
             
+            let processTimeout;
+            let cornerAnimationInterval;
+
             const resizeObserver = new ResizeObserver(() => {
                 resizeCanvas();
             });
@@ -2571,6 +2903,7 @@
                 updateMaskColor('negative');
                 updatePrecisionDesc(3);
                 updateUpscaleControlsVisibility();
+                renderDitherGradientStops();
                 debugModeCheck.checked = true;
                 
                 document.querySelectorAll('input[type="range"]').forEach(range => {
@@ -2613,6 +2946,13 @@
                  a.click();
             }
 
+            function debouncedRunProcess() {
+                clearTimeout(processTimeout);
+                processTimeout = setTimeout(() => {
+                    if(activeEditorFilter || currentMode !== 'editor') runProcess(false);
+                }, 50);
+            }
+
             function setupEventListeners() {
                 uploadBtn.addEventListener('click', () => imageInput.click());
                 imageInput.addEventListener('change', handleImageUpload);
@@ -2627,6 +2967,9 @@
                     }
                     if (!fsMainToolBtn.contains(e.target) && !fsToolPopup.contains(e.target)) {
                         fsToolPopup.style.display = 'none';
+                    }
+                    if (!tooltipPopup.contains(e.target) && !e.target.closest('.color-stop-preview')) {
+                        tooltipPopup.style.display = 'none';
                     }
                 });
                 toolOptions.forEach(btn => {
@@ -2818,7 +3161,7 @@
                         experimental: upscaleExperimentalCheck.checked,
                         pseudo: upscalePseudoCheck.checked,
                         wiener: upscaleWienerCheck.checked,
-                        aa: upscaleAACheck.checked
+                        aa: upscaleAACheck.value
                     };
                     const blob = new Blob([JSON.stringify(settings)], {type: 'application/json'});
                     const a = document.createElement('a');
@@ -2855,7 +3198,7 @@
                             upscaleExperimentalCheck.checked = s.experimental;
                             upscalePseudoCheck.checked = s.pseudo;
                             upscaleWienerCheck.checked = s.wiener;
-                            upscaleAACheck.checked = s.aa;
+                            upscaleAACheck.value = s.aa || 'none';
                             
                             document.querySelectorAll('input[type="range"]').forEach(r => r.dispatchEvent(new Event('input')));
                             
@@ -2919,9 +3262,45 @@
                     });
                 });
                 
+                ditherAlgoList.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        ditherAlgoList.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        activeDitherAlgo = btn.dataset.dither;
+                        debouncedRunProcess();
+                    });
+                });
+
+                ditherAddStopBtn.addEventListener('click', () => {
+                    ditherGradientColors.push('#ffffff');
+                    renderDitherGradientStops();
+                    debouncedRunProcess();
+                });
+
+                tooltipEdit.addEventListener('click', () => {
+                    if (activeColorStopIndex !== -1) {
+                        const inputs = ditherGradientContainer.querySelectorAll('input');
+                        if (inputs[activeColorStopIndex]) inputs[activeColorStopIndex].click();
+                        tooltipPopup.style.display = 'none';
+                    }
+                });
+
+                tooltipDelete.addEventListener('click', () => {
+                    if (activeColorStopIndex !== -1 && ditherGradientColors.length > 2) {
+                        ditherGradientColors.splice(activeColorStopIndex, 1);
+                        renderDitherGradientStops();
+                        debouncedRunProcess();
+                        tooltipPopup.style.display = 'none';
+                    } else if (ditherGradientColors.length <= 2) {
+                        alert("Minimum 2 colors required");
+                        tooltipPopup.style.display = 'none';
+                    }
+                });
+
                 document.querySelectorAll('#editor-settings input, #editor-settings select').forEach(el => {
-                    el.addEventListener('input', () => {
-                        if(activeEditorFilter) runProcess(false);
+                    const eventType = el.type === 'range' ? 'input' : 'change';
+                    el.addEventListener(eventType, () => {
+                        if(activeEditorFilter) debouncedRunProcess();
                     });
                 });
                 
@@ -3043,6 +3422,37 @@
                         initialPinchDist = 0;
                     }
                     if (e.touches.length === 0) isPanning = false;
+                });
+            }
+
+            function renderDitherGradientStops() {
+                ditherGradientContainer.innerHTML = '';
+                ditherGradientColors.forEach((color, index) => {
+                    const preview = document.createElement('div');
+                    preview.className = 'color-stop-preview';
+                    preview.style.backgroundColor = color;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'color';
+                    input.value = color;
+                    input.style.display = 'none';
+                    
+                    input.addEventListener('input', (e) => {
+                        ditherGradientColors[index] = e.target.value;
+                        preview.style.backgroundColor = e.target.value;
+                        debouncedRunProcess();
+                    });
+                    
+                    preview.addEventListener('click', (e) => {
+                        activeColorStopIndex = index;
+                        const rect = preview.getBoundingClientRect();
+                        tooltipPopup.style.left = `${rect.left}px`;
+                        tooltipPopup.style.top = `${rect.bottom + 5}px`;
+                        tooltipPopup.style.display = 'flex';
+                    });
+                    
+                    ditherGradientContainer.appendChild(preview);
+                    ditherGradientContainer.appendChild(input);
                 });
             }
 
@@ -3275,6 +3685,12 @@
                     resizeCanvas();
                     runAiBtn.disabled = false;
                     history = []; historyStep = -1;
+                    
+                    if (worker) {
+                        const imgData = getFullImageData();
+                        worker.postMessage({ command: 'setImage', imageData: imgData.data.buffer }, [imgData.data.buffer]);
+                    }
+                    
                     saveState();
                 };
                 mainImage.src = url;
@@ -3301,6 +3717,11 @@
                 clearMask();
                 history = []; historyStep = -1; saveState();
                 resizeCanvas();
+                
+                if (worker) {
+                    const imgData = getFullImageData();
+                    worker.postMessage({ command: 'setImage', imageData: imgData.data.buffer }, [imgData.data.buffer]);
+                }
                 
                 panX = 0; panY = 0; zoomScale = 1.0; updateZoom();
             }
@@ -3759,14 +4180,21 @@
 
             function updateUIState(processing, msg = "Processing...") {
                 isProcessing = processing;
+                
                 if(processing) {
-                    frame.classList.add('processing');
-                    statusPill.style.display = 'block';
-                    statusPill.innerText = msg;
-                    loadingOverlay.style.display = 'flex';
-                    runAiBtn.innerText = "CANCEL";
-                    runAiBtn.classList.add('cancel-mode');
+                    if (currentMode === 'editor') {
+                        startCornerAnimation();
+                    } else {
+                        frame.classList.add('processing');
+                        statusPill.style.display = 'block';
+                        statusPill.innerText = msg;
+                        loadingOverlay.style.display = 'flex';
+                        runAiBtn.innerText = "CANCEL";
+                        runAiBtn.classList.add('cancel-mode');
+                    }
                 } else {
+                    stopCornerAnimation();
+                    
                     frame.classList.remove('processing');
                     statusPill.style.display = 'none';
                     loadingOverlay.style.display = 'none';
@@ -3774,19 +4202,41 @@
                     runAiBtn.classList.remove('cancel-mode');
                 }
             }
+            
+            function startCornerAnimation() {
+                cornerIndicator.style.display = 'block';
+                let frames = ['⋯', '⋱', ' ⋮', '⋰', '⋯'];
+                let idx = 0;
+                if(cornerAnimationInterval) clearInterval(cornerAnimationInterval);
+                
+                cornerAnimationInterval = setInterval(() => {
+                    cornerIndicator.innerText = frames[idx];
+                    idx = (idx + 1) % frames.length;
+                }, 300);
+            }
+            
+            function stopCornerAnimation() {
+                if(cornerAnimationInterval) clearInterval(cornerAnimationInterval);
+                cornerIndicator.style.display = 'none';
+            }
 
             async function runProcess(isRerun) {
                 if (isProcessing) {
                     if (worker) worker.terminate();
                     updateUIState(false);
+                    worker = null;
                     return;
                 }
                 
                 if (currentMode === 'editor' && !activeEditorFilter) return;
 
-                updateUIState(true, currentMode === 'editor' ? "Applying Filter..." : "Initializing...");
+                if (currentMode !== 'editor') {
+                    updateUIState(true, "Initializing...");
+                } else {
+                    updateUIState(true, "Applying...");
+                }
 
-                const imgData = getFullImageData();
+                const imgData = (currentMode !== 'editor') ? getFullImageData() : null;
                 let maskData = null;
 
                 if (currentMode === 'inpaint') {
@@ -3802,8 +4252,16 @@
                     }
                 }
 
-                if (worker) worker.terminate();
-                worker = new Worker(workerUrl);
+                if (!worker) {
+                    worker = new Worker(workerUrl);
+                    if (currentMode === 'editor' && mainImage.src) {
+                        const fullData = getFullImageData();
+                        worker.postMessage({ command: 'setImage', imageData: fullData.data.buffer }, [fullData.data.buffer]);
+                    }
+                } else if (currentMode !== 'editor') {
+                    worker.terminate();
+                    worker = new Worker(workerUrl);
+                }
 
                 if (currentMode !== 'editor') {
                     generatedResults.forEach(r => URL.revokeObjectURL(r.url));
@@ -3841,7 +4299,7 @@
                     } else if (msg.type === 'complete') {
                         updateUIState(false);
                         if (isCustomUpscale || currentMode === 'editor') {
-                           // Stay in custom view
+                           
                         } else if(generatedResults.length > 0) {
                             if (!debugMode) selectResult(0); 
                             resultsBar.classList.add('active');
@@ -3860,13 +4318,12 @@
                     editorOptions.filter = activeEditorFilter;
                     editorOptions.strength = parseInt(editorStrengthSlider.value);
                     editorOptions.ditherEnable = document.getElementById('dither-enable').checked;
-                    editorOptions.ditherAlgo = document.getElementById('dither-algo').value;
+                    editorOptions.ditherAlgo = activeDitherAlgo;
                     editorOptions.ditherStrength = parseInt(document.getElementById('dither-strength').value);
                     editorOptions.ditherLevels = parseInt(document.getElementById('dither-levels').value);
                     editorOptions.ditherPatternSize = parseInt(document.getElementById('dither-pattern-size').value);
                     editorOptions.ditherMap = document.getElementById('dither-map').value;
-                    editorOptions.ditherColor1 = document.getElementById('dither-color1').value;
-                    editorOptions.ditherColor2 = document.getElementById('dither-color2').value;
+                    editorOptions.ditherGradient = ditherGradientColors;
                     
                     editorOptions.adjustments = {
                         brightness: parseInt(document.getElementById('adj-bright').value),
@@ -3911,11 +4368,22 @@
                     editorOptions.neoThreshold = parseInt(document.getElementById('neo-threshold').value);
                     editorOptions.duotoneColor1 = document.getElementById('duotone-color1').value;
                     editorOptions.duotoneColor2 = document.getElementById('duotone-color2').value;
+
+                    editorOptions.kuwaharaRadius = parseInt(document.getElementById('kuwahara-radius').value);
+                    editorOptions.tiltBlur = parseInt(document.getElementById('tilt-blur').value);
+                    editorOptions.tiltPos = parseInt(document.getElementById('tilt-pos').value);
+                    editorOptions.tiltArea = parseInt(document.getElementById('tilt-area').value);
+                    editorOptions.kalSegments = parseInt(document.getElementById('kal-segments').value);
+                    editorOptions.swirlAngle = parseFloat(document.getElementById('swirl-angle').value);
+                    editorOptions.swirlRadius = parseInt(document.getElementById('swirl-radius').value);
+                    
+                    editorOptions.width = mainImage.naturalWidth;
+                    editorOptions.height = mainImage.naturalHeight;
                 }
 
                 worker.postMessage({
                     command: currentMode,
-                    imageData: imgData,
+                    imageData: imgData ? imgData : { width: mainImage.naturalWidth, height: mainImage.naturalHeight }, 
                     maskData: maskData,
                     options: {
                         count: currentMode === 'inpaint' ? parseInt(resultCountSlider.value) : 1, 
@@ -3939,10 +4407,10 @@
                         debug: debugMode,
                         pseudo: upscalePseudoCheck.checked,
                         wiener: upscaleWienerCheck.checked,
-                        aa: upscaleAACheck.checked,
+                        aa: upscaleAACheck.value,
                         ...editorOptions
                     }
-                }, [imgData.data.buffer, maskData ? maskData.buffer : new ArrayBuffer(0)]);
+                }, imgData ? [imgData.data.buffer, maskData ? maskData.buffer : new ArrayBuffer(0)] : []);
             }
 
             function handleWorkerResult(msg) {
