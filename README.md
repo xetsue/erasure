@@ -1,25 +1,27 @@
 # A/E-Lens | Erasure
 Algorithmic Eraser — HTML based object eraser and image upscaler tool --- `Work In Progress`
-### Usage: 
+### Usage Methods: 
 
-1. [Here](xetsue.github.io/erasure)
+A. Recommend use directly through the web app [Here](xetsue.github.io/erasure)
 
-2. Download the [Portable Version]() `Without ONNX` and open in any browser or The [ONNX Version]() which requires quick setup and models.
+B. Download the [Portable Version](https://github.com/xetsue/erasure/blob/main/.archive/1.index.html) `Without ONNX` and open in any browser.
+
+C. Alternate [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip) .
+> Unzip anywhere, open folder, Right-click in the index.html folder, open in terminal, and run `python -m http.server 8000`
+
+>The app should now be accessible on http://localhost:8000 in your browser.
+
+>Normally, this app can be downloaded offline and used by opening the index.html in any browser.
+
+> This happens because browsers restrict direct access to device memory which the ONNX need to be loaded into for security reasons. Running your own local server with python overrides this as the owner.
+
 
 ## Features
 - Eraser Tool: Mathematically blends and remove a targeted subject in an image with minimal background context.
 - Editor: Add Filters, Dithering, Adjustments.
 - Upscaler: Upscale with traditional edge detection `Sobel/Prewitt/Canny` method with anti-aliasing and customisable settings.
 
-- Alternate Upscaler: ONNX
-> Alternate case of use included six `ONNX` Models that can be streamed and runs locally on your browser without the need of a third party server, ensuring your privacy.
-
->Normally, this app can be downloaded offline and used by opening the index.html in any browser.
-  
->The ONNX feature is however limited with direct browser access for offline use. FIX: Right-click in the index.html folder, open in terminal, and run `python -m http.server 8000`
->The app should now be accessible on http://localhost:8000 in your browser.
-
-> This happens because browsers restrict direct access to device memory which the ONNX need to be loaded into for security reasons. Running your own local server with python overrides this as the owner.
+>Alternate Upscaler: ONNX models streamed locally on your browser. Better results, lower speed. Your files are not kept anywhere outside your own device securing your privacy.
 
 ## Eraser
 ><img width="1915" height="971" alt="Screenshot 2025-12-07 222114" src="https://github.com/user-attachments/assets/ded8d9de-3242-410c-991c-6e7f1434a948" />
