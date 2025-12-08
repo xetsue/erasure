@@ -1,6 +1,4 @@
 [
   "[S] RealESR-General-4x.onnx",
   "[M] 4xNomos2_realplksr_dysample_256_fp32.onnx",
-  "[L] 4xRealWebPhoto_v2_rgt_s_fp32.onnx",
-  "[XL] real-esrgan-x4.onnx"
 ]
