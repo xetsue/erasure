@@ -1,4 +1,4 @@
-# ae-lens
+# A/E-Lens | Erasure
 Algorithmic Eraser — HTML based object eraser and image upscaler tool --- `Work In Progress`
 - Eraser Tool: Mathematically blends and remove a targeted subject in an image with minimal background context.
 - Upscaler: Upscale with traditional edge detection `Sobel/Prewitt/Canny` method with anti-aliasing and customisable settings.
