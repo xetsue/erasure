@@ -1,7 +1,0 @@
-[
-  "[4.6MB] RealESR-General-4x.onnx",
-  "[1.6MB] 2xLiveActionV1_SPAN_490000.onnx",
-  "[15MB] swin2SR-classical-sr-x2-64_q4f16.onnx",
-  "[14MB] swin2SR-realworld-sr-x4-64-bsrgan-psnr_q4f16.onnx",
-  "[22MB] swin2SR-realworld-sr-x4-64-bsrgan-psnr_q4.onnx"
-]
