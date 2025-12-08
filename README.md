@@ -21,7 +21,7 @@ C. Alternate [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads
 - Editor: Add Filters, Dithering, Adjustments.
 - Upscaler: Upscale with traditional edge detection `Sobel/Prewitt/Canny` method with anti-aliasing and customisable settings.
 
->Alternate Upscaler: ONNX models streamed locally on your browser offline without third party processing. 
+>Alternate Upscaler: ONNX models streamed locally on your browser offline without third party processing. The `.onnx` models may offer better results but sacrifices lower speed. 
 
 ## Eraser
 ><img width="1915" height="971" alt="Screenshot 2025-12-07 222114" src="https://github.com/user-attachments/assets/ded8d9de-3242-410c-991c-6e7f1434a948" />
@@ -35,8 +35,7 @@ C. Alternate [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads
 >![field-ae lens (1) (1)](https://github.com/user-attachments/assets/a77b207d-0613-4d59-bf8d-d27bef23fddf)
 ---
 ### After
-! Please also note that this result use purely JavaScript algorithm so its capabilities are limited to mathematical process natively running offline in your browser. 
-> Changelog: Added ONNX models for alternarite use of upscaling offering better results but slower speed.
+! Please also note that the result below used purely mathematical algorithm without `onnx` so its capabilities are limited to mathematical process offline in your browser. 
 
 ><img width="2048" height="1147" alt="field-ae lens" src="https://github.com/user-attachments/assets/b53401ea-9dd0-4aa3-b9d5-e6b9dea20ec9" />
 
