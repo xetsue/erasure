@@ -2,18 +2,18 @@
 Algorithmic Eraser — HTML based object eraser and image upscaler tool --- `Work In Progress`
 ### Usage Methods: 
 
-A. Recommend use directly through the web app [Here](xetsue.github.io/erasure)
+A. Use the app directly [Here](xetsue.github.io/erasure)
 
 B. Download the [Portable Version](https://github.com/xetsue/erasure/blob/main/.archive/1.index.html) `Without ONNX` and open in any browser.
 
-C. Alternate [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip) .
+C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip) .
 > Unzip anywhere, open folder, Right-click in the index.html folder, open in terminal, and run `python -m http.server 8000`
 
 >The app should now be accessible on http://localhost:8000 in your browser.
 
->Normally, this app can be downloaded offline and used by opening the index.html in any browser.
+>Normally, this app can be downloaded offline and run by simply opening the index.html in any browser.
 
-> This happens because browsers restrict direct access to device memory which the ONNX need to be loaded into for security reasons. Running your own local server with python overrides this as the owner.
+> Most browsers restrict direct access to device memory which the ONNX need to be loaded to for security reasons. Running your own local server with python overrides this.
 
 
 ## Features
@@ -31,11 +31,11 @@ C. Alternate [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads
 
 ## Upscaler
 ### Before
-! This image used is quite high is resolution and may not give the best example. The car in this photo can be a good reference subject.
+[!] The image used is in may not give the best example. The car in this photo can be a good reference subject.
 >![field-ae lens (1) (1)](https://github.com/user-attachments/assets/a77b207d-0613-4d59-bf8d-d27bef23fddf)
 ---
 ### After
-! Please also note that the result below used purely mathematical algorithm without `onnx` so its capabilities are limited to mathematical process offline in your browser. 
+! Please also note that the default upscaler (result below) uses edge detection algorithm and anti aliasing to process images without `onnx` — its capabilities are limited to mathematical process entirely offline in your browser. 
 
 ><img width="2048" height="1147" alt="field-ae lens" src="https://github.com/user-attachments/assets/b53401ea-9dd0-4aa3-b9d5-e6b9dea20ec9" />
 
