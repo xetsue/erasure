@@ -2,7 +2,7 @@
 Algorithmic Eraser — HTML based object eraser and image upscaler tool --- `Work In Progress`
 ### Usage Methods: 
 
-A. Use the app directly [Here](xetsue.github.io/erasure)
+A. Use the app directly [Here](https://xetsue.github.io/erasure)
 
 B. Download the [Portable Version](https://github.com/xetsue/erasure/blob/main/.archive/1.index.html) `Without ONNX` and open in any browser.
 
