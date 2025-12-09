@@ -7,9 +7,9 @@ A. Use the app directly [Here](https://xetsue.github.io/erasure)
 B. Download the [Portable Version](https://github.com/xetsue/erasure/blob/main/.archive/1.index.html) `Without ONNX` and open in any browser.
 
 C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip) .
-> Unzip anywhere, open folder, Right-click in the index.html folder, open in terminal, and run `python -m http.server 8000`
+> Unzip anywhere, open folder, Right-click in the index.html folder, open in terminal, and run `python server.py`~
 
->The app should now be accessible on http://localhost:8000 in your browser.
+>The app should now be accessible on http://localhost:8000 or 8001 in your browser.
 
 >Normally, this app can be downloaded offline and run by simply opening the index.html in any browser.
 
