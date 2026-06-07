@@ -53,9 +53,53 @@
         .brand-main { font-weight: bold; line-height: 1; }
         .brand-sub { font-size: 0.8em; opacity: 0.7; line-height: 1; margin-top: 4px; }
         .ascii-frame { background-color: var(--button-bg); color: var(--button-text); border: 1px solid var(--frame-color); padding: 8px 1px; font-family: var(--font-family); border-radius: var(--button-radius); font-size: 14px; min-width: 60px; text-align: center; white-space: pre; cursor: default; transition: all 0.3s; }
-        .main-container { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; flex-grow: 1; padding: 20px; box-sizing: border-box; gap: 20px; width: 100%; height: calc(100vh - 60px); }
-        .left-panel-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 100%; flex-shrink: 0; transition: width 0.3s, height 0.3s; position: relative; overflow-x: hidden; }
-        .frame { border: 1.6px solid var(--frame-color); border-radius: var(--frame-radius); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; resize: both; aspect-ratio: 1 / 1; width: var(--frame-custom-size, 90vmin); height: var(--frame-custom-size, 90vmin); min-width: var(--frame-custom-min-size); min-height: var(--frame-custom-min-size); max-width: 100%; max-height: 80vh; background-color: #111; overflow: hidden; user-select: none; transition: height 0.3s; touch-action: none; }
+        
+        .main-container {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            width: 100%;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+        
+        .left-panel-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: auto;
+            max-width: none;
+            height: 100%;
+            flex-shrink: 0;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        
+        .frame {
+            width: 100%;
+            height: 100%;
+            max-height: none;
+            aspect-ratio: auto;
+            border: 1.6px solid var(--frame-color);
+            border-radius: var(--frame-radius);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #111;
+            overflow: hidden;
+            user-select: none;
+            touch-action: none;
+            transition: height 0.3s;
+        }
+
         .frame.fullscreen-active { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; border: none !important; resize: none !important; z-index: 9999 !important; background-color: #000 !important; }
         .frame.fullscreen-active .fs-tool-overlay { display: block; }
         .frame.processing .action-buttons { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
@@ -85,6 +129,7 @@
         .tool-popup { position: absolute; left: 0; bottom: 100%; top: auto; margin-bottom: 5px; background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid var(--settings-outline); border-radius: 5px; padding: 5px; display: none; flex-direction: column; gap: 5px; z-index: 20000; width: 140px; max-height: 300px; overflow-y: auto; }
         .tool-popup button { width: 100%; text-align: left; border: none; background: none; color: var(--text-color); }
         .tool-popup button:hover { background-color: var(--settings-outline); }
+        
         .controls { display: flex; justify-content: flex-start; width: 100%; margin-top: 10px; flex-wrap: wrap; gap: 10px; position: relative; }
         #run-onx-button, #rerun-button, #confirm-button, #run-onx-button-2, #fs-save-button, #upscale-load-preset, #upscale-export-preset { background-color: var(--text-color); color: var(--bg-color); font-weight: bold; border-color: var(--text-color); }
         #run-onx-button:disabled, #rerun-button:disabled, #confirm-button:disabled, #run-onx-button-2:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -95,15 +140,19 @@
         button:hover { opacity: 0.8; }
         button.active-tool { background-color: var(--frame-color); color: var(--bg-color); }
         button.compare-active { background-color: var(--compare-active-bg) !important; color: var(--compare-active-text) !important; border-color: var(--frame-color); }
-        #advanced-settings-panel { background-color: var(--settings-bg); border: 1px solid var(--settings-outline); border-radius: var(--settings-radius); z-index: 10002; max-height: 80vh; width: 95vmin; display: flex; flex-direction: column; --header-height: 60px; --tab-bar-height: 50px; transition: background-color 0.3s; }
+        
+        #side-panel { flex: 0 0 400px; width: 400px; height: 100%; max-height: none; margin-top: 0; overflow-y: auto; background-color: var(--settings-bg); border: 1px solid var(--settings-outline); border-radius: var(--settings-radius); z-index: 10002; display: flex; flex-direction: column; --header-height: 60px; --tab-bar-height: 50px; transition: background-color 0.3s; }
+        
         .settings-header { background-color: var(--settings-bg); padding: 15px; border-bottom: 1px solid var(--settings-outline); display: flex; align-items: center; justify-content: space-between; height: var(--header-height); flex-shrink: 0; }
         .header-controls { display: flex; gap: 8px; align-items: center; }
         .header-btn { padding: 4px 10px; font-size: 1.1em; border-radius: 3px; }
-        .tab-bar { display: flex; border-bottom: 1px solid var(--settings-outline); background-color: var(--settings-bg); height: var(--tab-bar-height); overflow-x: auto; flex-shrink: 0; }
-        .tab-link { background: none; border: none; border-bottom: 2px solid transparent; padding: 14px 20px; cursor: pointer; color: var(--text-color); opacity: 0.7; font-family: var(--font-family); font-size: 14px; flex-grow: 1; white-space: nowrap; min-width: 80px; text-align: center; }
-        .tab-link.active { opacity: 1; border-bottom-color: var(--frame-color); font-weight: bold; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        
+        .eraser-tab-link, .sub-tab-link { flex: 1; background: none; border: none; padding: 8px; color: var(--text-color); opacity: 0.6; cursor: pointer; border-bottom: 2px solid transparent; text-align: center; }
+        .eraser-tab-link.active, .sub-tab-link.active { opacity: 1; border-bottom-color: var(--accent-color); font-weight: bold; }
+        
+        .eraser-tab-content, .sub-tab-content { display: none; }
+        .eraser-tab-content.active, .sub-tab-content.active { display: block; }
+
         .settings-content-scrollable { flex-grow: 1; overflow-y: auto; padding: 15px; }
         .setting-group { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid var(--settings-outline); }
         .slider-input-group { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
@@ -119,19 +168,13 @@
         .confirm-modal { background: var(--settings-bg); border: 1px solid var(--frame-color); padding: 20px; border-radius: var(--settings-radius); text-align: center; min-width: 250px; }
         .confirm-actions { display: flex; gap: 10px; justify-content: center; margin-top: 15px; }
         
-        .main-container.side-by-side-layout { flex-direction: row; align-items: flex-start; justify-content: center; gap: 20px; height: calc(100vh - 60px); overflow: hidden; }
-        .main-container.side-by-side-layout .left-panel-wrapper { flex: 1; width: auto; height: 100%; max-width: none; overflow-y: auto; }
-        .main-container.side-by-side-layout .frame { width: 100%; height: 100%; max-height: none; aspect-ratio: auto; }
-        .main-container.side-by-side-layout #advanced-settings-panel { flex: 0 0 400px; width: 400px; height: 100%; max-height: none; margin-top: 0; overflow-y: auto; }
-
-        @media (max-width: 991px) and (orientation: portrait) { .main-container.side-by-side-layout { flex-direction: column; height: auto; overflow-y: auto; } .main-container.side-by-side-layout .left-panel-wrapper, .main-container.side-by-side-layout #advanced-settings-panel { width: 95vw; max-width: 500px; height: auto; } .main-container.side-by-side-layout .frame { aspect-ratio: 1/1; height: 90vmin; } }
-        @media (max-width: 991px) and (orientation: landscape) { .main-container.side-by-side-layout { flex-direction: row; align-items: flex-start; height: calc(100vh - 60px); overflow: hidden; } .main-container.side-by-side-layout .left-panel-wrapper { display: flex; flex-direction: column; height: 100%; overflow: hidden; } .main-container.side-by-side-layout .frame { flex: 1; min-height: 0; height: auto; max-height: 80vh; } .main-container.side-by-side-layout .controls { flex-shrink: 0; overflow-y: auto; max-height: 45%; padding-bottom: 5px; } .main-container.side-by-side-layout #advanced-settings-panel { width: 320px; flex: 0 0 320px; } .tab-link { padding: 12px 20px; min-height: 48px; } }
-        
         .placeholder-text { position: absolute; color: var(--settings-outline); pointer-events: none; font-size: 0.9em; }
         .desc-text { font-size: 0.8em; opacity: 0.9; margin-top: 6px; margin-bottom: 10px; line-height: 1.4; background-color: var(--desc-bg); padding: 10px; border-radius: 4px; border-left: 3px solid var(--settings-outline); display: none; }
-        .mode-toggles { display: flex; width: 100%; margin-bottom: 10px; border: 1px solid var(--settings-outline); border-radius: var(--button-radius); overflow: hidden; }
-        .mode-toggles button { flex: 1; border: none; border-radius: 0; background: var(--settings-bg); color: var(--text-color); opacity: 0.6; }
+        
+        .mode-toggles { display: flex; width: 100%; border: 1px solid var(--settings-outline); border-radius: var(--button-radius); overflow: hidden; }
+        .mode-toggles button { flex: 1; border: none; border-radius: 0; background: var(--settings-bg); color: var(--text-color); opacity: 0.6; padding: 12px 20px; }
         .mode-toggles button.active { background: #000080; color: white; opacity: 1; font-weight: bold; }
+        
         #magnifier { position: fixed; width: 100px; height: 100px; border: 2px solid var(--frame-color); border-radius: 5px; overflow: hidden; z-index: 20005; background-color: var(--bg-color); pointer-events: none; box-shadow: 0 0 10px rgba(0,0,0,0.5); display: none; transform: translate(-50%, calc(-100% - 50px)); font-family: var(--font-family); }
         #magnifier-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges; }
         #magnifier-crosshair { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: red; pointer-events: none; text-shadow: 0 0 3px black; font-weight: bold; transform: translate(-50%, -50%); }
@@ -148,10 +191,7 @@
         .filter-option:not(.active):nth-child(4n+3) { background-color: rgba(255, 255, 255, 0.09); }
         .filter-option:not(.active):nth-child(4n+4) { background-color: rgba(255, 255, 255, 0.12); }
         .sub-tab-bar { display: flex; border-bottom: 1px solid var(--settings-outline); margin-bottom: 15px; }
-        .sub-tab-link { flex: 1; background: none; border: none; padding: 8px; color: var(--text-color); opacity: 0.6; cursor: pointer; border-bottom: 2px solid transparent; }
-        .sub-tab-link.active { opacity: 1; border-bottom-color: var(--accent-color); font-weight: bold; }
-        .sub-tab-content { display: none; }
-        .sub-tab-content.active { display: block; }
+        
         .dynamic-setting-group { display: none; }
         .dynamic-setting-group.active { display: block; }
         .gradient-editor { display: flex; gap: 5px; align-items: center; margin-top: 5px; }
@@ -861,7 +901,7 @@ function processEditor(imgData, options) {
              }
          }
     }
-    else if (filter === 'swirl') {
+        else if (filter === 'swirl') {
          const angle = options.swirlAngle || 3;
          const radius = options.swirlRadius || 50;
          const cx = w/2, cy = h/2;
@@ -884,6 +924,61 @@ function processEditor(imgData, options) {
                  dest[dIdx] = src[sIdx]; dest[dIdx+1] = src[sIdx+1]; dest[dIdx+2] = src[sIdx+2];
              }
          }
+    }
+
+    if (adj.blur > 0 || adj.sharp > 0 || adj.bloom > 0 || adj.grain > 0 || adj.haze > 0) {
+        let fData = new Float32Array(dest);
+
+        if (adj.blur > 0) {
+            fData = applyBoxBlur(fData, w, h, adj.blur);
+        }
+
+        if (adj.sharp > 0) {
+            const blurred = applyBoxBlur(fData, w, h, 1);
+            const amt = adj.sharp * 0.15;
+            for(let i = 0; i < len * 4; i += 4) {
+                fData[i] = fData[i] + (fData[i] - blurred[i]) * amt;
+                fData[i+1] = fData[i+1] + (fData[i+1] - blurred[i+1]) * amt;
+                fData[i+2] = fData[i+2] + (fData[i+2] - blurred[i+2]) * amt;
+            }
+        }
+
+        if (adj.bloom > 0) {
+            const blurred = applyBoxBlur(fData, w, h, 8);
+            const amt = adj.bloom / 100;
+            for(let i = 0; i < len * 4; i += 4) {
+                const r = fData[i]/255, g = fData[i+1]/255, b = fData[i+2]/255;
+                const br = blurred[i]/255, bg = blurred[i+1]/255, bb = blurred[i+2]/255;
+                fData[i] = (1 - (1 - r) * (1 - br * amt)) * 255;
+                fData[i+1] = (1 - (1 - g) * (1 - bg * amt)) * 255;
+                fData[i+2] = (1 - (1 - b) * (1 - bb * amt)) * 255;
+            }
+        }
+
+        if (adj.grain > 0) {
+            const amt = adj.grain;
+            for(let i = 0; i < len * 4; i += 4) {
+                const noise = (Math.random() - 0.5) * amt;
+                fData[i] += noise;
+                fData[i+1] += noise;
+                fData[i+2] += noise;
+            }
+        }
+
+        if (adj.haze > 0) {
+            const amt = adj.haze / 100;
+            for(let i = 0; i < len * 4; i += 4) {
+                fData[i] = fData[i] + (210 - fData[i]) * amt * 0.6;
+                fData[i+1] = fData[i+1] + (210 - fData[i+1]) * amt * 0.6;
+                fData[i+2] = fData[i+2] + (225 - fData[i+2]) * amt * 0.6; 
+            }
+        }
+
+        for(let i = 0; i < len * 4; i += 4) {
+            dest[i] = Math.min(255, Math.max(0, fData[i]));
+            dest[i+1] = Math.min(255, Math.max(0, fData[i+1]));
+            dest[i+2] = Math.min(255, Math.max(0, fData[i+2]));
+        }
     }
 
     if (options.ditherEnable) {
@@ -1279,10 +1374,12 @@ function processUpscaleSmart(imgData, options) {
     self.postMessage({ type: 'complete' });
 }
     </script>
+    
     <div id="tooltip-popup">
         <button id="tooltip-edit">Edit</button>
         <button id="tooltip-delete">Delete</button>
     </div>
+    
     <div id="confirm-modal" class="confirm-modal-overlay">
         <div class="confirm-modal">
             <h4>Revert Image?</h4>
@@ -1303,7 +1400,7 @@ function processUpscaleSmart(imgData, options) {
         <div class="header-left">
             <button id="compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
             <div class="ascii-frame" id="ascii-anim">( =.=)</div>
-            <br><p id="message1" style="font-size:  9px;font-color: #333333;">Files Processed Offline <br>[ Privacy Matters ] </p>
+            <br><p id="message1" style="font-size: 9px; color: #333333;">Files Processed Offline <br>[ Privacy Matters ] </p>
             <div id="onx-estimation" style="font-size: 0.8em; color: var(--accent-color); margin-top: 5px; display: none;"></div>
         </div>
         <div class="header-branding">
@@ -1381,16 +1478,17 @@ function processUpscaleSmart(imgData, options) {
                 <button id="rerun-button">RERUN</button>
                 <button id="confirm-button">CONFIRM</button>
                 
-                <div style="border-left: 1px solid #555; padding-left: 10px;">
+                <div style="border-left: 1px solid var(--settings-outline); padding-left: 10px; display: flex; gap: 5px;">
                      <button id="export-button">Save</button>
-                     <button id="advanced-settings-button">Settings</button>
+                     <button id="editor-button">Editor</button>
+                     <button id="tools-button">Tools</button>
                 </div>
             </div>
         </div>
 
-        <div id="advanced-settings-panel" style="display: none;">
+        <div id="side-panel" style="display: none;">
             <div class="settings-header">
-                <h3>Settings</h3>
+                <h3 id="side-panel-title">Editor</h3>
                 <div class="header-controls">
                     <button id="undo-button" class="header-btn" title="Undo (Ctrl+Z)">&lt;</button>
                     <button id="redo-button" class="header-btn" title="Redo (Ctrl+Shift+Z)">&gt;</button>
@@ -1398,71 +1496,472 @@ function processUpscaleSmart(imgData, options) {
                 </div>
             </div>
             
-            <div class="tab-bar">
-                <button class="tab-link active" data-tab="models">Process</button>
-                <button class="tab-link" data-tab="brush">Brush</button>
-            </div>
+            <div id="editor-view" class="settings-content-scrollable">
+                <div class="sub-tab-bar">
+                    <button class="sub-tab-link active" data-subtab="filters">Filters</button>
+                    <button class="sub-tab-link" data-subtab="settings" id="editor-settings-tab-link" style="display:none;">Settings</button>
+                    <button class="sub-tab-link" data-subtab="dither">Dither</button>
+                    <button class="sub-tab-link" data-subtab="adjustments">Adjustments</button>
+                </div>
 
-            <div class="settings-content-scrollable">
-                <div id="tab-models" class="tab-content active">
-                    <div class="setting-group">
-                        <h4>Operation Mode</h4>
-                        <div class="mode-toggles">
-                            <button id="mode-eraser" class="active">Eraser</button>
-                            <button id="mode-upscaler">Upscaler</button>
-                            <button id="mode-editor">Editor</button>
+                <div id="subtab-filters" class="sub-tab-content active">
+                    <div class="filter-list-box" id="editor-filter-list">
+                        <button class="filter-option active" data-filter="none">None</button>
+                        <button class="filter-option" data-filter="ascii">ASCII</button>
+                        <button class="filter-option" data-filter="crt">CRT Shader</button>
+                        <button class="filter-option" data-filter="edge">Edge Detect</button>
+                        <button class="filter-option" data-filter="glitch">Glitch</button>
+                        <button class="filter-option" data-filter="invert">Invert</button>
+                        <button class="filter-option" data-filter="neo">Matrix / Neo</button>
+                        <button class="filter-option" data-filter="noise">Noise</button>
+                        <button class="filter-option" data-filter="pixelate">Pixelate</button>
+                        <button class="filter-option" data-filter="posterize">Posterize</button>
+                        <button class="filter-option" data-filter="rgb">RGB Pixels</button>
+                        <button class="filter-option" data-filter="sepia">Sepia</button>
+                        <button class="filter-option" data-filter="solarize">Solarize</button>
+                        <button class="filter-option" data-filter="emboss">Emboss</button>
+                        <button class="filter-option" data-filter="vignette">Vignette</button>
+                        <button class="filter-option" data-filter="wes">Wes Anderson</button>
+                        <button class="filter-option" data-filter="duotone">Duotone</button>
+                        <button class="filter-option" data-filter="threshold">Threshold</button>
+                        <button class="filter-option" data-filter="gamma">Gamma</button>
+                        <button class="filter-option" data-filter="chromatic">Chromatic</button>
+                        <button class="filter-option" data-filter="kuwahara">Kuwahara (Oil)</button>
+                        <button class="filter-option" data-filter="tiltshift">Tilt Shift</button>
+                        <button class="filter-option" data-filter="kaleidoscope">Kaleidoscope</button>
+                        <button class="filter-option" data-filter="swirl">Swirl</button>
+                    </div>
+                </div>
+
+                <div id="subtab-settings" class="sub-tab-content">
+                    <div id="editor-dynamic-settings">
+                        <div class="dynamic-setting-group" data-for="ascii">
+                            <label>ASCII Mode:</label>
+                            <select id="ascii-mode" style="width:100%; margin-bottom:10px;">
+                                <option value="color">Color</option>
+                                <option value="mono">Mono (Green/Black)</option>
+                                <option value="bw">Black & White</option>
+                            </select>
+                            <div class="slider-input-group">
+                                <label>Block Size:</label>
+                                <input type="range" id="ascii-size" min="2" max="100" value="8">
+                                <input type="number" id="ascii-size-num" value="8" min="2" max="100">
+                            </div>
+                            <label>Characters:</label>
+                            <input type="text" id="ascii-chars" value="@%#*+=-:. " style="width:100%;">
+                        </div>
+
+                        <div class="dynamic-setting-group" data-for="edge">
+                            <label>Algorithm:</label>
+                            <select id="edge-algo" style="width:100%; margin-bottom:10px;">
+                                <option value="sobel">Sobel</option>
+                                <option value="prewitt">Prewitt</option>
+                                <option value="canny">Canny</option>
+                            </select>
+                            <label class="radio-option"><input type="checkbox" id="edge-invert"> Invert Output</label>
+                            <div class="slider-input-group">
+                                <label>Sensitivity:</label>
+                                <input type="range" id="edge-sensitivity" min="1" max="20" value="5">
+                                <input type="number" id="edge-sensitivity-num" value="5" min="1" max="20">
+                            </div>
+                        </div>
+
+                        <div class="dynamic-setting-group" data-for="glitch">
+                            <label>Glitch Type:</label>
+                            <select id="glitch-type" style="width:100%; margin-bottom:10px;">
+                                <option value="rgb">RGB Shift</option>
+                                <option value="slice">Horizontal Slice</option>
+                                <option value="jitter">Jitter</option>
+                            </select>
+                            <div class="slider-input-group">
+                                <label>Amount:</label>
+                                <input type="range" id="glitch-amount" min="0" max="50" value="10">
+                                <input type="number" id="glitch-amount-num" value="10" min="0" max="50">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Seed:</label>
+                                <input type="range" id="glitch-seed" min="0" max="100" value="0">
+                                <input type="number" id="glitch-seed-num" value="0" min="0" max="100">
+                            </div>
                         </div>
                         
-                        <div style="margin-top: 10px;" id="invert-option">
-                            <label class="radio-option">
-                                <input type="checkbox" id="invert-mask-check"> Invert Mask (Erase Outside)
-                            </label>
+                        <div class="dynamic-setting-group" data-for="pixelate">
+                             <div class="slider-input-group">
+                                <label>Block Size:</label>
+                                <input type="range" id="pixelate-size" min="2" max="64" value="8">
+                                <input type="number" id="pixelate-size-num" value="8" min="2" max="64">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="noise">
+                             <div class="slider-input-group">
+                                <label>Amount:</label>
+                                <input type="range" id="noise-amount" min="0" max="100" value="20">
+                                <input type="number" id="noise-amount-num" value="20" min="0" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="posterize">
+                             <div class="slider-input-group">
+                                <label>Levels:</label>
+                                <input type="range" id="posterize-levels" min="2" max="32" value="4">
+                                <input type="number" id="posterize-levels-num" value="4" min="2" max="32">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="solarize">
+                             <div class="slider-input-group">
+                                <label>Threshold:</label>
+                                <input type="range" id="solarize-threshold" min="0" max="255" value="128">
+                                <input type="number" id="solarize-threshold-num" value="128" min="0" max="255">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="emboss">
+                             <div class="slider-input-group">
+                                <label>Strength:</label>
+                                <input type="range" id="emboss-strength" min="0" max="100" value="100">
+                                <input type="number" id="emboss-strength-num" value="100" min="0" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="vignette">
+                             <div class="slider-input-group">
+                                <label>Amount:</label>
+                                <input type="range" id="vignette-amount" min="0" max="100" value="50">
+                                <input type="number" id="vignette-amount-num" value="50" min="0" max="100">
+                            </div>
+                             <div class="slider-input-group">
+                                <label>Size:</label>
+                                <input type="range" id="vignette-size" min="0" max="100" value="50">
+                                <input type="number" id="vignette-size-num" value="50" min="0" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="rgb">
+                             <div class="slider-input-group">
+                                <label>Offset:</label>
+                                <input type="range" id="rgb-offset" min="0" max="50" value="5">
+                                <input type="number" id="rgb-offset-num" value="5" min="0" max="50">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="sepia">
+                             <div class="slider-input-group">
+                                <label>Intensity:</label>
+                                <input type="range" id="sepia-intensity" min="0" max="100" value="100">
+                                <input type="number" id="sepia-intensity-num" value="100" min="0" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="duotone">
+                            <div class="gradient-editor">
+                                <label>Color 1:</label>
+                                <input type="color" id="duotone-color1" value="#000000">
+                            </div>
+                            <div class="gradient-editor">
+                                <label>Color 2:</label>
+                                <input type="color" id="duotone-color2" value="#ffffff">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="threshold">
+                             <div class="slider-input-group">
+                                <label>Level:</label>
+                                <input type="range" id="threshold-level" min="0" max="255" value="128">
+                                <input type="number" id="threshold-level-num" value="128" min="0" max="255">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="gamma">
+                             <div class="slider-input-group">
+                                <label>Value:</label>
+                                <input type="range" id="gamma-value" min="0.1" max="3.0" step="0.1" value="1.0">
+                                <input type="number" id="gamma-value-num" value="1.0" min="0.1" max="3.0" step="0.1">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="chromatic">
+                             <div class="slider-input-group">
+                                <label>Offset X:</label>
+                                <input type="range" id="chromatic-x" min="-20" max="20" value="5">
+                                <input type="number" id="chromatic-x-num" value="5" min="-20" max="20">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Offset Y:</label>
+                                <input type="range" id="chromatic-y" min="-20" max="20" value="0">
+                                <input type="number" id="chromatic-y-num" value="0" min="-20" max="20">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="crt">
+                             <div class="slider-input-group">
+                                <label>Scanline Intensity:</label>
+                                <input type="range" id="crt-scanline" min="0" max="100" value="50">
+                                <input type="number" id="crt-scanline-num" value="50" min="0" max="100">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Curvature:</label>
+                                <input type="range" id="crt-curvature" min="0" max="100" value="50">
+                                <input type="number" id="crt-curvature-num" value="50" min="0" max="100">
+                            </div>
+                        </div>
+                        
+                        <div class="dynamic-setting-group" data-for="neo">
+                             <div class="slider-input-group">
+                                <label>Threshold:</label>
+                                <input type="range" id="neo-threshold" min="0" max="255" value="50">
+                                <input type="number" id="neo-threshold-num" value="50" min="0" max="255">
+                            </div>
                         </div>
 
-                         <div style="margin-top: 10px; display: none;" id="debug-mode-container">
-                            <label class="radio-option">
-                                <input type="checkbox" id="debug-mode-check" checked> Debug Mode (Visualize Steps)
-                            </label>
-                            <div style="margin-top: 5px;">
+                        <div class="dynamic-setting-group" data-for="kuwahara">
+                             <div class="slider-input-group">
+                                <label>Radius:</label>
+                                <input type="range" id="kuwahara-radius" min="2" max="10" value="3">
+                                <input type="number" id="kuwahara-radius-num" value="3" min="2" max="10">
+                            </div>
+                        </div>
+
+                        <div class="dynamic-setting-group" data-for="tiltshift">
+                             <div class="slider-input-group">
+                                <label>Blur Radius:</label>
+                                <input type="range" id="tilt-blur" min="0" max="20" value="5">
+                                <input type="number" id="tilt-blur-num" value="5" min="0" max="20">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Position:</label>
+                                <input type="range" id="tilt-pos" min="0" max="100" value="50">
+                                <input type="number" id="tilt-pos-num" value="50" min="0" max="100">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Area Size:</label>
+                                <input type="range" id="tilt-area" min="0" max="100" value="30">
+                                <input type="number" id="tilt-area-num" value="30" min="0" max="100">
+                            </div>
+                        </div>
+
+                        <div class="dynamic-setting-group" data-for="kaleidoscope">
+                             <div class="slider-input-group">
+                                <label>Segments:</label>
+                                <input type="range" id="kal-segments" min="2" max="12" value="6">
+                                <input type="number" id="kal-segments-num" value="6" min="2" max="12">
+                            </div>
+                        </div>
+
+                        <div class="dynamic-setting-group" data-for="swirl">
+                             <div class="slider-input-group">
+                                <label>Angle:</label>
+                                <input type="range" id="swirl-angle" min="-10" max="10" step="0.1" value="3">
+                                <input type="number" id="swirl-angle-num" value="3" min="-10" max="10" step="0.1">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Radius:</label>
+                                <input type="range" id="swirl-radius" min="0" max="100" value="50">
+                                <input type="number" id="swirl-radius-num" value="50" min="0" max="100">
+                            </div>
+                        </div>
+
+                        <div class="dynamic-setting-group" data-for="common">
+                            <div class="slider-input-group">
+                                <label>Strength:</label>
+                                <input type="range" id="editor-strength" min="0" max="100" value="100">
+                                <input type="number" id="editor-strength-num" value="100" min="0" max="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="subtab-dither" class="sub-tab-content">
+                    <label class="radio-option" style="margin-bottom:10px;">
+                        <input type="checkbox" id="dither-enable"> Enable Dither
+                    </label>
+                    
+                    <label>Algorithm:</label>
+                    <div class="filter-list-box" id="dither-algo-list" style="margin-bottom: 10px;">
+                        <button class="filter-option active" data-dither="bayer">Bayer</button>
+                        <button class="filter-option" data-dither="crosshatch">Crosshatch</button>
+                        <button class="filter-option" data-dither="halftone">Halftone</button>
+                        <button class="filter-option" data-dither="contour">Contour</button>
+                        <button class="filter-option" data-dither="legacy">Legacy</button>
+                    </div>
+                    
+                    <div class="slider-input-group">
+                        <label>Strength:</label>
+                        <input type="range" id="dither-strength" min="0" max="400" value="100">
+                        <input type="number" id="dither-strength-num" value="100" min="0" max="400">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Pattern Size:</label>
+                        <input type="range" id="dither-pattern-size" min="1" max="16" value="1">
+                        <input type="number" id="dither-pattern-size-num" value="1" min="1" max="16">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Color Levels:</label>
+                        <input type="range" id="dither-levels" min="2" max="16" value="4">
+                        <input type="number" id="dither-levels-num" value="4" min="2" max="16">
+                    </div>
+                    
+                    <label>Color Map:</label>
+                    <select id="dither-map" style="width:100%; margin-bottom:10px;">
+                        <option value="auto">Auto</option>
+                        <option value="gradient">Gradient</option>
+                    </select>
+                    
+                    <div id="dither-gradient-controls" style="display:none;">
+                        <div class="dither-color-stops" id="dither-gradient-stops">
+                            
+                        </div>
+                        <button id="dither-add-stop" class="add-stop-btn" title="Add Stop">+</button>
+                    </div>
+                </div>
+
+                <div id="subtab-adjustments" class="sub-tab-content">
+                    <div class="slider-input-group">
+                        <label>Brightness:</label>
+                        <input type="range" id="adj-bright" min="-100" max="100" value="0">
+                        <input type="number" id="adj-bright-num" value="0" min="-100" max="100">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Contrast:</label>
+                        <input type="range" id="adj-contrast" min="-100" max="100" value="0">
+                        <input type="number" id="adj-contrast-num" value="0" min="-100" max="100">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Saturation:</label>
+                        <input type="range" id="adj-sat" min="-100" max="100" value="0">
+                        <input type="number" id="adj-sat-num" value="0" min="-100" max="100">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Hue:</label>
+                        <input type="range" id="adj-hue" min="-180" max="180" value="0">
+                        <input type="number" id="adj-hue-num" value="0" min="-180" max="180">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Blur:</label>
+                        <input type="range" id="adj-blur" min="0" max="20" value="0">
+                        <input type="number" id="adj-blur-num" value="0" min="0" max="20">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Sharpen:</label>
+                        <input type="range" id="adj-sharp" min="0" max="20" value="0">
+                        <input type="number" id="adj-sharp-num" value="0" min="0" max="20">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Grain:</label>
+                        <input type="range" id="adj-grain" min="0" max="100" value="0">
+                        <input type="number" id="adj-grain-num" value="0" min="0" max="100">
+                    </div>
+                    <div class="slider-input-group">
+                        <label>Bloom:</label>
+                        <input type="range" id="adj-bloom" min="0" max="100" value="0">
+                        <input type="number" id="adj-bloom-num" value="0" min="0" max="100">
+                    </div>
+                     <div class="slider-input-group">
+                        <label>Haze:</label>
+                        <input type="range" id="adj-haze" min="0" max="100" value="0">
+                        <input type="number" id="adj-haze-num" value="0" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+
+            <div id="tools-view" class="settings-content-scrollable" style="display: none;">
+                <div class="mode-toggles" style="margin-bottom: 15px;">
+                    <button id="mode-eraser" class="active">Eraser</button>
+                    <button id="mode-upscaler">Upscaler</button>
+                </div>
+
+                <div id="eraser-view">
+                    <div class="sub-tab-bar">
+                        <button class="eraser-tab-link active" data-erasertab="general">General</button>
+                        <button class="eraser-tab-link" data-erasertab="brush">Brush</button>
+                    </div>
+
+                    <div id="erasertab-general" class="eraser-tab-content active">
+                        <div class="setting-group" id="inpaint-settings">
+                            <select id="inpaint-algo" style="width: 100%; padding: 8px; margin-bottom: 5px;">
+                                <option value="hybrid" selected>Hybrid (Balanced)</option>
+                                <option value="linear">Linear (Lines/Edges)</option>
+                                <option value="pattern">Pattern (Repetitive)</option>
+                                <option value="smart_remove">Mesh (Text/Wire)</option>
+                            </select>
+                            <p class="desc-text" id="algo-desc" style="display:block;">Hybrid: Best for general use. Balances lines and texture.</p>
+
+                            <div class="slider-input-group">
+                                <label>Patch Size:</label>
+                                <input type="range" id="patch-size" min="1" max="20" step="1" value="5">
+                                <input type="number" id="patch-size-num" value="5" min="1" max="20">
+                            </div>
+                            
+                            <div class="slider-input-group">
+                                <label>Results Count:</label>
+                                <input type="range" id="result-count" min="1" max="30" value="3">
+                                <input type="number" id="result-count-num" value="3" min="1" max="30">
+                            </div>
+
+                             <div class="slider-input-group">
+                                <label>Precision:</label>
+                                <input type="range" id="search-effort" min="1" max="5" value="3">
+                                <span id="search-effort-val">Med</span>
+                            </div>
+                            <p id="precision-desc" class="desc-text" style="display:block;">Balanced speed and accuracy. Recommended for most edits.</p>
+                            
+                            <div style="margin-top: 10px;" id="invert-option">
                                 <label class="radio-option">
-                                    <input type="checkbox" id="verbose-mode-check"> Verbose Logs
+                                    <input type="checkbox" id="invert-mask-check"> Invert Mask (Erase Outside)
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="setting-group" id="inpaint-settings">
-                        <h4>Eraser Logic</h4>
-                        <select id="inpaint-algo" style="width: 100%; padding: 8px; margin-bottom: 5px;">
-                            <option value="hybrid" selected>Hybrid (Balanced)</option>
-                            <option value="linear">Linear (Lines/Edges)</option>
-                            <option value="pattern">Pattern (Repetitive)</option>
-                            <option value="smart_remove">Mesh (Text/Wire)</option>
-                        </select>
-                        <p class="desc-text" id="algo-desc" style="display:block;">Hybrid: Best for general use. Balances lines and texture.</p>
-
-                        <div class="slider-input-group">
-                            <label>Patch Size:</label>
-                            <input type="range" id="patch-size" min="1" max="20" step="1" value="5">
-                            <input type="number" id="patch-size-num" value="5" min="1" max="20">
+                    <div id="erasertab-brush" class="eraser-tab-content" style="display:none;">
+                        <div class="setting-group">
+                            <h4>Drawing</h4>
+                            <div class="slider-input-group">
+                                <label for="brush-size">Size:</label>
+                                <input type="range" id="brush-size" min="1" max="100" value="15">
+                                <input type="number" id="brush-size-num" value="15" min="1" max="100" style="width: 50px;">
+                            </div>
+                            <div class="slider-input-group">
+                                <label for="brush-opacity">Mask Opacity:</label>
+                                <input type="range" id="brush-opacity" min="0.1" max="1.0" step="0.1" value="0.6">
+                                <input type="number" id="brush-opacity-num" value="0.6" min="0.1" max="1.0" step="0.1">
+                            </div>
+                            <div class="setting-group">
+                                <label>Brush Color:</label>
+                                <div class="radio-group">
+                                    <label class="radio-option"><input type="radio" name="brush-color" value="white"> White</label>
+                                    <label class="radio-option"><input type="radio" name="brush-color" value="black"> Black</label>
+                                    <label class="radio-option"><input type="radio" name="brush-color" value="red"> Red</label>
+                                    <label class="radio-option"><input type="radio" name="brush-color" value="negative" checked> Negative</label>
+                                </div>
+                                <p class="desc-text">All colors add to mask. Negative visually inverts image for contrast.</p>
+                            </div>
+                            <div class="slider-input-group" id="tolerance-group" style="display:none;">
+                                <label for="magic-tolerance">Tolerance:</label>
+                                <input type="range" id="magic-tolerance" min="0" max="100" value="30">
+                                <input type="number" id="magic-tolerance-num" value="30" min="0" max="100">
+                            </div>
+                            
+                            <div class="setting-group">
+                                <h4>Magnifier</h4>
+                                <div class="slider-input-group">
+                                    <label for="magnifier-zoom">Zoom:</label>
+                                    <input type="range" id="magnifier-zoom" min="1" max="10" step="0.5" value="1.5">
+                                    <input type="number" id="magnifier-zoom-num" value="1.5" min="1" max="10" step="0.5">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label for="magnifier-offset">Offset:</label>
+                                    <input type="range" id="magnifier-offset" min="10" max="200" step="5" value="45">
+                                    <input type="number" id="magnifier-offset-num" value="45" min="10" max="200" step="5">
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="slider-input-group">
-                            <label>Results Count:</label>
-                            <input type="range" id="result-count" min="1" max="30" value="3">
-                            <input type="number" id="result-count-num" value="3" min="1" max="30">
-                        </div>
-
-                         <div class="slider-input-group">
-                            <label>Precision:</label>
-                            <input type="range" id="search-effort" min="1" max="5" value="3">
-                            <span id="search-effort-val">Med</span>
-                        </div>
-                        <p id="precision-desc" class="desc-text" style="display:block;">Balanced speed and accuracy. Recommended for most edits.</p>
                     </div>
+                </div>
 
-                    <div class="setting-group" id="upscale-settings" style="display:none;">
-                        <h4>Upscale Settings</h4>
+                <div id="upscaler-view" style="display: none;">
+                    <div class="setting-group" id="upscale-settings">
                         
                         <select id="upscale-algo" style="width: 100%; padding: 8px; margin-bottom: 5px;">
                             <option value="general" selected>General (Enhance)</option>
@@ -1643,419 +2142,15 @@ function processUpscaleSmart(imgData, options) {
                                 <input type="number" id="upscale-result-count-num" value="1" min="1" max="5">
                             </div>
                         </div>
-                    </div>
 
-                    <div class="setting-group" id="editor-settings" style="display:none;">
-                        <h4>Editor</h4>
-                        <div class="sub-tab-bar">
-                            <button class="sub-tab-link active" data-subtab="filters">Filters</button>
-                            <button class="sub-tab-link" data-subtab="settings" id="editor-settings-tab-link" style="display:none;">Settings</button>
-                            <button class="sub-tab-link" data-subtab="dither">Dither</button>
-                            <button class="sub-tab-link" data-subtab="adjustments">Adjustments</button>
-                        </div>
-
-                        <div id="subtab-filters" class="sub-tab-content active">
-                            <div class="filter-list-box" id="editor-filter-list">
-                                <button class="filter-option active" data-filter="none">None</button>
-                                <button class="filter-option" data-filter="ascii">ASCII</button>
-                                <button class="filter-option" data-filter="crt">CRT Shader</button>
-                                <button class="filter-option" data-filter="edge">Edge Detect</button>
-                                <button class="filter-option" data-filter="glitch">Glitch</button>
-                                <button class="filter-option" data-filter="invert">Invert</button>
-                                <button class="filter-option" data-filter="neo">Matrix / Neo</button>
-                                <button class="filter-option" data-filter="noise">Noise</button>
-                                <button class="filter-option" data-filter="pixelate">Pixelate</button>
-                                <button class="filter-option" data-filter="posterize">Posterize</button>
-                                <button class="filter-option" data-filter="rgb">RGB Pixels</button>
-                                <button class="filter-option" data-filter="sepia">Sepia</button>
-                                <button class="filter-option" data-filter="solarize">Solarize</button>
-                                <button class="filter-option" data-filter="emboss">Emboss</button>
-                                <button class="filter-option" data-filter="vignette">Vignette</button>
-                                <button class="filter-option" data-filter="wes">Wes Anderson</button>
-                                <button class="filter-option" data-filter="duotone">Duotone</button>
-                                <button class="filter-option" data-filter="threshold">Threshold</button>
-                                <button class="filter-option" data-filter="gamma">Gamma</button>
-                                <button class="filter-option" data-filter="chromatic">Chromatic</button>
-                                <button class="filter-option" data-filter="kuwahara">Kuwahara (Oil)</button>
-                                <button class="filter-option" data-filter="tiltshift">Tilt Shift</button>
-                                <button class="filter-option" data-filter="kaleidoscope">Kaleidoscope</button>
-                                <button class="filter-option" data-filter="swirl">Swirl</button>
-                            </div>
-                        </div>
-
-                        <div id="subtab-settings" class="sub-tab-content">
-                            <div id="editor-dynamic-settings">
-                                <div class="dynamic-setting-group" data-for="ascii">
-                                    <label>ASCII Mode:</label>
-                                    <select id="ascii-mode" style="width:100%; margin-bottom:10px;">
-                                        <option value="color">Color</option>
-                                        <option value="mono">Mono (Green/Black)</option>
-                                        <option value="bw">Black & White</option>
-                                    </select>
-                                    <div class="slider-input-group">
-                                        <label>Block Size:</label>
-                                        <input type="range" id="ascii-size" min="2" max="100" value="8">
-                                        <input type="number" id="ascii-size-num" value="8" min="2" max="100">
-                                    </div>
-                                    <label>Characters:</label>
-                                    <input type="text" id="ascii-chars" value="@%#*+=-:. " style="width:100%;">
-                                </div>
-
-                                <div class="dynamic-setting-group" data-for="edge">
-                                    <label>Algorithm:</label>
-                                    <select id="edge-algo" style="width:100%; margin-bottom:10px;">
-                                        <option value="sobel">Sobel</option>
-                                        <option value="prewitt">Prewitt</option>
-                                        <option value="canny">Canny</option>
-                                    </select>
-                                    <label class="radio-option"><input type="checkbox" id="edge-invert"> Invert Output</label>
-                                    <div class="slider-input-group">
-                                        <label>Sensitivity:</label>
-                                        <input type="range" id="edge-sensitivity" min="1" max="20" value="5">
-                                        <input type="number" id="edge-sensitivity-num" value="5" min="1" max="20">
-                                    </div>
-                                </div>
-
-                                <div class="dynamic-setting-group" data-for="glitch">
-                                    <label>Glitch Type:</label>
-                                    <select id="glitch-type" style="width:100%; margin-bottom:10px;">
-                                        <option value="rgb">RGB Shift</option>
-                                        <option value="slice">Horizontal Slice</option>
-                                        <option value="jitter">Jitter</option>
-                                    </select>
-                                    <div class="slider-input-group">
-                                        <label>Amount:</label>
-                                        <input type="range" id="glitch-amount" min="0" max="50" value="10">
-                                        <input type="number" id="glitch-amount-num" value="10" min="0" max="50">
-                                    </div>
-                                    <div class="slider-input-group">
-                                        <label>Seed:</label>
-                                        <input type="range" id="glitch-seed" min="0" max="100" value="0">
-                                        <input type="number" id="glitch-seed-num" value="0" min="0" max="100">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="pixelate">
-                                     <div class="slider-input-group">
-                                        <label>Block Size:</label>
-                                        <input type="range" id="pixelate-size" min="2" max="64" value="8">
-                                        <input type="number" id="pixelate-size-num" value="8" min="2" max="64">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="noise">
-                                     <div class="slider-input-group">
-                                        <label>Amount:</label>
-                                        <input type="range" id="noise-amount" min="0" max="100" value="20">
-                                        <input type="number" id="noise-amount-num" value="20" min="0" max="100">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="posterize">
-                                     <div class="slider-input-group">
-                                        <label>Levels:</label>
-                                        <input type="range" id="posterize-levels" min="2" max="32" value="4">
-                                        <input type="number" id="posterize-levels-num" value="4" min="2" max="32">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="solarize">
-                                     <div class="slider-input-group">
-                                        <label>Threshold:</label>
-                                        <input type="range" id="solarize-threshold" min="0" max="255" value="128">
-                                        <input type="number" id="solarize-threshold-num" value="128" min="0" max="255">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="emboss">
-                                     <div class="slider-input-group">
-                                        <label>Strength:</label>
-                                        <input type="range" id="emboss-strength" min="0" max="100" value="100">
-                                        <input type="number" id="emboss-strength-num" value="100" min="0" max="100">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="vignette">
-                                     <div class="slider-input-group">
-                                        <label>Amount:</label>
-                                        <input type="range" id="vignette-amount" min="0" max="100" value="50">
-                                        <input type="number" id="vignette-amount-num" value="50" min="0" max="100">
-                                    </div>
-                                     <div class="slider-input-group">
-                                        <label>Size:</label>
-                                        <input type="range" id="vignette-size" min="0" max="100" value="50">
-                                        <input type="number" id="vignette-size-num" value="50" min="0" max="100">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="rgb">
-                                     <div class="slider-input-group">
-                                        <label>Offset:</label>
-                                        <input type="range" id="rgb-offset" min="0" max="50" value="5">
-                                        <input type="number" id="rgb-offset-num" value="5" min="0" max="50">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="sepia">
-                                     <div class="slider-input-group">
-                                        <label>Intensity:</label>
-                                        <input type="range" id="sepia-intensity" min="0" max="100" value="100">
-                                        <input type="number" id="sepia-intensity-num" value="100" min="0" max="100">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="duotone">
-                                    <div class="gradient-editor">
-                                        <label>Color 1:</label>
-                                        <input type="color" id="duotone-color1" value="#000000">
-                                    </div>
-                                    <div class="gradient-editor">
-                                        <label>Color 2:</label>
-                                        <input type="color" id="duotone-color2" value="#ffffff">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="threshold">
-                                     <div class="slider-input-group">
-                                        <label>Level:</label>
-                                        <input type="range" id="threshold-level" min="0" max="255" value="128">
-                                        <input type="number" id="threshold-level-num" value="128" min="0" max="255">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="gamma">
-                                     <div class="slider-input-group">
-                                        <label>Value:</label>
-                                        <input type="range" id="gamma-value" min="0.1" max="3.0" step="0.1" value="1.0">
-                                        <input type="number" id="gamma-value-num" value="1.0" min="0.1" max="3.0" step="0.1">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="chromatic">
-                                     <div class="slider-input-group">
-                                        <label>Offset X:</label>
-                                        <input type="range" id="chromatic-x" min="-20" max="20" value="5">
-                                        <input type="number" id="chromatic-x-num" value="5" min="-20" max="20">
-                                    </div>
-                                    <div class="slider-input-group">
-                                        <label>Offset Y:</label>
-                                        <input type="range" id="chromatic-y" min="-20" max="20" value="0">
-                                        <input type="number" id="chromatic-y-num" value="0" min="-20" max="20">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="crt">
-                                     <div class="slider-input-group">
-                                        <label>Scanline Intensity:</label>
-                                        <input type="range" id="crt-scanline" min="0" max="100" value="50">
-                                        <input type="number" id="crt-scanline-num" value="50" min="0" max="100">
-                                    </div>
-                                    <div class="slider-input-group">
-                                        <label>Curvature:</label>
-                                        <input type="range" id="crt-curvature" min="0" max="100" value="50">
-                                        <input type="number" id="crt-curvature-num" value="50" min="0" max="100">
-                                    </div>
-                                </div>
-                                
-                                <div class="dynamic-setting-group" data-for="neo">
-                                     <div class="slider-input-group">
-                                        <label>Threshold:</label>
-                                        <input type="range" id="neo-threshold" min="0" max="255" value="50">
-                                        <input type="number" id="neo-threshold-num" value="50" min="0" max="255">
-                                    </div>
-                                </div>
-
-                                <div class="dynamic-setting-group" data-for="kuwahara">
-                                     <div class="slider-input-group">
-                                        <label>Radius:</label>
-                                        <input type="range" id="kuwahara-radius" min="2" max="10" value="3">
-                                        <input type="number" id="kuwahara-radius-num" value="3" min="2" max="10">
-                                    </div>
-                                </div>
-
-                                <div class="dynamic-setting-group" data-for="tiltshift">
-                                     <div class="slider-input-group">
-                                        <label>Blur Radius:</label>
-                                        <input type="range" id="tilt-blur" min="0" max="20" value="5">
-                                        <input type="number" id="tilt-blur-num" value="5" min="0" max="20">
-                                    </div>
-                                    <div class="slider-input-group">
-                                        <label>Position:</label>
-                                        <input type="range" id="tilt-pos" min="0" max="100" value="50">
-                                        <input type="number" id="tilt-pos-num" value="50" min="0" max="100">
-                                    </div>
-                                    <div class="slider-input-group">
-                                        <label>Area Size:</label>
-                                        <input type="range" id="tilt-area" min="0" max="100" value="30">
-                                        <input type="number" id="tilt-area-num" value="30" min="0" max="100">
-                                    </div>
-                                </div>
-
-                                <div class="dynamic-setting-group" data-for="kaleidoscope">
-                                     <div class="slider-input-group">
-                                        <label>Segments:</label>
-                                        <input type="range" id="kal-segments" min="2" max="12" value="6">
-                                        <input type="number" id="kal-segments-num" value="6" min="2" max="12">
-                                    </div>
-                                </div>
-
-                                <div class="dynamic-setting-group" data-for="swirl">
-                                     <div class="slider-input-group">
-                                        <label>Angle:</label>
-                                        <input type="range" id="swirl-angle" min="-10" max="10" step="0.1" value="3">
-                                        <input type="number" id="swirl-angle-num" value="3" min="-10" max="10" step="0.1">
-                                    </div>
-                                    <div class="slider-input-group">
-                                        <label>Radius:</label>
-                                        <input type="range" id="swirl-radius" min="0" max="100" value="50">
-                                        <input type="number" id="swirl-radius-num" value="50" min="0" max="100">
-                                    </div>
-                                </div>
-
-                                <div class="dynamic-setting-group" data-for="common">
-                                    <div class="slider-input-group">
-                                        <label>Strength:</label>
-                                        <input type="range" id="editor-strength" min="0" max="100" value="100">
-                                        <input type="number" id="editor-strength-num" value="100" min="0" max="100">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="subtab-dither" class="sub-tab-content">
-                            <label class="radio-option" style="margin-bottom:10px;">
-                                <input type="checkbox" id="dither-enable"> Enable Dither
+                        <div style="margin-top: 10px; display: none;" id="debug-mode-container">
+                            <label class="radio-option">
+                                <input type="checkbox" id="debug-mode-check" checked> Debug Mode (Visualize Steps)
                             </label>
-                            
-                            <label>Algorithm:</label>
-                            <div class="filter-list-box" id="dither-algo-list" style="margin-bottom: 10px;">
-                                <button class="filter-option active" data-dither="bayer">Bayer</button>
-                                <button class="filter-option" data-dither="crosshatch">Crosshatch</button>
-                                <button class="filter-option" data-dither="halftone">Halftone</button>
-                                <button class="filter-option" data-dither="contour">Contour</button>
-                                <button class="filter-option" data-dither="legacy">Legacy</button>
-                            </div>
-                            
-                            <div class="slider-input-group">
-                                <label>Strength:</label>
-                                <input type="range" id="dither-strength" min="0" max="400" value="100">
-                                <input type="number" id="dither-strength-num" value="100" min="0" max="400">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Pattern Size:</label>
-                                <input type="range" id="dither-pattern-size" min="1" max="16" value="1">
-                                <input type="number" id="dither-pattern-size-num" value="1" min="1" max="16">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Color Levels:</label>
-                                <input type="range" id="dither-levels" min="2" max="16" value="4">
-                                <input type="number" id="dither-levels-num" value="4" min="2" max="16">
-                            </div>
-                            
-                            <label>Color Map:</label>
-                            <select id="dither-map" style="width:100%; margin-bottom:10px;">
-                                <option value="auto">Auto</option>
-                                <option value="gradient">Gradient</option>
-                            </select>
-                            
-                            <div id="dither-gradient-controls" style="display:none;">
-                                <div class="dither-color-stops" id="dither-gradient-stops">
-                                    
-                                </div>
-                                <button id="dither-add-stop" class="add-stop-btn" title="Add Stop">+</button>
-                            </div>
-                        </div>
-
-                        <div id="subtab-adjustments" class="sub-tab-content">
-                            <div class="slider-input-group">
-                                <label>Brightness:</label>
-                                <input type="range" id="adj-bright" min="-100" max="100" value="0">
-                                <input type="number" id="adj-bright-num" value="0" min="-100" max="100">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Contrast:</label>
-                                <input type="range" id="adj-contrast" min="-100" max="100" value="0">
-                                <input type="number" id="adj-contrast-num" value="0" min="-100" max="100">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Saturation:</label>
-                                <input type="range" id="adj-sat" min="-100" max="100" value="0">
-                                <input type="number" id="adj-sat-num" value="0" min="-100" max="100">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Hue:</label>
-                                <input type="range" id="adj-hue" min="-180" max="180" value="0">
-                                <input type="number" id="adj-hue-num" value="0" min="-180" max="180">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Blur:</label>
-                                <input type="range" id="adj-blur" min="0" max="20" value="0">
-                                <input type="number" id="adj-blur-num" value="0" min="0" max="20">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Sharpen:</label>
-                                <input type="range" id="adj-sharp" min="0" max="20" value="0">
-                                <input type="number" id="adj-sharp-num" value="0" min="0" max="20">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Grain:</label>
-                                <input type="range" id="adj-grain" min="0" max="100" value="0">
-                                <input type="number" id="adj-grain-num" value="0" min="0" max="100">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Bloom:</label>
-                                <input type="range" id="adj-bloom" min="0" max="100" value="0">
-                                <input type="number" id="adj-bloom-num" value="0" min="0" max="100">
-                            </div>
-                             <div class="slider-input-group">
-                                <label>Haze:</label>
-                                <input type="range" id="adj-haze" min="0" max="100" value="0">
-                                <input type="number" id="adj-haze-num" value="0" min="0" max="100">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="tab-brush" class="tab-content">
-                    <div class="setting-group">
-                        <h4>Drawing</h4>
-                        <div class="slider-input-group">
-                            <label for="brush-size">Size:</label>
-                            <input type="range" id="brush-size" min="1" max="100" value="15">
-                            <input type="number" id="brush-size-num" value="15" min="1" max="100" style="width: 50px;">
-                        </div>
-                        <div class="slider-input-group">
-                            <label for="brush-opacity">Mask Opacity:</label>
-                            <input type="range" id="brush-opacity" min="0.1" max="1.0" step="0.1" value="0.6">
-                            <input type="number" id="brush-opacity-num" value="0.6" min="0.1" max="1.0" step="0.1">
-                        </div>
-                        <div class="setting-group">
-                            <label>Brush Color:</label>
-                            <div class="radio-group">
-                                <label class="radio-option"><input type="radio" name="brush-color" value="white"> White</label>
-                                <label class="radio-option"><input type="radio" name="brush-color" value="black"> Black</label>
-                                <label class="radio-option"><input type="radio" name="brush-color" value="red"> Red</label>
-                                <label class="radio-option"><input type="radio" name="brush-color" value="negative" checked> Negative</label>
-                            </div>
-                            <p class="desc-text">All colors add to mask. Negative visually inverts image for contrast.</p>
-                        </div>
-                        <div class="slider-input-group" id="tolerance-group" style="display:none;">
-                            <label for="magic-tolerance">Tolerance:</label>
-                            <input type="range" id="magic-tolerance" min="0" max="100" value="30">
-                            <input type="number" id="magic-tolerance-num" value="30" min="0" max="100">
-                        </div>
-                        
-                        <div class="setting-group">
-                            <h4>Magnifier</h4>
-                            <div class="slider-input-group">
-                                <label for="magnifier-zoom">Zoom:</label>
-                                <input type="range" id="magnifier-zoom" min="1" max="10" step="0.5" value="1.5">
-                                <input type="number" id="magnifier-zoom-num" value="1.5" min="1" max="10" step="0.5">
-                            </div>
-                            <div class="slider-input-group">
-                                <label for="magnifier-offset">Offset:</label>
-                                <input type="range" id="magnifier-offset" min="10" max="200" step="5" value="45">
-                                <input type="number" id="magnifier-offset-num" value="45" min="10" max="200" step="5">
+                            <div style="margin-top: 5px;">
+                                <label class="radio-option">
+                                    <input type="checkbox" id="verbose-mode-check"> Verbose Logs
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -2103,12 +2198,18 @@ function processUpscaleSmart(imgData, options) {
             const rerunBtn = document.getElementById('rerun-button');
             const confirmBtn = document.getElementById('confirm-button');
             const revertBtn = document.getElementById('revert-button');
-            const advSettingsBtn = document.getElementById('advanced-settings-button');
+            const editorBtn = document.getElementById('editor-button');
+            const toolsBtn = document.getElementById('tools-button');
             const imageInput = document.getElementById('image-input');
             const loadingOverlay = document.getElementById('loading-overlay');
             const statusPill = document.getElementById('status-pill');
             const cornerIndicator = document.getElementById('corner-indicator');
-            const advPanel = document.getElementById('advanced-settings-panel');
+            const sidePanel = document.getElementById('side-panel');
+            const editorView = document.getElementById('editor-view');
+            const toolsView = document.getElementById('tools-view');
+            const eraserView = document.getElementById('eraser-view');
+            const upscalerView = document.getElementById('upscaler-view');
+            const sidePanelTitle = document.getElementById('side-panel-title');
             const compareBtn = document.getElementById('compare-button');
             const canvasCompareBtn = document.getElementById('canvas-compare-button');
             const scaleSlider = document.getElementById('upscale-scale');
@@ -2189,7 +2290,6 @@ function processUpscaleSmart(imgData, options) {
             
             const modeEraserBtn = document.getElementById('mode-eraser');
             const modeUpscalerBtn = document.getElementById('mode-upscaler');
-            const modeEditorBtn = document.getElementById('mode-editor');
             const editorFilterList = document.getElementById('editor-filter-list');
             const ditherAlgoList = document.getElementById('dither-algo-list');
             const editorStrengthSlider = document.getElementById('editor-strength');
@@ -2216,7 +2316,7 @@ function processUpscaleSmart(imgData, options) {
             let magicTolerance = 30;
             let currentBrushColor = 'negative';
             let isProcessing = false;
-            let currentMode = 'inpaint';
+            let currentMode = 'editor';
             let currentAbortController = null;
             
             let originalFileName = "image.png";
@@ -2248,13 +2348,11 @@ function processUpscaleSmart(imgData, options) {
             let activeColorStopIndex = -1;
 
             let worker = null;
-
-            let isManualLayoutEnabled = false;
             let isDarkTheme = true;
-            let lastWindowWidth = window.innerWidth;
-            
             let processTimeout;
             let cornerAnimationInterval;
+            let isSidePanelOpen = false;
+            let currentPanelTab = null;
             
             const defaultOnxModel = 'real-esrgan-x4.onnx';
 
@@ -2276,7 +2374,6 @@ function processUpscaleSmart(imgData, options) {
             function init() {
                 setupEventListeners();
                 loadSettings();
-                checkLayout();
                 handleEmptyState();
                 setTool('pan');
                 updateMaskColor('negative');
@@ -2353,10 +2450,45 @@ function processUpscaleSmart(imgData, options) {
                     if(activeEditorFilter || currentMode !== 'editor') runProcess(false);
                 }, 50);
             }
+            
+            function openPanel(tab) {
+                sidePanel.style.display = 'flex';
+                isSidePanelOpen = true;
+                currentPanelTab = tab;
+
+                if (tab === 'editor') {
+                    sidePanelTitle.innerText = 'Editor';
+                    editorView.style.display = 'block';
+                    toolsView.style.display = 'none';
+                    setMode('editor');
+                } else if (tab === 'tools') {
+                    sidePanelTitle.innerText = 'Tools';
+                    editorView.style.display = 'none';
+                    toolsView.style.display = 'block';
+                    if (currentMode === 'editor') {
+                        setMode('inpaint');
+                    }
+                }
+            }
+
+            function togglePanel(tab) {
+                if (isSidePanelOpen && currentPanelTab === tab) {
+                    sidePanel.style.display = 'none';
+                    isSidePanelOpen = false;
+                    if (currentMode === 'editor') {
+                        runOnxBtn.style.display = 'none';
+                    }
+                } else {
+                    openPanel(tab);
+                }
+            }
 
             function setupEventListeners() {
                 uploadBtn.addEventListener('click', () => imageInput.click());
                 imageInput.addEventListener('change', handleImageUpload);
+                
+                editorBtn.addEventListener('click', () => togglePanel('editor'));
+                toolsBtn.addEventListener('click', () => togglePanel('tools'));
 
                 mainToolBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -2505,9 +2637,9 @@ function processUpscaleSmart(imgData, options) {
                 fullscreenBtn.addEventListener('click', () => {
                     const isActive = frame.classList.toggle('fullscreen-active');
                     if (isActive) {
-                        advPanel.style.display = 'none';
+                        sidePanel.style.display = 'none';
                     } else {
-                        checkLayout();
+                        if(isSidePanelOpen) sidePanel.style.display = 'flex';
                         zoomScale = 1.0;
                         panX = 0;
                         panY = 0;
@@ -2516,15 +2648,7 @@ function processUpscaleSmart(imgData, options) {
                     setTimeout(resizeCanvas, 50);
                 });
 
-                advSettingsBtn.addEventListener('click', () => {
-                    advPanel.style.display = advPanel.style.display === 'none' ? 'flex' : 'none';
-                });
-
                 window.addEventListener('resize', () => {
-                    if (Math.abs(window.innerWidth - lastWindowWidth) > 50) {
-                        checkLayout();
-                        lastWindowWidth = window.innerWidth;
-                    }
                     resizeCanvas();
                 });
                 
@@ -2555,7 +2679,6 @@ function processUpscaleSmart(imgData, options) {
                 
                 modeEraserBtn.addEventListener('click', () => setMode('inpaint'));
                 modeUpscalerBtn.addEventListener('click', () => setMode('upscale'));
-                modeEditorBtn.addEventListener('click', () => setMode('editor'));
 
                 runOnxBtn.addEventListener('click', () => runProcess(false));
                 runOnxBtn2.addEventListener('click', () => runProcess(false));
@@ -2634,12 +2757,12 @@ function processUpscaleSmart(imgData, options) {
 
                 document.getElementById('export-button').addEventListener('click', downloadImage);
                 
-                document.querySelectorAll('.tab-link').forEach(btn => {
+                document.querySelectorAll('.eraser-tab-link').forEach(btn => {
                     btn.addEventListener('click', (e) => {
-                        document.querySelectorAll('.tab-link').forEach(b => b.classList.remove('active'));
-                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        document.querySelectorAll('.eraser-tab-link').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.eraser-tab-content').forEach(c => c.style.display = 'none');
                         e.target.classList.add('active');
-                        document.getElementById('tab-' + e.target.dataset.tab).classList.add('active');
+                        document.getElementById('erasertab-' + e.target.dataset.erasertab).style.display = 'block';
                     });
                 });
                 
@@ -2713,8 +2836,8 @@ function processUpscaleSmart(imgData, options) {
                     }
                 });
 
-                document.querySelectorAll('#editor-settings input, #editor-settings select').forEach(el => {
-                    const eventType = el.type === 'range' ? 'input' : 'change';
+                document.querySelectorAll('#editor-view input, #editor-view select').forEach(el => {
+                    const eventType = 'change';
                     el.addEventListener(eventType, () => {
                         if(activeEditorFilter) debouncedRunProcess();
                     });
@@ -2973,52 +3096,33 @@ function processUpscaleSmart(imgData, options) {
 
             function setMode(mode) {
                 currentMode = mode;
-                const inpaintSettings = document.getElementById('inpaint-settings');
-                const upscaleSettings = document.getElementById('upscale-settings');
-                const editorSettings = document.getElementById('editor-settings');
-                const invertOpt = document.getElementById('invert-option');
-                const debugContainer = document.getElementById('debug-mode-container');
                 
-                modeEraserBtn.classList.remove('active');
-                modeUpscalerBtn.classList.remove('active');
-                modeEditorBtn.classList.remove('active');
-                
-                inpaintSettings.style.display = 'none';
-                upscaleSettings.style.display = 'none';
-                editorSettings.style.display = 'none';
-                
-                if (mode === 'inpaint') {
+                if (mode === 'editor') {
+                    maskCanvas.style.display = 'none';
+                    setTool('pan');
+                    runOnxBtn.style.display = 'none';
+                    toolSelector.style.display = 'none';
+                    fsToolContainer.style.display = 'none';
+                    fsSaveBtn.style.display = 'block';
+                } else if (mode === 'inpaint') {
                     modeEraserBtn.classList.add('active');
-                    inpaintSettings.style.display = 'block';
-                    invertOpt.style.display = 'block';
-                    debugContainer.style.display = 'none';
-                    document.getElementById('debug-mode-check').checked = false;
+                    modeUpscalerBtn.classList.remove('active');
+                    eraserView.style.display = 'block';
+                    upscalerView.style.display = 'none';
                     maskCanvas.style.display = 'block';
                     setTool('brush');
-
-                    toolSelector.style.display = 'flex'; 
+                    runOnxBtn.style.display = '';
+                    toolSelector.style.display = 'flex';
                     fsToolContainer.style.display = 'block';
                     fsSaveBtn.style.display = 'none';
                 } else if (mode === 'upscale') {
                     modeUpscalerBtn.classList.add('active');
-                    upscaleSettings.style.display = 'block';
-                    invertOpt.style.display = 'none';
-                    debugContainer.style.display = 'block';
-                    document.getElementById('debug-mode-check').checked = true;
+                    modeEraserBtn.classList.remove('active');
+                    eraserView.style.display = 'none';
+                    upscalerView.style.display = 'block';
                     maskCanvas.style.display = 'none';
                     setTool('pan');
-
-                    toolSelector.style.display = 'none';
-                    fsToolContainer.style.display = 'none';
-                    fsSaveBtn.style.display = 'block';
-                } else if (mode === 'editor') {
-                    modeEditorBtn.classList.add('active');
-                    editorSettings.style.display = 'block';
-                    invertOpt.style.display = 'none';
-                    debugContainer.style.display = 'none';
-                    maskCanvas.style.display = 'none';
-                    setTool('pan');
-                    
+                    runOnxBtn.style.display = '';
                     toolSelector.style.display = 'none';
                     fsToolContainer.style.display = 'none';
                     fsSaveBtn.style.display = 'block';
@@ -3125,6 +3229,7 @@ function processUpscaleSmart(imgData, options) {
                     }
                     
                     saveState();
+                    openPanel('editor');
                 };
                 mainImage.src = url;
             }
@@ -4016,22 +4121,6 @@ function processUpscaleSmart(imgData, options) {
                 resizeCanvas();
             }
 
-            function toggleManualLayout(){
-                isManualLayoutEnabled = !isManualLayoutEnabled;
-                checkLayout();
-            }
-
-            function checkLayout(){
-                const sideBySide = isManualLayoutEnabled || window.innerWidth >= 992 || (window.innerWidth >= 480 && window.matchMedia("(orientation: landscape)").matches);
-                if(sideBySide){
-                    document.querySelector('.main-container').classList.add('side-by-side-layout');
-                    advPanel.style.display = 'flex';
-                } else {
-                    document.querySelector('.main-container').classList.remove('side-by-side-layout');
-                    advPanel.style.display = 'none';
-                }
-            }
-
             function toggleTheme(){
                 isDarkTheme = !isDarkTheme;
                 const r = document.documentElement;
@@ -4045,6 +4134,9 @@ function processUpscaleSmart(imgData, options) {
                  const r = document.documentElement;
                  const theme = themes.dark;
                  for(const[k,v] of Object.entries(theme)){ r.style.setProperty(k,v); }
+                 
+                 document.querySelector('.main-container').classList.add('side-by-side-layout');
+                 document.getElementById('side-panel').style.display = 'none';
             }
             
             init();
@@ -4052,3 +4144,5 @@ function processUpscaleSmart(imgData, options) {
     </script>
 </body>
 </html>
+<!--I left an Egg here 🐣(may hatch by the time you see this)--> 
+
