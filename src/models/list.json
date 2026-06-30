@@ -1,6 +1,6 @@
 [
-  "[0.8MB] 4xNomos8k_span_otf_medium_fp16_opset17.onnx",
-  "[0.8MB] 2x_StarSample_V2.0_Lite-fp16-opset17.onnx",
+  "[1.6MB] 4xNomos8k_span_otf_medium_fp32_opset17.onnx",
+  "[1.6 MB] 1x_StarSample_V2.0_Lite_NS-fp32-opset17.onnx",
   "[1.6MB] 4xSPANkendata_fp32.onnx",
   "[1.6MB] 2xLiveActionV1_SPAN_490000.onnx",
   "[4.6MB] RealESR-General-4x.onnx",
