@@ -1,5 +1,5 @@
 # A/E-Lens | Erasure
-Algorithmic Eraser — HTML based object eraser and image upscaler tool --- `Work In Progress`
+Algo Eraser — HTML based object eraser and image upscaler tool --- `Work In Progress`
 ### Usage Methods: 
 
 A. Use the app directly [Here](https://xetsue.github.io/erasure)
@@ -17,7 +17,7 @@ C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip)
 
 
 ## Features
-- Eraser Tool: Mathematically blends and remove a targeted subject in an image with minimal background context.
+- Eraser Tool: Legacy approach to blend and remove a targeted subject in an image. 
 - Editor: Add Filters, Dithering, Adjustments.
 - Upscaler: Upscale with traditional edge detection `Sobel/Prewitt/Canny` method with anti-aliasing and customisable settings.
 
@@ -31,11 +31,11 @@ C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip)
 
 ## Upscaler
 ### Before
-[!] The image used is in may not give the best example. The car in this photo can be a good reference subject.
+[!] The image used is in may not give the best example. 
 >![field-ae lens (1) (1)](https://github.com/user-attachments/assets/a77b207d-0613-4d59-bf8d-d27bef23fddf)
 ---
 ### After
-! Please also note that the default upscaler (result below) uses edge detection algorithm and anti aliasing to process images without `onnx` — its capabilities are limited to mathematical process entirely offline in your browser. 
+! Please also note that the default upscaler (result below) uses edge detection and anti aliasing to process images without `onnx` — its capabilities are limited to mathematical process. Both options runs entirely offline in your browser. 
 
 ><img width="2048" height="1147" alt="field-ae lens" src="https://github.com/user-attachments/assets/b53401ea-9dd0-4aa3-b9d5-e6b9dea20ec9" />
 
