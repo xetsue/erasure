@@ -1,8 +1,12 @@
 [
-  "[4.6MB] RealESR-General-4x.onnx",
+  "[0.8MB] 4xNomos8k_span_otf_medium_fp16_opset17.onnx",
+  "[0.8MB] 2x_StarSample_V2.0_Lite-fp16-opset17.onnx",
+  "[1.6MB] 4xSPANkendata_fp32.onnx",
   "[1.6MB] 2xLiveActionV1_SPAN_490000.onnx",
+  "[4.6MB] RealESR-General-4x.onnx",
+  "[5MB] 4x_cugan_pretrain.onnx",
   "[6MB] 4x_APISR_GRL_GAN_generator.onnx",
   "[22MB] swin2SR-realworld-sr-x4-64-bsrgan-psnr_q4.onnx",
   "[23MB] swin2SR-classical-sr-x2-64_q4.onnx",
-  "[64MB] Real-ESRGAN-x4plus.onnx"
+  "[64MB] Real-ESRGAN-x4plus.onnx",
 ]
