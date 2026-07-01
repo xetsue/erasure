@@ -4491,7 +4491,7 @@ function processUpscaleSmart(imgData, options) {
             
             function startCornerAnimation() {
                 cornerIndicator.style.display = 'block';
-                let frames = ['⋯', '⋱', ' ⋮', '⋰', '⋯'];
+                let frames = ['+', '×', '+', '×']; 
                 let idx = 0;
                 if(cornerAnimationInterval) clearInterval(cornerAnimationInterval);
                 
