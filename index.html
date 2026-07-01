@@ -30,8 +30,10 @@
             --glass-bg: rgba(20, 20, 20, 0.9);
             --compare-active-bg: #ffffff;
             --compare-active-text: #000000;
-            --accent-color: #ff4d4d;
+            --accent-color: #b01105;
+            --accent-color2: #4d4d4d;
             --desc-bg: #111111;
+            --bg-filter: #3e3e3e;
         }
 
         body {
@@ -98,7 +100,9 @@
             user-select: none;
             touch-action: none;
             transition: height 0.3s;
-        }
+            
+         }    
+         
 
         .frame.fullscreen-active { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding: 0 !important; border: none !important; resize: none !important; z-index: 9999 !important; background-color: #000 !important; }
         .frame.fullscreen-active .fs-tool-overlay { display: block; }
@@ -200,12 +204,20 @@
         .filter-lock-btn { width: 30px; background: none; border: 1px solid var(--settings-outline); color: var(--text-color); cursor: pointer; border-radius: 3px; flex-shrink: 0; padding: 0; font-size: 16px; }
         .filter-lock-btn:hover { background: var(--settings-outline); }
         .filter-lock-btn.locked { background: var(--settings-outline); font-weight: bold; }
-        .filter-option { flex-grow: 1; text-align: left; border: none; background: none; padding: 8px; color: var(--text-color); cursor: pointer; transition: background-color 0.2s; border-radius: 3px; }
+        .filter-option { flex-grow: 1; text-align: left; border: none; background: var(--bg-filter); padding: 8px; color: var(--text-color); cursor: pointer; transition: background-color 0.2s; border-radius: 3px; }
         .filter-option:hover { background-color: var(--settings-outline); }
         .filter-option.active { background-color: var(--frame-color); color: var(--bg-color); font-weight: bold; }
         .filter-settings-toggle { width: 30px; background: none; border: 1px solid var(--settings-outline); color: var(--text-color); cursor: pointer; border-radius: 3px; flex-shrink: 0; padding: 0; }
         .filter-settings-toggle:hover { background: var(--settings-outline); }
-        .filter-settings-panel { padding: 10px; border-left: 2px solid var(--accent-color); margin-left: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.05); display: none; border-radius: 0 4px 4px 0; }
+        .filter-settings-panel { padding: 20px; border: 2px solid var(--accent-color2); border-top: 1px dashed var(--accent-color2); margin-left: 0px; margin-bottom: 15px; margin-top: 5px; background: rgba(255,255,255,0.05); display: none; border-radius: 0 4px 4px 0; }
+        
+        label {
+            font-size: 14px;
+        }
+        
+        input { 
+        	width: 20px;
+        }	
         
         .sub-tab-bar { display: flex; border-bottom: 1px solid var(--settings-outline); margin-bottom: 15px; }
         
@@ -1640,8 +1652,8 @@ function processUpscaleSmart(imgData, options) {
 
     <div class="header">
         <div class="header-left">
-            <button id="compare-button" title="Hold to Compare (Alt)" disabled><b>/</b></button>
-            <button id="grid-toggle-button" title="Toggle Grid">▦</button>
+        	<button id="grid-toggle-button" title="Toggle Grid">▦</button>
+            <button id="compare-button" title="Hold to Compare (Alt)" disabled><b> (•ᴗ•) </b></button>
             <div class="ascii-frame" id="ascii-anim">( =.=)</div>
             <br><p id="message1" style="font-size: 9px; color: #333333;">Files Processed Offline <br>[ Privacy Matters ] </p>
             <div id="onx-estimation" style="font-size: 0.8em; color: var(--accent-color); margin-top: 5px; display: none;"></div>
@@ -2927,10 +2939,10 @@ function processUpscaleSmart(imgData, options) {
 
             const themes = {
                 dark: {
-                    '--bg-color':'#000000','--frame-color':'#ffffff','--text-color':'#ffffff','--button-bg':'#111111','--button-text':'#ffffff','--settings-bg':'#000000','--settings-outline':'#555555','--slider-track':'#555555','--slider-thumb':'#ffffff','--checkbox-color':'#333333','--number-input-bg':'#000000','--number-input-outline-color':'#555555','--glass-bg':'rgba(20, 20, 20, 0.85)','--compare-active-bg':'#ffffff','--compare-active-text':'#000000', '--accent-color': '#ff4d4d', '--desc-bg': '#111111'
+                    '--bg-color':'#000000','--frame-color':'#ffffff','--text-color':'#ffffff','--button-bg':'#111111','--button-text':'#ffffff','--settings-bg':'#000000','--settings-outline':'#555555','--slider-track':'#555555','--slider-thumb':'#ffffff','--checkbox-color':'#333333','--number-input-bg':'#000000','--number-input-outline-color':'#555555','--glass-bg':'rgba(20, 20, 20, 0.85)','--compare-active-bg':'#ffffff','--compare-active-text':'#000000', '--accent-color': '#b01105', '--desc-bg': '#111111', '--bg-filter': '#5c0f0f'
                 },
                 light: {
-                    '--bg-color':'#f0f0f0','--frame-color':'#000000','--text-color':'#000000','--button-bg':'#ffffff','--button-text':'#000000','--settings-bg':'#ffffff','--settings-outline':'#cccccc','--slider-track':'#cccccc','--slider-thumb':'#000000','--checkbox-color':'#aaaaaa','--number-input-bg':'#ffffff','--number-input-outline-color':'#cccccc','--glass-bg':'rgba(255, 255, 255, 0.85)','--compare-active-bg':'#000000','--compare-active-text':'#ffffff', '--accent-color': '#000000', '--desc-bg': '#f5f5f5'
+                    '--bg-color':'#f0f0f0','--frame-color':'#000000','--text-color':'#000000','--button-bg':'#ffffff','--button-text':'#000000','--settings-bg':'#ffffff','--settings-outline':'#cccccc','--slider-track':'#cccccc','--slider-thumb':'#000000','--checkbox-color':'#aaaaaa','--number-input-bg':'#ffffff','--number-input-outline-color':'#cccccc','--glass-bg':'rgba(255, 255, 255, 0.85)','--compare-active-bg':'#000000','--compare-active-text':'#ffffff', '--accent-color': '#000000', '--desc-bg': '#f5f5f5', '--bg-filter': '#c9c9c9'
                 }
             };
 
@@ -4433,7 +4445,7 @@ function processUpscaleSmart(imgData, options) {
                 redoBtn.disabled = historyStep >= history.length - 1;
             }
 
-            // Redefining updateUIState to implement the ASCII animation and hide the loading overlay/spinner
+          
             function updateUIState(processing, msg = "Processing...") {
                 isProcessing = processing;
                 
@@ -4446,7 +4458,7 @@ function processUpscaleSmart(imgData, options) {
                         statusPill.style.display = 'block';
                         statusPill.innerText = msg;
                         asciiAnim.style.display = 'block';
-                        loadingOverlay.style.display = 'none'; // Replaced with ascii animation
+                        loadingOverlay.style.display = 'none'; 
                         runOnxBtn.innerText = "CANCEL";
                         runOnxBtn.classList.add('cancel-mode');
                         
@@ -4680,7 +4692,7 @@ function processUpscaleSmart(imgData, options) {
                     } else if (msg.type === 'complete') {
                         updateUIState(false);
                         if (isCustomUpscale || currentMode === 'editor') {
-                           // No extra actions needed for custom upscale / editor
+                           
                         } else if(generatedResults.length > 0) {
                             if (!debugMode) selectResult(0); 
                             resultsBar.classList.add('active');
