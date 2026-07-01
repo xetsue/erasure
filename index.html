@@ -30,7 +30,7 @@
             --glass-bg: rgba(20, 20, 20, 0.9);
             --compare-active-bg: #ffffff;
             --compare-active-text: #000000;
-            --accent-color: #00ff9d;
+            --accent-color: #ff4d4d;
             --desc-bg: #111111;
         }
 
@@ -52,7 +52,7 @@
         .header-branding { display: flex; flex-direction: column; align-items: flex-end; justify-content: center; border-left: 1px solid var(--settings-outline); padding-left: 15px; margin-left: auto; }
         .brand-main { font-weight: bold; line-height: 1; }
         .brand-sub { font-size: 0.8em; opacity: 0.7; line-height: 1; margin-top: 4px; }
-        .ascii-frame { background-color: var(--button-bg); color: var(--button-text); border: 1px solid var(--frame-color); padding: 8px 1px; font-family: var(--font-family); border-radius: var(--button-radius); font-size: 14px; min-width: 60px; text-align: center; white-space: pre; cursor: default; transition: all 0.3s; }
+        .ascii-frame { background-color: var(--button-bg); color: var(--button-text); border: 1px solid var(--frame-color); padding: 8px 1px; font-family: var(--font-family); border-radius: var(--button-radius); font-size: 14px; min-width: 60px; text-align: center; white-space: pre; cursor: default; transition: all 0.3s; display: none; }
         
         .main-container {
             display: flex;
@@ -105,7 +105,7 @@
         .frame.processing .action-buttons { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         
         .canvas-container { position: relative; width: 100%; height: 100%; flex-grow: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; background-color: #050505; transform-origin: center center; }
-        #original-image, #main-image, #mask-canvas, #preview-canvas, #streaming-canvas { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); max-width: none; max-height: none; pointer-events: none; transform-origin: center center; }
+        #original-image, #main-image, #mask-canvas, #preview-canvas, #streaming-canvas, #grid-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1); max-width: none; max-height: none; pointer-events: none; transform-origin: center center; }
         #original-image { z-index: 5; display: none; transition: filter 0.3s; }
         #original-image.overlay-active { filter: brightness(0.2) grayscale(0.8); }
         #main-image { z-index: 6; display: none; transition: opacity 0.1s; }
@@ -113,6 +113,16 @@
         #mask-canvas { pointer-events: auto; opacity: 0.6; cursor: crosshair; z-index: 20; mix-blend-mode: normal; }
         #preview-canvas { z-index: 15; pointer-events: none; mix-blend-mode: difference; }
         
+        #grid-overlay {
+            z-index: 25;
+            display: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+        #grid-overlay.active { display: block; }
+
         .status-pill { position: absolute; bottom: 15px; right: 15px; z-index: 10001; background-color: #fff; color: #000; padding: 8px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; display: none; font-family: var(--font-family); pointer-events: none; white-space: nowrap; }
         .corner-indicator { position: flex; bottom: 15px; right: 15px; font-family: var(--font-family); font-size: 24px; color: #fff; text-shadow: 0 0 4px #000; z-index: 20000; display: none; pointer-events: none; }
         .results-bar { width: 100%; height: 0; background: var(--glass-bg); backdrop-filter: blur(10px); border-top: 0px solid var(--frame-color); display: flex; padding: 0; box-sizing: border-box; overflow-x: auto; white-space: nowrap; gap: 10px; scrollbar-width: thin; scrollbar-color: var(--frame-color) transparent; transition: height 0.3s, padding 0.3s, border 0.3s; flex-shrink: 0; z-index: 50; }
@@ -162,7 +172,7 @@
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; background: var(--slider-thumb); border-radius: 50%; cursor: pointer;}
         input[type="number"], select, input[type="text"], input[type="color"] { background-color: var(--number-input-bg); border: 1px solid var(--number-input-outline-color); color: var(--text-color); padding: 4px; border-radius: 3px; width: 60px; }
         #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 200; }
-        .spinner { border: 4px solid #333; border-top: 4px solid var(--text-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        .spinner { border: 4px solid #333; border-top: 4px solid var(--text-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .confirm-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10005; display: none; justify-content: center; align-items: center; }
         .confirm-modal { background: var(--settings-bg); border: 1px solid var(--frame-color); padding: 20px; border-radius: var(--settings-radius); text-align: center; min-width: 250px; }
@@ -182,18 +192,23 @@
         .upscale-control-group.visible { display: block; }
         #custom-upscale-actions { display: flex; gap: 10px; margin-bottom: 15px; }
         #custom-upscale-actions button { flex: 1; }
-        .filter-list-box { background-color: var(--desc-bg); border-left: 3px solid var(--frame-color); border-radius: 4px; padding: 10px; max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; }
-        .filter-option { text-align: left; border: none; background: none; padding: 8px; color: var(--text-color); cursor: pointer; transition: background-color 0.2s; border-radius: 3px; }
+        
+        
+        .filter-list-box { background-color: var(--desc-bg); border-left: 3px solid var(--frame-color); border-radius: 4px; padding: 10px; max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; }
+        .filter-item-container { display: flex; flex-direction: column; }
+        .filter-row { display: flex; gap: 5px; margin-bottom: 2px; }
+        .filter-lock-btn { width: 30px; background: none; border: 1px solid var(--settings-outline); color: var(--text-color); cursor: pointer; border-radius: 3px; flex-shrink: 0; padding: 0; font-size: 16px; }
+        .filter-lock-btn:hover { background: var(--settings-outline); }
+        .filter-lock-btn.locked { background: var(--settings-outline); font-weight: bold; }
+        .filter-option { flex-grow: 1; text-align: left; border: none; background: none; padding: 8px; color: var(--text-color); cursor: pointer; transition: background-color 0.2s; border-radius: 3px; }
         .filter-option:hover { background-color: var(--settings-outline); }
         .filter-option.active { background-color: var(--frame-color); color: var(--bg-color); font-weight: bold; }
-        .filter-option:not(.active):nth-child(4n+1) { background-color: rgba(255, 255, 255, 0.03); }
-        .filter-option:not(.active):nth-child(4n+2) { background-color: rgba(255, 255, 255, 0.06); }
-        .filter-option:not(.active):nth-child(4n+3) { background-color: rgba(255, 255, 255, 0.09); }
-        .filter-option:not(.active):nth-child(4n+4) { background-color: rgba(255, 255, 255, 0.12); }
+        .filter-settings-toggle { width: 30px; background: none; border: 1px solid var(--settings-outline); color: var(--text-color); cursor: pointer; border-radius: 3px; flex-shrink: 0; padding: 0; }
+        .filter-settings-toggle:hover { background: var(--settings-outline); }
+        .filter-settings-panel { padding: 10px; border-left: 2px solid var(--accent-color); margin-left: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.05); display: none; border-radius: 0 4px 4px 0; }
+        
         .sub-tab-bar { display: flex; border-bottom: 1px solid var(--settings-outline); margin-bottom: 15px; }
         
-        .dynamic-setting-group { display: none; }
-        .dynamic-setting-group.active { display: block; }
         .gradient-editor { display: flex; gap: 5px; align-items: center; margin-top: 5px; }
         .gradient-editor input[type="color"] { flex: 1; height: 30px; padding: 0; border: 1px solid var(--settings-outline); }
         .dither-color-stops { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; align-items: center; }
@@ -205,6 +220,11 @@
         #tooltip-popup button { background: none; border: none; color: var(--text-color); text-align: left; padding: 5px 10px; cursor: pointer; }
         #tooltip-popup button:hover { background: var(--settings-outline); }
         
+        .adj-item { border: 1px solid var(--settings-outline); padding: 10px; border-radius: 4px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
+        .adj-item .slider-input-group { margin-bottom: 0; }
+        .reset-val-btn { background-color: var(--button-bg); color: var(--text-color); border: 1px solid var(--frame-color); border-radius: 3px; cursor: pointer; padding: 2px 6px; margin-left: 5px; min-width: auto; }
+        .reset-val-btn:hover { opacity: 0.8; }
+
         @media (max-width: 991px) and (orientation: portrait) {
             .main-container {
                 flex-direction: column;
@@ -567,9 +587,8 @@ function processEditor(imgData, options) {
     const w = imgData.width, h = imgData.height;
     const len = w * h;
     const src = imgData.data; 
-    const dest = new Uint8ClampedArray(len * 4);
+    let currentBuffer = new Uint8ClampedArray(len * 4);
     
-    const filter = options.filter;
     const strength = options.strength;
     const adj = options.adjustments || {};
     const hasColorAdj = adj.brightness || adj.contrast || adj.saturation || adj.hue;
@@ -608,554 +627,600 @@ function processEditor(imgData, options) {
                  r = retR; g = retG; b = retB;
             }
         }
-        dest[i] = r < 0 ? 0 : r > 255 ? 255 : r;
-        dest[i+1] = g < 0 ? 0 : g > 255 ? 255 : g;
-        dest[i+2] = b < 0 ? 0 : b > 255 ? 255 : b;
-        dest[i+3] = a;
+        currentBuffer[i] = r < 0 ? 0 : r > 255 ? 255 : r;
+        currentBuffer[i+1] = g < 0 ? 0 : g > 255 ? 255 : g;
+        currentBuffer[i+2] = b < 0 ? 0 : b > 255 ? 255 : b;
+        currentBuffer[i+3] = a;
     }
 
     if (adj.blur > 0) {
-        const blurred = applyBoxBlur(dest, w, h, adj.blur);
-        dest.set(blurred);
+        const blurred = applyBoxBlur(currentBuffer, w, h, adj.blur);
+        currentBuffer.set(blurred);
     }
     if (adj.sharp > 0) {
-        const blurred = applyBoxBlur(dest, w, h, 1);
+        const blurred = applyBoxBlur(currentBuffer, w, h, 1);
         const amount = adj.sharp / 10;
-        for(let i=0; i<dest.length; i+=4) {
-            dest[i] = Math.min(255, Math.max(0, dest[i] + (dest[i] - blurred[i]) * amount));
-            dest[i+1] = Math.min(255, Math.max(0, dest[i+1] + (dest[i+1] - blurred[i+1]) * amount));
-            dest[i+2] = Math.min(255, Math.max(0, dest[i+2] + (dest[i+2] - blurred[i+2]) * amount));
+        for(let i=0; i<currentBuffer.length; i+=4) {
+            currentBuffer[i] = Math.min(255, Math.max(0, currentBuffer[i] + (currentBuffer[i] - blurred[i]) * amount));
+            currentBuffer[i+1] = Math.min(255, Math.max(0, currentBuffer[i+1] + (currentBuffer[i+1] - blurred[i+1]) * amount));
+            currentBuffer[i+2] = Math.min(255, Math.max(0, currentBuffer[i+2] + (currentBuffer[i+2] - blurred[i+2]) * amount));
         }
     }
     if (adj.bloom > 0) {
-        const blurred = applyBoxBlur(dest, w, h, 10);
+        const blurred = applyBoxBlur(currentBuffer, w, h, 10);
         const amount = adj.bloom / 100;
-        for(let i=0; i<dest.length; i+=4) {
-            dest[i] = Math.min(255, dest[i] + blurred[i] * amount);
-            dest[i+1] = Math.min(255, dest[i+1] + blurred[i+1] * amount);
-            dest[i+2] = Math.min(255, dest[i+2] + blurred[i+2] * amount);
+        for(let i=0; i<currentBuffer.length; i+=4) {
+            currentBuffer[i] = Math.min(255, currentBuffer[i] + blurred[i] * amount);
+            currentBuffer[i+1] = Math.min(255, currentBuffer[i+1] + blurred[i+1] * amount);
+            currentBuffer[i+2] = Math.min(255, currentBuffer[i+2] + blurred[i+2] * amount);
         }
     }
     if (adj.haze > 0) {
         const amount = adj.haze / 100;
-        for(let i=0; i<dest.length; i+=4) {
-            dest[i] = Math.min(255, dest[i] + (255 - dest[i]) * amount * 0.5);
-            dest[i+1] = Math.min(255, dest[i+1] + (255 - dest[i+1]) * amount * 0.5);
-            dest[i+2] = Math.min(255, dest[i+2] + (255 - dest[i+2]) * amount * 0.6);
+        for(let i=0; i<currentBuffer.length; i+=4) {
+            currentBuffer[i] = Math.min(255, currentBuffer[i] + (255 - currentBuffer[i]) * amount * 0.5);
+            currentBuffer[i+1] = Math.min(255, currentBuffer[i+1] + (255 - currentBuffer[i+1]) * amount * 0.5);
+            currentBuffer[i+2] = Math.min(255, currentBuffer[i+2] + (255 - currentBuffer[i+2]) * amount * 0.6);
         }
     }
     if (adj.grain > 0) {
         const amount = adj.grain;
-        for(let i=0; i<dest.length; i+=4) {
+        for(let i=0; i<currentBuffer.length; i+=4) {
             const noise = (Math.random() - 0.5) * amount;
-            dest[i] = Math.min(255, Math.max(0, dest[i] + noise));
-            dest[i+1] = Math.min(255, Math.max(0, dest[i+1] + noise));
-            dest[i+2] = Math.min(255, Math.max(0, dest[i+2] + noise));
+            currentBuffer[i] = Math.min(255, Math.max(0, currentBuffer[i] + noise));
+            currentBuffer[i+1] = Math.min(255, Math.max(0, currentBuffer[i+1] + noise));
+            currentBuffer[i+2] = Math.min(255, Math.max(0, currentBuffer[i+2] + noise));
         }
     }
 
-    if (filter === 'invert') {
-        for(let i=0; i<dest.length; i+=4) {
-            dest[i] = 255 - dest[i];
-            dest[i+1] = 255 - dest[i+1];
-            dest[i+2] = 255 - dest[i+2];
-        }
-    }
-    else if (filter === 'threshold') {
-        const level = options.thresholdLevel || 128;
-        for(let i=0; i<dest.length; i+=4) {
-            const v = (dest[i]*0.299 + dest[i+1]*0.587 + dest[i+2]*0.114) >= level ? 255 : 0;
-            dest[i] = dest[i+1] = dest[i+2] = v;
-        }
-    }
-    else if (filter === 'pixelate') {
-        const size = Math.max(2, options.pixelateSize || 8);
-        for(let y=0; y<h; y+=size) {
-            for(let x=0; x<w; x+=size) {
-                const idx = (y*w + x) << 2;
-                const r = dest[idx], g = dest[idx+1], b = dest[idx+2];
-                for(let py=0; py<size && y+py<h; py++) {
-                    const rowOff = (y+py)*w*4;
-                    for(let px=0; px<size && x+px<w; px++) {
-                        const dIdx = rowOff + ((x+px)<<2);
-                        dest[dIdx] = r; dest[dIdx+1] = g; dest[dIdx+2] = b;
-                    }
+    if (options.filters && options.filters.length > 0) {
+        for (const f of options.filters) {
+            const filter = f.name;
+            const srcCopy = new Uint8ClampedArray(currentBuffer);
+            
+            if (filter === 'invert') {
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    currentBuffer[i] = 255 - currentBuffer[i];
+                    currentBuffer[i+1] = 255 - currentBuffer[i+1];
+                    currentBuffer[i+2] = 255 - currentBuffer[i+2];
                 }
             }
-        }
-    }
-    else if (filter === 'noise') {
-        const amt = options.noiseAmount || 20;
-        for(let i=0; i<dest.length; i+=4) {
-            const n = (Math.random() - 0.5) * amt;
-            let r = dest[i] + n;
-            let g = dest[i+1] + n;
-            let b = dest[i+2] + n;
-            dest[i] = r < 0 ? 0 : r > 255 ? 255 : r;
-            dest[i+1] = g < 0 ? 0 : g > 255 ? 255 : g;
-            dest[i+2] = b < 0 ? 0 : b > 255 ? 255 : b;
-        }
-    }
-    else if (filter === 'edge') {
-        const fData = new Float32Array(dest); 
-        const edges = createEdgeMap(fData, w, h, options.edgeSensitivity || 5, options.edgeAlgo || 'sobel');
-        const invert = options.edgeInvert;
-        for(let i=0; i<len; i++) {
-            const val = invert ? (1 - edges[i]) * 255 : edges[i] * 255;
-            const idx = i << 2;
-            dest[idx] = val; dest[idx+1] = val; dest[idx+2] = val; dest[idx+3] = 255;
-        }
-    }
-    else if (filter === 'ascii') {
-        const mode = options.asciiMode || 'color';
-        const blockSize = Math.max(2, options.asciiSize || 8);
-        const chars = options.asciiChars || "@%#*+=-:. ";
-        const canvas = new OffscreenCanvas(w, h);
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = (mode === 'mono' || mode === 'bw') ? '#000' : '#000';
-        ctx.fillRect(0, 0, w, h);
-        ctx.font = `${blockSize}px monospace`;
-        ctx.textBaseline = 'top';
-        for (let y = 0; y < h; y += blockSize) {
-            for (let x = 0; x < w; x += blockSize) {
-                let r=0, g=0, b=0, count=0;
-                for(let by=0; by<blockSize && y+by<h; by++) {
-                    for(let bx=0; bx<blockSize && x+bx<w; bx++) {
-                        const i = ((y+by)*w + (x+bx)) << 2; 
-                        r += src[i]; g += src[i+1]; b += src[i+2]; count++;
-                    }
-                }
-                r /= count; g /= count; b /= count;
-                const lum = 0.299*r + 0.587*g + 0.114*b;
-                const charIdx = Math.floor((1 - (lum/255)) * (chars.length-1));
-                const char = chars[charIdx] || ' ';
-                if (mode === 'color') ctx.fillStyle = `rgb(${r},${g},${b})`;
-                else if (mode === 'mono') ctx.fillStyle = `rgb(0, 255, 0)`;
-                else ctx.fillStyle = `rgb(255, 255, 255)`;
-                ctx.fillText(char, x, y);
-            }
-        }
-        const resData = ctx.getImageData(0, 0, w, h).data;
-        dest.set(resData);
-    }
-    else if (filter === 'sepia') {
-        const intensity = (options.sepiaIntensity || 100) / 100;
-        const inv = 1 - intensity;
-        for(let i=0; i<dest.length; i+=4) {
-            const r = dest[i], g = dest[i+1], b = dest[i+2];
-            const tr = (r * 0.393) + (g * 0.769) + (b * 0.189);
-            const tg = (r * 0.349) + (g * 0.686) + (b * 0.168);
-            const tb = (r * 0.272) + (g * 0.534) + (b * 0.131);
-            let nr = r * inv + tr * intensity;
-            let ng = g * inv + tg * intensity;
-            let nb = b * inv + tb * intensity;
-            dest[i] = nr > 255 ? 255 : nr;
-            dest[i+1] = ng > 255 ? 255 : ng;
-            dest[i+2] = nb > 255 ? 255 : nb;
-        }
-    }
-    else if (filter === 'wes') {
-        for(let i=0; i<dest.length; i+=4) {
-            let r = dest[i], g = dest[i+1], b = dest[i+2];
-            r = Math.min(255, r * 1.1 + 10); g = Math.min(255, g * 1.0 + 10); b = Math.min(255, b * 0.9);
-            const avg = (r+g+b)/3; r = avg + (r-avg)*1.3; g = avg + (g-avg)*1.3; b = avg + (b-avg)*1.3;
-            dest[i] = r < 0 ? 0 : r > 255 ? 255 : r; 
-            dest[i+1] = g < 0 ? 0 : g > 255 ? 255 : g;
-            dest[i+2] = b < 0 ? 0 : b > 255 ? 255 : b;
-        }
-    }
-    else if (filter === 'crt') {
-        const scanInt = (options.crtScanline || 50) / 100;
-        const curve = (options.crtCurvature || 50) / 100;
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                const i = (y*w+x)*4;
-                const scanline = Math.sin(y * 0.5) * 0.1 * scanInt + (1 - 0.1 * scanInt);
-                const vigX = x/w - 0.5; const vigY = y/h - 0.5;
-                const vig = 1.0 - Math.sqrt(vigX*vigX + vigY*vigY) * curve;
-                dest[i] = Math.min(255, dest[i] * scanline * vig); 
-                dest[i+1] = Math.min(255, dest[i+1] * scanline * vig); 
-                dest[i+2] = Math.min(255, dest[i+2] * scanline * vig);
-            }
-        }
-    }
-    else if (filter === 'rgb') {
-        const offset = options.rgbOffset || 5;
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                const i = (y*w+x)*4;
-                const rIdx = (y*w + Math.min(w-1, Math.max(0, x+offset)))*4;
-                const bIdx = (y*w + Math.min(w-1, Math.max(0, x-offset)))*4;
-                dest[i] = src[rIdx]; 
-                dest[i+1] = src[i+1]; 
-                dest[i+2] = src[bIdx+2]; 
-                dest[i+3] = 255;
-            }
-        }
-    }
-    else if (filter === 'neo') {
-        const thresh = options.neoThreshold || 50;
-        for(let i=0; i<dest.length; i+=4) {
-            const lum = 0.299*dest[i] + 0.587*dest[i+1] + 0.114*dest[i+2];
-            const val = lum < thresh ? 0 : (lum > 255-thresh ? 255 : lum);
-            dest[i] = 0; dest[i+1] = val; dest[i+2] = 0;
-        }
-    }
-    else if (filter === 'glitch') {
-        const amount = options.glitchAmount || 10;
-        const seed = options.glitchSeed || 0;
-        const type = options.glitchType || 'rgb';
-        
-        if (type === 'rgb') {
-            for(let y=0; y<h; y++) {
-                const shift = Math.floor(Math.sin(y * 0.1 + seed) * amount);
-                for(let x=0; x<w; x++) {
-                    const i = (y*w+x)*4;
-                    const rIdx = (y*w + Math.min(w-1, Math.max(0, x+shift)))*4;
-                    const bIdx = (y*w + Math.min(w-1, Math.max(0, x-shift)))*4;
-                    dest[i] = src[rIdx]; dest[i+1] = src[i+1]; dest[i+2] = src[bIdx+2];
+            else if (filter === 'threshold') {
+                const level = f.thresholdLevel || 128;
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    const v = (currentBuffer[i]*0.299 + currentBuffer[i+1]*0.587 + currentBuffer[i+2]*0.114) >= level ? 255 : 0;
+                    currentBuffer[i] = currentBuffer[i+1] = currentBuffer[i+2] = v;
                 }
             }
-        } else if (type === 'slice') {
-            const slices = Math.floor(h / 20);
-            for(let s=0; s<slices; s++) {
-                const yStart = Math.floor(Math.random() * h);
-                const hSlice = Math.floor(Math.random() * 20) + 1;
-                const shift = Math.floor((Math.random() - 0.5) * amount * 2);
-                if (Math.sin(s + seed) > 0) {
-                    for(let y=yStart; y<Math.min(h, yStart+hSlice); y++) {
-                        for(let x=0; x<w; x++) {
-                            const i = (y*w+x)*4;
-                            const sIdx = (y*w + Math.min(w-1, Math.max(0, x+shift)))*4;
-                            dest[i] = src[sIdx]; dest[i+1] = src[sIdx+1]; dest[i+2] = src[sIdx+2];
+            else if (filter === 'pixelate') {
+                const size = Math.max(2, f.pixelateSize || 8);
+                for(let y=0; y<h; y+=size) {
+                    for(let x=0; x<w; x+=size) {
+                        const idx = (y*w + x) << 2;
+                        const r = currentBuffer[idx], g = currentBuffer[idx+1], b = currentBuffer[idx+2];
+                        for(let py=0; py<size && y+py<h; py++) {
+                            const rowOff = (y+py)*w*4;
+                            for(let px=0; px<size && x+px<w; px++) {
+                                const dIdx = rowOff + ((x+px)<<2);
+                                currentBuffer[dIdx] = r; currentBuffer[dIdx+1] = g; currentBuffer[dIdx+2] = b;
+                            }
                         }
                     }
                 }
             }
-        } else if (type === 'jitter') {
-            for(let y=0; y<h; y++) {
-                for(let x=0; x<w; x++) {
-                    const i = (y*w+x)*4;
-                    if (Math.random() < 0.1) {
-                        const jx = Math.floor((Math.random()-0.5)*amount);
-                        const jy = Math.floor((Math.random()-0.5)*amount);
-                        const idx = (Math.min(h-1, Math.max(0, y+jy))*w + Math.min(w-1, Math.max(0, x+jx)))*4;
-                        dest[i] = src[idx]; dest[i+1] = src[idx+1]; dest[i+2] = src[idx+2];
+            else if (filter === 'noise') {
+                const amt = f.noiseAmount || 20;
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    const n = (Math.random() - 0.5) * amt;
+                    let r = currentBuffer[i] + n;
+                    let g = currentBuffer[i+1] + n;
+                    let b = currentBuffer[i+2] + n;
+                    currentBuffer[i] = r < 0 ? 0 : r > 255 ? 255 : r;
+                    currentBuffer[i+1] = g < 0 ? 0 : g > 255 ? 255 : g;
+                    currentBuffer[i+2] = b < 0 ? 0 : b > 255 ? 255 : b;
+                }
+            }
+            else if (filter === 'edge') {
+                const fData = new Float32Array(currentBuffer); 
+                const edges = createEdgeMap(fData, w, h, f.edgeSensitivity || 5, f.edgeAlgo || 'sobel');
+                const invert = f.edgeInvert;
+                for(let i=0; i<len; i++) {
+                    const val = invert ? (1 - edges[i]) * 255 : edges[i] * 255;
+                    const idx = i << 2;
+                    currentBuffer[idx] = val; currentBuffer[idx+1] = val; currentBuffer[idx+2] = val; currentBuffer[idx+3] = 255;
+                }
+            }
+            else if (filter === 'ascii') {
+                const mode = f.asciiMode || 'color';
+                const blockSize = Math.max(2, f.asciiSize || 8);
+                const chars = f.asciiChars || "@%#*+=-:. ";
+                const canvas = new OffscreenCanvas(w, h);
+                const tempCtx = canvas.getContext('2d');
+                tempCtx.fillStyle = (mode === 'mono' || mode === 'bw') ? '#000' : '#000';
+                tempCtx.fillRect(0, 0, w, h);
+                tempCtx.font = `${blockSize}px monospace`;
+                tempCtx.textBaseline = 'top';
+                for (let y = 0; y < h; y += blockSize) {
+                    for (let x = 0; x < w; x += blockSize) {
+                        let r=0, g=0, b=0, count=0;
+                        for(let by=0; by<blockSize && y+by<h; by++) {
+                            for(let bx=0; bx<blockSize && x+bx<w; bx++) {
+                                const i = ((y+by)*w + (x+bx)) << 2; 
+                                r += srcCopy[i]; g += srcCopy[i+1]; b += srcCopy[i+2]; count++;
+                            }
+                        }
+                        r /= count; g /= count; b /= count;
+                        const lum = 0.299*r + 0.587*g + 0.114*b;
+                        const charIdx = Math.floor((1 - (lum/255)) * (chars.length-1));
+                        const char = chars[charIdx] || ' ';
+                        if (mode === 'color') tempCtx.fillStyle = `rgb(${r},${g},${b})`;
+                        else if (mode === 'mono') tempCtx.fillStyle = `rgb(0, 255, 0)`;
+                        else tempCtx.fillStyle = `rgb(255, 255, 255)`;
+                        tempCtx.fillText(char, x, y);
+                    }
+                }
+                const resData = tempCtx.getImageData(0, 0, w, h).data;
+                currentBuffer.set(resData);
+            }
+            else if (filter === 'sepia') {
+                const intensity = (f.sepiaIntensity || 100) / 100;
+                const inv = 1 - intensity;
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    const r = currentBuffer[i], g = currentBuffer[i+1], b = currentBuffer[i+2];
+                    const tr = (r * 0.393) + (g * 0.769) + (b * 0.189);
+                    const tg = (r * 0.349) + (g * 0.686) + (b * 0.168);
+                    const tb = (r * 0.272) + (g * 0.534) + (b * 0.131);
+                    let nr = r * inv + tr * intensity;
+                    let ng = g * inv + tg * intensity;
+                    let nb = b * inv + tb * intensity;
+                    currentBuffer[i] = nr > 255 ? 255 : nr;
+                    currentBuffer[i+1] = ng > 255 ? 255 : ng;
+                    currentBuffer[i+2] = nb > 255 ? 255 : nb;
+                }
+            }
+            else if (filter === 'wes') {
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    let r = currentBuffer[i], g = currentBuffer[i+1], b = currentBuffer[i+2];
+                    r = Math.min(255, r * 1.1 + 10); g = Math.min(255, g * 1.0 + 10); b = Math.min(255, b * 0.9);
+                    const avg = (r+g+b)/3; r = avg + (r-avg)*1.3; g = avg + (g-avg)*1.3; b = avg + (b-avg)*1.3;
+                    currentBuffer[i] = r < 0 ? 0 : r > 255 ? 255 : r; 
+                    currentBuffer[i+1] = g < 0 ? 0 : g > 255 ? 255 : g;
+                    currentBuffer[i+2] = b < 0 ? 0 : b > 255 ? 255 : b;
+                }
+            }
+            else if (filter === 'crt') {
+                const scanInt = (f.crtScanline || 50) / 100;
+                const curve = (f.crtCurvature || 50) / 100;
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        const scanline = Math.sin(y * 0.5) * 0.1 * scanInt + (1 - 0.1 * scanInt);
+                        const vigX = x/w - 0.5; const vigY = y/h - 0.5;
+                        const vig = 1.0 - Math.sqrt(vigX*vigX + vigY*vigY) * curve;
+                        currentBuffer[i] = Math.min(255, currentBuffer[i] * scanline * vig); 
+                        currentBuffer[i+1] = Math.min(255, currentBuffer[i+1] * scanline * vig); 
+                        currentBuffer[i+2] = Math.min(255, currentBuffer[i+2] * scanline * vig);
                     }
                 }
             }
-        }
-    }
-    else if (filter === 'solarize') {
-        const thresh = options.solarizeThreshold || 128;
-        for(let i=0; i<dest.length; i+=4) {
-            dest[i] = dest[i] > thresh ? 255 - dest[i] : dest[i];
-            dest[i+1] = dest[i+1] > thresh ? 255 - dest[i+1] : dest[i+1];
-            dest[i+2] = dest[i+2] > thresh ? 255 - dest[i+2] : dest[i+2];
-        }
-    }
-    else if (filter === 'emboss') {
-        const str = (options.embossStrength || 100) / 100;
-        const kernel = [ -2*str, -1*str, 0, -1*str, 1, 1*str, 0, 1*str, 2*str ];
-        for (let y = 0; y < h; y++) {
-            for (let x = 0; x < w; x++) {
-                let r = 0, g = 0, b = 0;
-                for(let ky=-1; ky<=1; ky++) {
-                    for(let kx=-1; kx<=1; kx++) {
-                        const px = Math.min(w-1, Math.max(0, x+kx));
-                        const py = Math.min(h-1, Math.max(0, y+ky));
-                        const idx = (py*w + px)*4;
-                        const k = kernel[(ky+1)*3 + (kx+1)];
-                        r += src[idx]*k; g += src[idx+1]*k; b += src[idx+2]*k;
+            else if (filter === 'rgb') {
+                const offset = f.rgbOffset || 5;
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        const rIdx = (y*w + Math.min(w-1, Math.max(0, x+offset)))*4;
+                        const bIdx = (y*w + Math.min(w-1, Math.max(0, x-offset)))*4;
+                        currentBuffer[i] = srcCopy[rIdx]; 
+                        currentBuffer[i+1] = srcCopy[i+1]; 
+                        currentBuffer[i+2] = srcCopy[bIdx+2]; 
+                        currentBuffer[i+3] = 255;
                     }
                 }
-                const i = (y*w+x)*4;
-                dest[i] = Math.min(255, Math.max(0, r + 128));
-                dest[i+1] = Math.min(255, Math.max(0, g + 128));
-                dest[i+2] = Math.min(255, Math.max(0, b + 128));
             }
-        }
-    }
-    else if (filter === 'vignette') {
-        const amount = (options.vignetteAmount || 50) / 100;
-        const size = (options.vignetteSize || 50) / 100;
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                const i = (y*w+x)*4;
-                const dx = (x / w) - 0.5; const dy = (y / h) - 0.5;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-                const vig = Math.max(0, 1 - Math.max(0, dist - (0.5 - size*0.5)) * (amount * 4));
-                dest[i] *= vig; dest[i+1] *= vig; dest[i+2] *= vig;
+            else if (filter === 'neo') {
+                const thresh = f.neoThreshold || 50;
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    const lum = 0.299*currentBuffer[i] + 0.587*currentBuffer[i+1] + 0.114*currentBuffer[i+2];
+                    const val = lum < thresh ? 0 : (lum > 255-thresh ? 255 : lum);
+                    currentBuffer[i] = 0; currentBuffer[i+1] = val; currentBuffer[i+2] = 0;
+                }
             }
-        }
-    }
-    else if (filter === 'posterize') {
-        const levels = Math.max(2, options.posterizeLevels || 4);
-        const step = 255 / (levels - 1);
-        for(let i=0; i<dest.length; i+=4) {
-            dest[i] = Math.round(dest[i] / step) * step;
-            dest[i+1] = Math.round(dest[i+1] / step) * step;
-            dest[i+2] = Math.round(dest[i+2] / step) * step;
-        }
-    }
-    else if (filter === 'duotone') {
-        function hexToRgb(h){if(!h)return{r:0,g:0,b:0};const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return{r,g,b};}
-        const c1 = hexToRgb(options.duotoneColor1 || '#000000'); 
-        const c2 = hexToRgb(options.duotoneColor2 || '#ffffff');
-        for(let i=0; i<dest.length; i+=4) {
-            const lum = (dest[i]*0.299 + dest[i+1]*0.587 + dest[i+2]*0.114) / 255;
-            dest[i] = c1.r + (c2.r - c1.r) * lum;
-            dest[i+1] = c1.g + (c2.g - c1.g) * lum;
-            dest[i+2] = c1.b + (c2.b - c1.b) * lum;
-        }
-    }
-    else if (filter === 'gamma') {
-        const gamma = options.gammaValue || 1.0;
-        const invGamma = 1.0 / gamma;
-        for(let i=0; i<dest.length; i+=4) {
-            dest[i] = 255 * Math.pow(dest[i] / 255, invGamma);
-            dest[i+1] = 255 * Math.pow(dest[i+1] / 255, invGamma);
-            dest[i+2] = 255 * Math.pow(dest[i+2] / 255, invGamma);
-        }
-    }
-    else if (filter === 'chromatic') {
-        const offX = options.chromaticX || 5;
-        const offY = options.chromaticY || 0;
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                const i = (y*w+x)*4;
-                const rX = Math.min(w-1, Math.max(0, x + offX));
-                const rY = Math.min(h-1, Math.max(0, y + offY));
-                const bX = Math.min(w-1, Math.max(0, x - offX));
-                const bY = Math.min(h-1, Math.max(0, y - offY));
-                const rIdx = (rY*w + rX)*4;
-                const bIdx = (bY*w + bX)*4;
-                dest[i] = src[rIdx];
-                dest[i+1] = src[i+1];
-                dest[i+2] = src[bIdx+2];
+            else if (filter === 'glitch') {
+                const amount = f.glitchAmount || 10;
+                const seed = f.glitchSeed || 0;
+                const type = f.glitchType || 'rgb';
+                
+                if (type === 'rgb') {
+                    for(let y=0; y<h; y++) {
+                        const shift = Math.floor(Math.sin(y * 0.1 + seed) * amount);
+                        for(let x=0; x<w; x++) {
+                            const i = (y*w+x)*4;
+                            const rIdx = (y*w + Math.min(w-1, Math.max(0, x+shift)))*4;
+                            const bIdx = (y*w + Math.min(w-1, Math.max(0, x-shift)))*4;
+                            currentBuffer[i] = srcCopy[rIdx]; currentBuffer[i+1] = srcCopy[i+1]; currentBuffer[i+2] = srcCopy[bIdx+2];
+                        }
+                    }
+                } else if (type === 'slice') {
+                    const slices = Math.floor(h / 20);
+                    for(let s=0; s<slices; s++) {
+                        const yStart = Math.floor(Math.random() * h);
+                        const hSlice = Math.floor(Math.random() * 20) + 1;
+                        const shift = Math.floor((Math.random() - 0.5) * amount * 2);
+                        if (Math.sin(s + seed) > 0) {
+                            for(let y=yStart; y<Math.min(h, yStart+hSlice); y++) {
+                                for(let x=0; x<w; x++) {
+                                    const i = (y*w+x)*4;
+                                    const sIdx = (y*w + Math.min(w-1, Math.max(0, x+shift)))*4;
+                                    currentBuffer[i] = srcCopy[sIdx]; currentBuffer[i+1] = srcCopy[sIdx+1]; currentBuffer[i+2] = srcCopy[sIdx+2];
+                                }
+                            }
+                        }
+                    }
+                } else if (type === 'jitter') {
+                    for(let y=0; y<h; y++) {
+                        for(let x=0; x<w; x++) {
+                            const i = (y*w+x)*4;
+                            if (Math.random() < 0.1) {
+                                const jx = Math.floor((Math.random()-0.5)*amount);
+                                const jy = Math.floor((Math.random()-0.5)*amount);
+                                const idx = (Math.min(h-1, Math.max(0, y+jy))*w + Math.min(w-1, Math.max(0, x+jx)))*4;
+                                currentBuffer[i] = srcCopy[idx]; currentBuffer[i+1] = srcCopy[idx+1]; currentBuffer[i+2] = srcCopy[idx+2];
+                            }
+                        }
+                    }
+                }
             }
-        }
-    }
-    else if (filter === 'kuwahara') {
-        const rad = Math.max(2, options.kuwaharaRadius || 3);
-        const rMeans = new Float32Array(4);
-        const gMeans = new Float32Array(4);
-        const bMeans = new Float32Array(4);
-        const variances = new Float32Array(4);
+            else if (filter === 'solarize') {
+                const thresh = f.solarizeThreshold || 128;
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    currentBuffer[i] = currentBuffer[i] > thresh ? 255 - currentBuffer[i] : currentBuffer[i];
+                    currentBuffer[i+1] = currentBuffer[i+1] > thresh ? 255 - currentBuffer[i+1] : currentBuffer[i+1];
+                    currentBuffer[i+2] = currentBuffer[i+2] > thresh ? 255 - currentBuffer[i+2] : currentBuffer[i+2];
+                }
+            }
+            else if (filter === 'emboss') {
+                const str = (f.embossStrength || 100) / 100;
+                const kernel = [ -2*str, -1*str, 0, -1*str, 1, 1*str, 0, 1*str, 2*str ];
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        let r = 0, g = 0, b = 0;
+                        for(let ky=-1; ky<=1; ky++) {
+                            for(let kx=-1; kx<=1; kx++) {
+                                const px = Math.min(w-1, Math.max(0, x+kx));
+                                const py = Math.min(h-1, Math.max(0, y+ky));
+                                const idx = (py*w + px)*4;
+                                const k = kernel[(ky+1)*3 + (kx+1)];
+                                r += srcCopy[idx]*k; g += srcCopy[idx+1]*k; b += srcCopy[idx+2]*k;
+                            }
+                        }
+                        const i = (y*w+x)*4;
+                        currentBuffer[i] = Math.min(255, Math.max(0, r + 128));
+                        currentBuffer[i+1] = Math.min(255, Math.max(0, g + 128));
+                        currentBuffer[i+2] = Math.min(255, Math.max(0, b + 128));
+                    }
+                }
+            }
+            else if (filter === 'vignette') {
+                const amount = (f.vignetteAmount || 50) / 100;
+                const size = (f.vignetteSize || 50) / 100;
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        const dx = (x / w) - 0.5; const dy = (y / h) - 0.5;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        const vig = Math.max(0, 1 - Math.max(0, dist - (0.5 - size*0.5)) * (amount * 4));
+                        currentBuffer[i] *= vig; currentBuffer[i+1] *= vig; currentBuffer[i+2] *= vig;
+                    }
+                }
+            }
+            else if (filter === 'posterize') {
+                const levels = Math.max(2, f.posterizeLevels || 4);
+                const step = 255 / (levels - 1);
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    currentBuffer[i] = Math.round(currentBuffer[i] / step) * step;
+                    currentBuffer[i+1] = Math.round(currentBuffer[i+1] / step) * step;
+                    currentBuffer[i+2] = Math.round(currentBuffer[i+2] / step) * step;
+                }
+            }
+            else if (filter === 'duotone') {
+                function hexToRgb(h){if(!h)return{r:0,g:0,b:0};const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return{r,g,b};}
+                const c1 = hexToRgb(f.duotoneColor1 || '#000000'); 
+                const c2 = hexToRgb(f.duotoneColor2 || '#ffffff');
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    const lum = (currentBuffer[i]*0.299 + currentBuffer[i+1]*0.587 + currentBuffer[i+2]*0.114) / 255;
+                    currentBuffer[i] = c1.r + (c2.r - c1.r) * lum;
+                    currentBuffer[i+1] = c1.g + (c2.g - c1.g) * lum;
+                    currentBuffer[i+2] = c1.b + (c2.b - c1.b) * lum;
+                }
+            }
+            else if (filter === 'gamma') {
+                const gamma = f.gammaValue || 1.0;
+                const invGamma = 1.0 / gamma;
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    currentBuffer[i] = 255 * Math.pow(currentBuffer[i] / 255, invGamma);
+                    currentBuffer[i+1] = 255 * Math.pow(currentBuffer[i+1] / 255, invGamma);
+                    currentBuffer[i+2] = 255 * Math.pow(currentBuffer[i+2] / 255, invGamma);
+                }
+            }
+            else if (filter === 'chromatic') {
+                const offX = f.chromaticX || 5;
+                const offY = f.chromaticY || 0;
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        const rX = Math.min(w-1, Math.max(0, x + offX));
+                        const rY = Math.min(h-1, Math.max(0, y + offY));
+                        const bX = Math.min(w-1, Math.max(0, x - offX));
+                        const bY = Math.min(h-1, Math.max(0, y - offY));
+                        const rIdx = (rY*w + rX)*4;
+                        const bIdx = (bY*w + bX)*4;
+                        currentBuffer[i] = srcCopy[rIdx];
+                        currentBuffer[i+1] = srcCopy[i+1];
+                        currentBuffer[i+2] = srcCopy[bIdx+2];
+                    }
+                }
+            }
+            else if (filter === 'kuwahara') {
+                const rad = Math.max(2, f.kuwaharaRadius || 3);
+                const rMeans = new Float32Array(4);
+                const gMeans = new Float32Array(4);
+                const bMeans = new Float32Array(4);
+                const variances = new Float32Array(4);
 
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                 for(let i=0; i<4; i++) {
-                     let rSum=0, gSum=0, bSum=0, rSq=0, gSq=0, bSq=0, cnt=0;
-                     const xStart = (i === 0 || i === 2) ? x - rad : x;
-                     const xEnd = (i === 0 || i === 2) ? x : x + rad;
-                     const yStart = (i === 0 || i === 1) ? y - rad : y;
-                     const yEnd = (i === 0 || i === 1) ? y : y + rad;
-                     for(let vy=yStart; vy<=yEnd; vy++) {
-                         for(let vx=xStart; vx<=xEnd; vx++) {
-                             if(vx>=0 && vx<w && vy>=0 && vy<h) {
-                                 const idx = (vy*w+vx)*4;
-                                 const r=src[idx], g=src[idx+1], b=src[idx+2];
-                                 rSum+=r; gSum+=g; bSum+=b;
-                                 rSq+=r*r; gSq+=g*g; bSq+=b*b;
-                                 cnt++;
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                         for(let i=0; i<4; i++) {
+                             let rSum=0, gSum=0, bSum=0, rSq=0, gSq=0, bSq=0, cnt=0;
+                             const xStart = (i === 0 || i === 2) ? x - rad : x;
+                             const xEnd = (i === 0 || i === 2) ? x : x + rad;
+                             const yStart = (i === 0 || i === 1) ? y - rad : y;
+                             const yEnd = (i === 0 || i === 1) ? y : y + rad;
+                             for(let vy=yStart; vy<=yEnd; vy++) {
+                                 for(let vx=xStart; vx<=xEnd; vx++) {
+                                     if(vx>=0 && vx<w && vy>=0 && vy<h) {
+                                         const idx = (vy*w+vx)*4;
+                                         const r=srcCopy[idx], g=srcCopy[idx+1], b=srcCopy[idx+2];
+                                         rSum+=r; gSum+=g; bSum+=b;
+                                         rSq+=r*r; gSq+=g*g; bSq+=b*b;
+                                         cnt++;
+                                     }
+                                 }
+                             }
+                             if (cnt > 0) {
+                                 const rMean = rSum/cnt, gMean = gSum/cnt, bMean = bSum/cnt;
+                                 const variance = (rSq/cnt - rMean*rMean) + (gSq/cnt - gMean*gMean) + (bSq/cnt - bMean*bMean);
+                                 rMeans[i] = rMean; gMeans[i] = gMean; bMeans[i] = bMean;
+                                 variances[i] = Math.abs(variance);
+                             } else {
+                                 rMeans[i] = 0; gMeans[i] = 0; bMeans[i] = 0;
+                                 variances[i] = 999999;
                              }
                          }
-                     }
-                     if (cnt > 0) {
-                         const rMean = rSum/cnt, gMean = gSum/cnt, bMean = bSum/cnt;
-                         const variance = (rSq/cnt - rMean*rMean) + (gSq/cnt - gMean*gMean) + (bSq/cnt - bMean*bMean);
-                         rMeans[i] = rMean; gMeans[i] = gMean; bMeans[i] = bMean;
-                         variances[i] = Math.abs(variance);
-                     } else {
-                         rMeans[i] = 0; gMeans[i] = 0; bMeans[i] = 0;
-                         variances[i] = 999999;
-                     }
-                 }
-                 let minVar = variances[0], minIdx = 0;
-                 for(let i=1; i<4; i++) if(variances[i] < minVar) { minVar = variances[i]; minIdx = i; }
-                 const i = (y*w+x)*4;
-                 dest[i] = rMeans[minIdx]; dest[i+1] = gMeans[minIdx]; dest[i+2] = bMeans[minIdx];
-            }
-        }
-    }
-    else if (filter === 'tiltshift') {
-        const blurR = options.tiltBlur || 5;
-        const pos = (options.tiltPos || 50) / 100;
-        const area = (options.tiltArea || 30) / 100;
-        const blurred = applyBoxBlur(dest, w, h, blurR);
-        for(let y=0; y<h; y++) {
-            const normY = y / h;
-            const dist = Math.abs(normY - pos);
-            const blurAmt = Math.min(1, Math.max(0, (dist - area*0.5) * 5));
-            for(let x=0; x<w; x++) {
-                const i = (y*w+x)*4;
-                dest[i] = dest[i]*(1-blurAmt) + blurred[i]*blurAmt;
-                dest[i+1] = dest[i+1]*(1-blurAmt) + blurred[i+1]*blurAmt;
-                dest[i+2] = dest[i+2]*(1-blurAmt) + blurred[i+2]*blurAmt;
-            }
-        }
-    }
-    else if (filter === 'kaleidoscope') {
-         const segments = options.kalSegments || 6;
-         const cx = w/2, cy = h/2;
-         for(let y=0; y<h; y++) {
-             for(let x=0; x<w; x++) {
-                 const dx = x - cx, dy = y - cy;
-                 let r = Math.sqrt(dx*dx + dy*dy);
-                 let theta = Math.atan2(dy, dx);
-                 const segmentAngle = 2 * Math.PI / segments;
-                 theta = Math.abs(theta % segmentAngle);
-                 if (theta > segmentAngle/2) theta = segmentAngle - theta;
-                 const nx = cx + r * Math.cos(theta);
-                 const ny = cy + r * Math.sin(theta);
-                 const ix = Math.min(w-1, Math.max(0, Math.floor(nx)));
-                 const iy = Math.min(h-1, Math.max(0, Math.floor(ny)));
-                 const sIdx = (iy*w+ix)*4;
-                 const dIdx = (y*w+x)*4;
-                 dest[dIdx] = src[sIdx]; dest[dIdx+1] = src[sIdx+1]; dest[dIdx+2] = src[sIdx+2];
-             }
-         }
-    }
-    else if (filter === 'swirl') {
-         const angle = options.swirlAngle || 3;
-         const radius = options.swirlRadius || 50;
-         const cx = w/2, cy = h/2;
-         const maxR = Math.min(w,h)/2;
-         const rScale = maxR * (radius/50);
-         for(let y=0; y<h; y++) {
-             for(let x=0; x<w; x++) {
-                 const dx = x - cx, dy = y - cy;
-                 const r = Math.sqrt(dx*dx + dy*dy);
-                 let srcX = x, srcY = y;
-                 if(r < rScale) {
-                     const theta = Math.atan2(dy, dx) + angle * (1 - r/rScale);
-                     srcX = cx + r * Math.cos(theta);
-                     srcY = cy + r * Math.sin(theta);
-                 }
-                 const ix = Math.min(w-1, Math.max(0, Math.floor(srcX)));
-                 const iy = Math.min(h-1, Math.max(0, Math.floor(srcY)));
-                 const sIdx = (iy*w+ix)*4;
-                 const dIdx = (y*w+x)*4;
-                 dest[dIdx] = src[sIdx]; dest[dIdx+1] = src[sIdx+1]; dest[dIdx+2] = src[sIdx+2];
-             }
-         }
-    }
-    else if (filter === 'motionblur') {
-        const angle = (options.motionAngle || 0) * Math.PI / 180;
-        const dist = options.motionDistance || 10;
-        const dx = Math.cos(angle);
-        const dy = Math.sin(angle);
-        const temp = new Uint8ClampedArray(dest);
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                let r=0, g=0, b=0, count=0;
-                for(let i=0; i<dist; i++) {
-                    const nx = Math.min(w-1, Math.max(0, Math.floor(x + dx * i)));
-                    const ny = Math.min(h-1, Math.max(0, Math.floor(y + dy * i)));
-                    const idx = (ny*w + nx)*4;
-                    r += temp[idx]; g += temp[idx+1]; b += temp[idx+2]; count++;
-                }
-                const dIdx = (y*w + x)*4;
-                dest[dIdx] = r/count; dest[dIdx+1] = g/count; dest[dIdx+2] = b/count;
-            }
-        }
-    }
-    else if (filter === 'lsd') {
-        const amt = options.lsdIntensity || 50;
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                const i = (y*w+x)*4;
-                const r = dest[i], g = dest[i+1], b = dest[i+2];
-                const lum = 0.299*r + 0.587*g + 0.114*b;
-                const wave = Math.sin((x+y)*0.01 + lum*0.1) * amt;
-                dest[i] = (r + wave) % 255;
-                dest[i+1] = (g + wave + 85) % 255;
-                dest[i+2] = (b + wave + 170) % 255;
-                if(dest[i]<0) dest[i]+=255;
-                if(dest[i+1]<0) dest[i+1]+=255;
-                if(dest[i+2]<0) dest[i+2]+=255;
-            }
-        }
-    }
-    else if (filter === 'fisheye') {
-        const amount = (options.fisheyeAmount || 50) / 100.0;
-        const cx = w/2, cy = h/2;
-        const temp = new Uint8ClampedArray(dest);
-        for(let y=0; y<h; y++) {
-            const ny = (y - cy) / cy;
-            for(let x=0; x<w; x++) {
-                const nx = (x - cx) / cx;
-                const r = Math.sqrt(nx*nx + ny*ny);
-                let bind;
-                if (r >= 1.0) {
-                    bind = r;
-                } else {
-                    const p = amount >= 0 ? Math.sin(r * Math.PI / 2) : Math.asin(r) / (Math.PI / 2);
-                    bind = r * (1 - Math.abs(amount)) + p * Math.abs(amount);
-                }
-                const factor = r > 0 ? bind / r : 0;
-                const srcX = Math.min(w-1, Math.max(0, Math.floor(cx + nx * cx * factor)));
-                const srcY = Math.min(h-1, Math.max(0, Math.floor(cy + ny * cy * factor)));
-                const sIdx = (srcY*w + srcX)*4;
-                const dIdx = (y*w + x)*4;
-                dest[dIdx] = temp[sIdx]; dest[dIdx+1] = temp[sIdx+1]; dest[dIdx+2] = temp[sIdx+2];
-            }
-        }
-    }
-    else if (filter === 'bit8') {
-        const size = Math.max(1, options.bit8Size || 4);
-        for(let y=0; y<h; y+=size) {
-            for(let x=0; x<w; x+=size) {
-                const idx = (y*w + x) * 4;
-                const r = Math.round(dest[idx] / 36.4) * 36.4;
-                const g = Math.round(dest[idx+1] / 36.4) * 36.4;
-                const b = Math.round(dest[idx+2] / 85) * 85;
-                for(let py=0; py<size && y+py<h; py++) {
-                    const rowOff = (y+py)*w*4;
-                    for(let px=0; px<size && x+px<w; px++) {
-                        const dIdx = rowOff + ((x+px)<<2);
-                        dest[dIdx] = r; dest[dIdx+1] = g; dest[dIdx+2] = b;
+                         let minVar = variances[0], minIdx = 0;
+                         for(let i=1; i<4; i++) if(variances[i] < minVar) { minVar = variances[i]; minIdx = i; }
+                         const i = (y*w+x)*4;
+                         currentBuffer[i] = rMeans[minIdx]; currentBuffer[i+1] = gMeans[minIdx]; currentBuffer[i+2] = bMeans[minIdx];
                     }
                 }
             }
-        }
-    }
-    else if (filter === 'bit16') {
-        const size = Math.max(1, options.bit16Size || 2);
-        for(let y=0; y<h; y+=size) {
-            for(let x=0; x<w; x+=size) {
-                const idx = (y*w + x) * 4;
-                const r = Math.round(dest[idx] / 8.22) * 8.22;
-                const g = Math.round(dest[idx+1] / 4.04) * 4.04;
-                const b = Math.round(dest[idx+2] / 8.22) * 8.22;
-                for(let py=0; py<size && y+py<h; py++) {
-                    const rowOff = (y+py)*w*4;
-                    for(let px=0; px<size && x+px<w; px++) {
-                        const dIdx = rowOff + ((x+px)<<2);
-                        dest[dIdx] = r; dest[dIdx+1] = g; dest[dIdx+2] = b;
+            else if (filter === 'tiltshift') {
+                const blurR = f.tiltBlur || 5;
+                const pos = (f.tiltPos || 50) / 100;
+                const area = (f.tiltArea || 30) / 100;
+                const blurred = applyBoxBlur(currentBuffer, w, h, blurR);
+                for(let y=0; y<h; y++) {
+                    const normY = y / h;
+                    const dist = Math.abs(normY - pos);
+                    const blurAmt = Math.min(1, Math.max(0, (dist - area*0.5) * 5));
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        currentBuffer[i] = currentBuffer[i]*(1-blurAmt) + blurred[i]*blurAmt;
+                        currentBuffer[i+1] = currentBuffer[i+1]*(1-blurAmt) + blurred[i+1]*blurAmt;
+                        currentBuffer[i+2] = currentBuffer[i+2]*(1-blurAmt) + blurred[i+2]*blurAmt;
                     }
                 }
             }
-        }
-    }
-    else if (filter === 'parallax') {
-        const amount = options.parallaxAmount || 15;
-        const fData = new Float32Array(dest);
-        const edges = createEdgeMap(fData, w, h, 10, 'sobel');
-        const temp = new Uint8ClampedArray(dest);
-        for(let y=0; y<h; y++) {
-            for(let x=0; x<w; x++) {
-                const eVal = edges[y*w + x];
-                const dIdx = (y*w + x)*4;
-                const lum = (temp[dIdx]*0.299 + temp[dIdx+1]*0.587 + temp[dIdx+2]*0.114) / 255;
-                const depth = lum * (1 - eVal) + eVal; 
-                const shiftX = Math.floor((depth - 0.5) * amount);
-                const shiftY = Math.floor((depth - 0.5) * (amount / 2));
-                const sx = Math.min(w-1, Math.max(0, x + shiftX));
-                const sy = Math.min(h-1, Math.max(0, y + shiftY));
-                const sIdx = (sy*w + sx)*4;
-                dest[dIdx] = temp[sIdx]; dest[dIdx+1] = temp[sIdx+1]; dest[dIdx+2] = temp[sIdx+2];
+            else if (filter === 'kaleidoscope') {
+                 const segments = f.kalSegments || 6;
+                 const cx = w/2, cy = h/2;
+                 for(let y=0; y<h; y++) {
+                     for(let x=0; x<w; x++) {
+                         const dx = x - cx, dy = y - cy;
+                         let r = Math.sqrt(dx*dx + dy*dy);
+                         let theta = Math.atan2(dy, dx);
+                         const segmentAngle = 2 * Math.PI / segments;
+                         theta = Math.abs(theta % segmentAngle);
+                         if (theta > segmentAngle/2) theta = segmentAngle - theta;
+                         const nx = cx + r * Math.cos(theta);
+                         const ny = cy + r * Math.sin(theta);
+                         const ix = Math.min(w-1, Math.max(0, Math.floor(nx)));
+                         const iy = Math.min(h-1, Math.max(0, Math.floor(ny)));
+                         const sIdx = (iy*w+ix)*4;
+                         const dIdx = (y*w+x)*4;
+                         currentBuffer[dIdx] = srcCopy[sIdx]; currentBuffer[dIdx+1] = srcCopy[sIdx+1]; currentBuffer[dIdx+2] = srcCopy[sIdx+2];
+                     }
+                 }
+            }
+            else if (filter === 'swirl') {
+                 const angle = f.swirlAngle || 3;
+                 const radius = f.swirlRadius || 50;
+                 const cx = w/2, cy = h/2;
+                 const maxR = Math.min(w,h)/2;
+                 const rScale = maxR * (radius/50);
+                 for(let y=0; y<h; y++) {
+                     for(let x=0; x<w; x++) {
+                         const dx = x - cx, dy = y - cy;
+                         const r = Math.sqrt(dx*dx + dy*dy);
+                         let srcX = x, srcY = y;
+                         if(r < rScale) {
+                             const theta = Math.atan2(dy, dx) + angle * (1 - r/rScale);
+                             srcX = cx + r * Math.cos(theta);
+                             srcY = cy + r * Math.sin(theta);
+                         }
+                         const ix = Math.min(w-1, Math.max(0, Math.floor(srcX)));
+                         const iy = Math.min(h-1, Math.max(0, Math.floor(srcY)));
+                         const sIdx = (iy*w+ix)*4;
+                         const dIdx = (y*w+x)*4;
+                         currentBuffer[dIdx] = srcCopy[sIdx]; currentBuffer[dIdx+1] = srcCopy[sIdx+1]; currentBuffer[dIdx+2] = srcCopy[sIdx+2];
+                     }
+                 }
+            }
+            else if (filter === 'motionblur') {
+                const angle = (f.motionAngle || 0) * Math.PI / 180;
+                const dist = f.motionDistance || 10;
+                const dx = Math.cos(angle);
+                const dy = Math.sin(angle);
+                const temp = new Uint8ClampedArray(currentBuffer);
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        let r=0, g=0, b=0, count=0;
+                        for(let i=0; i<dist; i++) {
+                            const nx = Math.min(w-1, Math.max(0, Math.floor(x + dx * i)));
+                            const ny = Math.min(h-1, Math.max(0, Math.floor(y + dy * i)));
+                            const idx = (ny*w + nx)*4;
+                            r += temp[idx]; g += temp[idx+1]; b += temp[idx+2]; count++;
+                        }
+                        const dIdx = (y*w + x)*4;
+                        currentBuffer[dIdx] = r/count; currentBuffer[dIdx+1] = g/count; currentBuffer[dIdx+2] = b/count;
+                    }
+                }
+            }
+            else if (filter === 'lsd') {
+                const amt = f.lsdIntensity || 50;
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const i = (y*w+x)*4;
+                        const r = currentBuffer[i], g = currentBuffer[i+1], b = currentBuffer[i+2];
+                        const lum = 0.299*r + 0.587*g + 0.114*b;
+                        const wave = Math.sin((x+y)*0.01 + lum*0.1) * amt;
+                        currentBuffer[i] = (r + wave) % 255;
+                        currentBuffer[i+1] = (g + wave + 85) % 255;
+                        currentBuffer[i+2] = (b + wave + 170) % 255;
+                        if(currentBuffer[i]<0) currentBuffer[i]+=255;
+                        if(currentBuffer[i+1]<0) currentBuffer[i+1]+=255;
+                        if(currentBuffer[i+2]<0) currentBuffer[i+2]+=255;
+                    }
+                }
+            }
+            else if (filter === 'fisheye') {
+                const amount = (f.fisheyeAmount || 50) / 100.0;
+                const cx = w/2, cy = h/2;
+                const temp = new Uint8ClampedArray(currentBuffer);
+                for(let y=0; y<h; y++) {
+                    const ny = (y - cy) / cy;
+                    for(let x=0; x<w; x++) {
+                        const nx = (x - cx) / cx;
+                        const r = Math.sqrt(nx*nx + ny*ny);
+                        let bind;
+                        if (r >= 1.0) {
+                            bind = r;
+                        } else {
+                            const p = amount >= 0 ? Math.sin(r * Math.PI / 2) : Math.asin(r) / (Math.PI / 2);
+                            bind = r * (1 - Math.abs(amount)) + p * Math.abs(amount);
+                        }
+                        const factor = r > 0 ? bind / r : 0;
+                        const srcX = Math.min(w-1, Math.max(0, Math.floor(cx + nx * cx * factor)));
+                        const srcY = Math.min(h-1, Math.max(0, Math.floor(cy + ny * cy * factor)));
+                        const sIdx = (srcY*w + srcX)*4;
+                        const dIdx = (y*w + x)*4;
+                        currentBuffer[dIdx] = temp[sIdx]; currentBuffer[dIdx+1] = temp[sIdx+1]; currentBuffer[dIdx+2] = temp[sIdx+2];
+                    }
+                }
+            }
+            else if (filter === 'bit8') {
+                const size = Math.max(1, f.bit8Size || 4);
+                for(let y=0; y<h; y+=size) {
+                    for(let x=0; x<w; x+=size) {
+                        const idx = (y*w + x) * 4;
+                        const r = Math.round(currentBuffer[idx] / 36.4) * 36.4;
+                        const g = Math.round(currentBuffer[idx+1] / 36.4) * 36.4;
+                        const b = Math.round(currentBuffer[idx+2] / 85) * 85;
+                        for(let py=0; py<size && y+py<h; py++) {
+                            const rowOff = (y+py)*w*4;
+                            for(let px=0; px<size && x+px<w; px++) {
+                                const dIdx = rowOff + ((x+px)<<2);
+                                currentBuffer[dIdx] = r; currentBuffer[dIdx+1] = g; currentBuffer[dIdx+2] = b;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (filter === 'bit16') {
+                const size = Math.max(1, f.bit16Size || 2);
+                for(let y=0; y<h; y+=size) {
+                    for(let x=0; x<w; x+=size) {
+                        const idx = (y*w + x) * 4;
+                        const r = Math.round(currentBuffer[idx] / 8.22) * 8.22;
+                        const g = Math.round(currentBuffer[idx+1] / 4.04) * 4.04;
+                        const b = Math.round(currentBuffer[idx+2] / 8.22) * 8.22;
+                        for(let py=0; py<size && y+py<h; py++) {
+                            const rowOff = (y+py)*w*4;
+                            for(let px=0; px<size && x+px<w; px++) {
+                                const dIdx = rowOff + ((x+px)<<2);
+                                currentBuffer[dIdx] = r; currentBuffer[dIdx+1] = g; currentBuffer[dIdx+2] = b;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (filter === 'parallax') {
+                const amount = f.parallaxAmount || 15;
+                const fData = new Float32Array(currentBuffer);
+                const edges = createEdgeMap(fData, w, h, 10, 'sobel');
+                const temp = new Uint8ClampedArray(currentBuffer);
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        const eVal = edges[y*w + x];
+                        const dIdx = (y*w + x)*4;
+                        const lum = (temp[dIdx]*0.299 + temp[dIdx+1]*0.587 + temp[dIdx+2]*0.114) / 255;
+                        const depth = lum * (1 - eVal) + eVal; 
+                        const shiftX = Math.floor((depth - 0.5) * amount);
+                        const shiftY = Math.floor((depth - 0.5) * (amount / 2));
+                        const sx = Math.min(w-1, Math.max(0, x + shiftX));
+                        const sy = Math.min(h-1, Math.max(0, y + shiftY));
+                        const sIdx = (sy*w + sx)*4;
+                        currentBuffer[dIdx] = temp[sIdx]; currentBuffer[dIdx+1] = temp[sIdx+1]; currentBuffer[dIdx+2] = temp[sIdx+2];
+                    }
+                }
+            }
+            else if (filter === 'depth') {
+                const fData = new Float32Array(currentBuffer);
+                const edges = createEdgeMap(fData, w, h, 10, 'sobel');
+                const contrast = (f.depthContrast || 50) / 50.0;
+                for(let i=0; i<currentBuffer.length; i+=4) {
+                    const lum = (srcCopy[i]*0.299 + srcCopy[i+1]*0.587 + srcCopy[i+2]*0.114) / 255;
+                    const eVal = edges[i/4];
+                    let depth = lum * (1 - eVal) + eVal;
+                    if(f.depthInvert) depth = 1.0 - depth;
+                    depth = (depth - 0.5) * contrast + 0.5;
+                    const val = Math.min(255, Math.max(0, depth * 255));
+                    currentBuffer[i] = val; currentBuffer[i+1] = val; currentBuffer[i+2] = val;
+                }
+            }
+            else if (filter === 'normal') {
+                const gray = new Float32Array(w * h);
+                for(let i=0; i<w*h; i++) gray[i] = srcCopy[i*4]*0.299 + srcCopy[i*4+1]*0.587 + srcCopy[i*4+2]*0.114;
+                const str = (f.normalStrength || 50) / 10.0;
+                for (let y = 1; y < h - 1; y++) {
+                    const row = y * w;
+                    for (let x = 1; x < w - 1; x++) {
+                        const i = row + x;
+                        const gx = (gray[i-w+1] + 2*gray[i+1] + gray[i+w+1]) - (gray[i-w-1] + 2*gray[i-1] + gray[i+w-1]);
+                        const gy = (gray[i+w-1] + 2*gray[i+w] + gray[i+w+1]) - (gray[i-w-1] + 2*gray[i-w] + gray[i-w+1]);
+                        
+                        let nx = -gx * str / 255.0;
+                        let ny = gy * str / 255.0;
+                        if(f.normalInvertY) ny = -ny;
+                        let nz = 1.0;
+                        const len = Math.sqrt(nx*nx + ny*ny + nz*nz);
+                        nx /= len; ny /= len; nz /= len;
+                        
+                        const idx = i << 2;
+                        currentBuffer[idx] = (nx * 0.5 + 0.5) * 255;
+                        currentBuffer[idx+1] = (ny * 0.5 + 0.5) * 255;
+                        currentBuffer[idx+2] = (nz * 0.5 + 0.5) * 255;
+                    }
+                }
             }
         }
     }
@@ -1195,25 +1260,25 @@ function processEditor(imgData, options) {
                 }
                 
                 if (mapType === 'gradient') {
-                    const gray = dest[i] * 0.299 + dest[i+1] * 0.587 + dest[i+2] * 0.114;
+                    const gray = currentBuffer[i] * 0.299 + currentBuffer[i+1] * 0.587 + currentBuffer[i+2] * 0.114;
                     let val = gray + threshold;
                     val = Math.max(0, Math.min(255, val));
                     let quant = Math.round(val / 255 * (levels - 1)) / (levels - 1);
                     const c = getColorFromGradient(colors, quant);
-                    dest[i] = c.r; dest[i+1] = c.g; dest[i+2] = c.b;
+                    currentBuffer[i] = c.r; currentBuffer[i+1] = c.g; currentBuffer[i+2] = c.b;
                 } else {
                     for(let c=0; c<3; c++) {
-                        let val = dest[i+c] + threshold;
+                        let val = currentBuffer[i+c] + threshold;
                         val = Math.max(0, Math.min(255, val));
                         let quant = Math.round(val / 255 * (levels - 1)) / (levels - 1);
-                        dest[i+c] = quant * 255;
+                        currentBuffer[i+c] = quant * 255;
                     }
                 }
             }
         }
     }
 
-    self.postMessage({ type: 'result', buffer: dest.buffer, width: w, height: h, index: 0 }, [dest.buffer]);
+    self.postMessage({ type: 'result', buffer: currentBuffer.buffer, width: w, height: h, index: 0 }, [currentBuffer.buffer]);
     self.postMessage({ type: 'complete' });
 }
 
@@ -1575,7 +1640,8 @@ function processUpscaleSmart(imgData, options) {
 
     <div class="header">
         <div class="header-left">
-            <button id="compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
+            <button id="compare-button" title="Hold to Compare (Alt)" disabled><b>/</b></button>
+            <button id="grid-toggle-button" title="Toggle Grid">▦</button>
             <div class="ascii-frame" id="ascii-anim">( =.=)</div>
             <br><p id="message1" style="font-size: 9px; color: #333333;">Files Processed Offline <br>[ Privacy Matters ] </p>
             <div id="onx-estimation" style="font-size: 0.8em; color: var(--accent-color); margin-top: 5px; display: none;"></div>
@@ -1596,11 +1662,12 @@ function processUpscaleSmart(imgData, options) {
 
                 <div class="action-buttons" id="canvas-actions">
                     <button id="revert-button" title="Revert to Original">✖</button>
-                    <button id="canvas-compare-button" title="Hold to Compare (Alt)" disabled>⊖</button>
+                    <button id="canvas-compare-button" title="Hold to Compare (Alt)" disabled><b>/</b></button>
                     <div id="corner-indicator" class="corner-indicator"></div>
                 </div>
                 
                 <button id="fullscreen-button" class="fullscreen-btn">⛶</button>
+                <button id="reset-view-button" class="fullscreen-btn" style="right: 35px;" title="Reset View">▣</button>
                 
                 <div class="fs-tool-overlay">
                     <div class="tool-selector-container" id="fs-tool-selector-container">
@@ -1627,6 +1694,7 @@ function processUpscaleSmart(imgData, options) {
                     <img id="main-image" src="" alt="">
                     <canvas id="preview-canvas" style="display:none;"></canvas>
                     <canvas id="mask-canvas"></canvas>
+                    <div id="grid-overlay"></div>
                 </div>
 
                 <div class="results-bar" id="results-bar">
@@ -1634,7 +1702,8 @@ function processUpscaleSmart(imgData, options) {
             </div>
 
             <div class="controls">
-                <button id="upload-button">Load Image</button>
+                <button id="upload-button">Load</button>
+                <button id="remove-image-button" style="display:none; background-color:#ff4444; border-color:#ff4444; color:white;">Remove</button>
                 
                 <div class="tool-selector-container">
                     <button id="main-tool-button">Tool: Pan</button>
@@ -1657,15 +1726,15 @@ function processUpscaleSmart(imgData, options) {
                 
                 <div style="border-left: 1px solid var(--settings-outline); padding-left: 10px; display: flex; gap: 5px;">
                      <button id="export-button">Save</button>
-                     <button id="editor-button">Editor</button>
-                     <button id="tools-button">Tools</button>
+                     <button id="editor-button">Edit</button>
+                     <button id="tools-button">Modify</button>
                 </div>
             </div>
         </div>
 
         <div id="side-panel" style="display: none;">
             <div class="settings-header">
-                <h3 id="side-panel-title">Tools</h3>
+                <h3 id="side-panel-title">Modifier</h3>
                 <div class="header-controls">
                     <button id="undo-button" class="header-btn" title="Undo (Ctrl+Z)">&lt;</button>
                     <button id="redo-button" class="header-btn" title="Redo (Ctrl+Shift+Z)">&gt;</button>
@@ -1676,333 +1745,562 @@ function processUpscaleSmart(imgData, options) {
             <div id="editor-view" class="settings-content-scrollable" style="display: none;">
                 <div class="sub-tab-bar">
                     <button class="sub-tab-link active" data-subtab="filters">Filters</button>
-                    <button class="sub-tab-link" data-subtab="settings" id="editor-settings-tab-link" style="display:none;">Settings</button>
                     <button class="sub-tab-link" data-subtab="dither">Dither</button>
                     <button class="sub-tab-link" data-subtab="adjustments">Adjustments</button>
                 </div>
 
                 <div id="subtab-filters" class="sub-tab-content active">
                     <div class="filter-list-box" id="editor-filter-list">
-                        <button class="filter-option active" data-filter="none">None</button>
-                        <button class="filter-option" data-filter="ascii">ASCII</button>
-                        <button class="filter-option" data-filter="crt">CRT Shader</button>
-                        <button class="filter-option" data-filter="edge">Edge Detect</button>
-                        <button class="filter-option" data-filter="glitch">Glitch</button>
-                        <button class="filter-option" data-filter="invert">Invert</button>
-                        <button class="filter-option" data-filter="neo">Matrix / Neo</button>
-                        <button class="filter-option" data-filter="noise">Noise</button>
-                        <button class="filter-option" data-filter="pixelate">Pixelate</button>
-                        <button class="filter-option" data-filter="posterize">Posterize</button>
-                        <button class="filter-option" data-filter="rgb">RGB Pixels</button>
-                        <button class="filter-option" data-filter="sepia">Sepia</button>
-                        <button class="filter-option" data-filter="solarize">Solarize</button>
-                        <button class="filter-option" data-filter="emboss">Emboss</button>
-                        <button class="filter-option" data-filter="vignette">Vignette</button>
-                        <button class="filter-option" data-filter="wes">Wes Anderson</button>
-                        <button class="filter-option" data-filter="duotone">Duotone</button>
-                        <button class="filter-option" data-filter="threshold">Threshold</button>
-                        <button class="filter-option" data-filter="gamma">Gamma</button>
-                        <button class="filter-option" data-filter="chromatic">Chromatic</button>
-                        <button class="filter-option" data-filter="kuwahara">Kuwahara (Oil)</button>
-                        <button class="filter-option" data-filter="tiltshift">Tilt Shift</button>
-                        <button class="filter-option" data-filter="kaleidoscope">Kaleidoscope</button>
-                        <button class="filter-option" data-filter="swirl">Swirl</button>
-                        <button class="filter-option" data-filter="motionblur">Motion Blur</button>
-                        <button class="filter-option" data-filter="lsd">LSD</button>
-                        <button class="filter-option" data-filter="fisheye">Fish Eye Lens</button>
-                        <button class="filter-option" data-filter="bit8">BIT8 Console</button>
-                        <button class="filter-option" data-filter="bit16">BIT16 Console</button>
-                        <button class="filter-option" data-filter="parallax">Parallax Filter</button>
-                    </div>
-                </div>
-
-                <div id="subtab-settings" class="sub-tab-content">
-                    <div id="editor-dynamic-settings">
-                        <div class="dynamic-setting-group" data-for="ascii">
-                            <label>ASCII Mode:</label>
-                            <select id="ascii-mode" style="width:100%; margin-bottom:10px;">
-                                <option value="color">Color</option>
-                                <option value="mono">Mono (Green/Black)</option>
-                                <option value="bw">Black & White</option>
-                            </select>
-                            <div class="slider-input-group">
-                                <label>Block Size:</label>
-                                <input type="range" id="ascii-size" min="2" max="100" value="8">
-                                <input type="number" id="ascii-size-num" value="8" min="2" max="100">
-                            </div>
-                            <label>Characters:</label>
-                            <input type="text" id="ascii-chars" value="@%#*+=-:. " style="width:100%;">
-                        </div>
-
-                        <div class="dynamic-setting-group" data-for="edge">
-                            <label>Algorithm:</label>
-                            <select id="edge-algo" style="width:100%; margin-bottom:10px;">
-                                <option value="sobel">Sobel</option>
-                                <option value="prewitt">Prewitt</option>
-                                <option value="canny">Canny</option>
-                            </select>
-                            <label class="radio-option"><input type="checkbox" id="edge-invert"> Invert Output</label>
-                            <div class="slider-input-group">
-                                <label>Sensitivity:</label>
-                                <input type="range" id="edge-sensitivity" min="1" max="20" value="5">
-                                <input type="number" id="edge-sensitivity-num" value="5" min="1" max="20">
-                            </div>
-                        </div>
-
-                        <div class="dynamic-setting-group" data-for="glitch">
-                            <label>Glitch Type:</label>
-                            <select id="glitch-type" style="width:100%; margin-bottom:10px;">
-                                <option value="rgb">RGB Shift</option>
-                                <option value="slice">Horizontal Slice</option>
-                                <option value="jitter">Jitter</option>
-                            </select>
-                            <div class="slider-input-group">
-                                <label>Amount:</label>
-                                <input type="range" id="glitch-amount" min="0" max="50" value="10">
-                                <input type="number" id="glitch-amount-num" value="10" min="0" max="50">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Seed:</label>
-                                <input type="range" id="glitch-seed" min="0" max="100" value="0">
-                                <input type="number" id="glitch-seed-num" value="0" min="0" max="100">
+                        <!-- None -->
+                        <div class="filter-item-container" data-filter-name="none">
+                            <div class="filter-row">
+                                <button class="filter-option active" data-filter="none" style="padding-left:10px;">None</button>
                             </div>
                         </div>
                         
-                        <div class="dynamic-setting-group" data-for="pixelate">
-                             <div class="slider-input-group">
-                                <label>Block Size:</label>
-                                <input type="range" id="pixelate-size" min="2" max="64" value="8">
-                                <input type="number" id="pixelate-size-num" value="8" min="2" max="64">
+                        <!-- ascii ₍^. .^₎⟆  sniffs-->
+                        <div class="filter-item-container" data-filter-name="ascii">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="ascii">⨀</button>
+                                <button class="filter-option" data-filter="ascii">ASCII</button>
+                                <button class="filter-settings-toggle" data-filter="ascii">⚙</button>
                             </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="noise">
-                             <div class="slider-input-group">
-                                <label>Amount:</label>
-                                <input type="range" id="noise-amount" min="0" max="100" value="20">
-                                <input type="number" id="noise-amount-num" value="20" min="0" max="100">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="posterize">
-                             <div class="slider-input-group">
-                                <label>Levels:</label>
-                                <input type="range" id="posterize-levels" min="2" max="32" value="4">
-                                <input type="number" id="posterize-levels-num" value="4" min="2" max="32">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="solarize">
-                             <div class="slider-input-group">
-                                <label>Threshold:</label>
-                                <input type="range" id="solarize-threshold" min="0" max="255" value="128">
-                                <input type="number" id="solarize-threshold-num" value="128" min="0" max="255">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="emboss">
-                             <div class="slider-input-group">
-                                <label>Strength:</label>
-                                <input type="range" id="emboss-strength" min="0" max="100" value="100">
-                                <input type="number" id="emboss-strength-num" value="100" min="0" max="100">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="vignette">
-                             <div class="slider-input-group">
-                                <label>Amount:</label>
-                                <input type="range" id="vignette-amount" min="0" max="100" value="50">
-                                <input type="number" id="vignette-amount-num" value="50" min="0" max="100">
-                            </div>
-                             <div class="slider-input-group">
-                                <label>Size:</label>
-                                <input type="range" id="vignette-size" min="0" max="100" value="50">
-                                <input type="number" id="vignette-size-num" value="50" min="0" max="100">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="rgb">
-                             <div class="slider-input-group">
-                                <label>Offset:</label>
-                                <input type="range" id="rgb-offset" min="0" max="50" value="5">
-                                <input type="number" id="rgb-offset-num" value="5" min="0" max="50">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="sepia">
-                             <div class="slider-input-group">
-                                <label>Intensity:</label>
-                                <input type="range" id="sepia-intensity" min="0" max="100" value="100">
-                                <input type="number" id="sepia-intensity-num" value="100" min="0" max="100">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="duotone">
-                            <div class="gradient-editor">
-                                <label>Color 1:</label>
-                                <input type="color" id="duotone-color1" value="#000000">
-                            </div>
-                            <div class="gradient-editor">
-                                <label>Color 2:</label>
-                                <input type="color" id="duotone-color2" value="#ffffff">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="threshold">
-                             <div class="slider-input-group">
-                                <label>Level:</label>
-                                <input type="range" id="threshold-level" min="0" max="255" value="128">
-                                <input type="number" id="threshold-level-num" value="128" min="0" max="255">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="gamma">
-                             <div class="slider-input-group">
-                                <label>Value:</label>
-                                <input type="range" id="gamma-value" min="0.1" max="3.0" step="0.1" value="1.0">
-                                <input type="number" id="gamma-value-num" value="1.0" min="0.1" max="3.0" step="0.1">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="chromatic">
-                             <div class="slider-input-group">
-                                <label>Offset X:</label>
-                                <input type="range" id="chromatic-x" min="-20" max="20" value="5">
-                                <input type="number" id="chromatic-x-num" value="5" min="-20" max="20">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Offset Y:</label>
-                                <input type="range" id="chromatic-y" min="-20" max="20" value="0">
-                                <input type="number" id="chromatic-y-num" value="0" min="-20" max="20">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="crt">
-                             <div class="slider-input-group">
-                                <label>Scanline Intensity:</label>
-                                <input type="range" id="crt-scanline" min="0" max="100" value="50">
-                                <input type="number" id="crt-scanline-num" value="50" min="0" max="100">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Curvature:</label>
-                                <input type="range" id="crt-curvature" min="0" max="100" value="50">
-                                <input type="number" id="crt-curvature-num" value="50" min="0" max="100">
-                            </div>
-                        </div>
-                        
-                        <div class="dynamic-setting-group" data-for="neo">
-                             <div class="slider-input-group">
-                                <label>Threshold:</label>
-                                <input type="range" id="neo-threshold" min="0" max="255" value="50">
-                                <input type="number" id="neo-threshold-num" value="50" min="0" max="255">
+                            <div class="filter-settings-panel" data-for="ascii">
+                                <label>ASCII Mode:</label>
+                                <select id="ascii-mode" style="width:100%; margin-bottom:10px;">
+                                    <option value="color">Color</option>
+                                    <option value="mono">Mono (Green/Black)</option>
+                                    <option value="bw">Black & White</option>
+                                </select>
+                                <div class="slider-input-group">
+                                    <label>Block Size:</label>
+                                    <input type="range" id="ascii-size" min="2" max="100" value="8">
+                                    <input type="number" id="ascii-size-num" value="8" min="2" max="100">
+                                </div>
+                                <label>Characters:</label>
+                                <input type="text" id="ascii-chars" value="@%#*+=-:. " style="width:100%;">
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="kuwahara">
-                             <div class="slider-input-group">
-                                <label>Radius:</label>
-                                <input type="range" id="kuwahara-radius" min="2" max="10" value="3">
-                                <input type="number" id="kuwahara-radius-num" value="3" min="2" max="10">
+                        <!-- BIT16 -->
+                        <div class="filter-item-container" data-filter-name="bit16">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="bit16">⨀</button>
+                                <button class="filter-option" data-filter="bit16">BIT16 Console</button>
+                                <button class="filter-settings-toggle" data-filter="bit16">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="bit16">
+                                <div class="slider-input-group">
+                                    <label>Pixel Size:</label>
+                                    <input type="range" id="bit16-size" min="1" max="16" value="2">
+                                    <input type="number" id="bit16-size-num" value="2" min="1" max="16">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="tiltshift">
-                             <div class="slider-input-group">
-                                <label>Blur Radius:</label>
-                                <input type="range" id="tilt-blur" min="0" max="20" value="5">
-                                <input type="number" id="tilt-blur-num" value="5" min="0" max="20">
+                        <!-- BIT8 -->
+                        <div class="filter-item-container" data-filter-name="bit8">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="bit8">⨀</button>
+                                <button class="filter-option" data-filter="bit8">BIT8 Console</button>
+                                <button class="filter-settings-toggle" data-filter="bit8">⚙</button>
                             </div>
-                            <div class="slider-input-group">
-                                <label>Position:</label>
-                                <input type="range" id="tilt-pos" min="0" max="100" value="50">
-                                <input type="number" id="tilt-pos-num" value="50" min="0" max="100">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Area Size:</label>
-                                <input type="range" id="tilt-area" min="0" max="100" value="30">
-                                <input type="number" id="tilt-area-num" value="30" min="0" max="100">
+                            <div class="filter-settings-panel" data-for="bit8">
+                                <div class="slider-input-group">
+                                    <label>Pixel Size:</label>
+                                    <input type="range" id="bit8-size" min="1" max="16" value="4">
+                                    <input type="number" id="bit8-size-num" value="4" min="1" max="16">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="kaleidoscope">
-                             <div class="slider-input-group">
-                                <label>Segments:</label>
-                                <input type="range" id="kal-segments" min="2" max="12" value="6">
-                                <input type="number" id="kal-segments-num" value="6" min="2" max="12">
+                        <!-- CRT -->
+                        <div class="filter-item-container" data-filter-name="crt">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="crt">⨀</button>
+                                <button class="filter-option" data-filter="crt">CRT Shader</button>
+                                <button class="filter-settings-toggle" data-filter="crt">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="crt">
+                                <div class="slider-input-group">
+                                    <label>Scanline:</label>
+                                    <input type="range" id="crt-scanline" min="0" max="100" value="50">
+                                    <input type="number" id="crt-scanline-num" value="50" min="0" max="100">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Curvature:</label>
+                                    <input type="range" id="crt-curvature" min="0" max="100" value="50">
+                                    <input type="number" id="crt-curvature-num" value="50" min="0" max="100">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="swirl">
-                             <div class="slider-input-group">
-                                <label>Angle:</label>
-                                <input type="range" id="swirl-angle" min="-10" max="10" step="0.1" value="3">
-                                <input type="number" id="swirl-angle-num" value="3" min="-10" max="10" step="0.1">
+                        <!-- Chromatic -->
+                        <div class="filter-item-container" data-filter-name="chromatic">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="chromatic">⨀</button>
+                                <button class="filter-option" data-filter="chromatic">Chromatic</button>
+                                <button class="filter-settings-toggle" data-filter="chromatic">⚙</button>
                             </div>
-                            <div class="slider-input-group">
-                                <label>Radius:</label>
-                                <input type="range" id="swirl-radius" min="0" max="100" value="50">
-                                <input type="number" id="swirl-radius-num" value="50" min="0" max="100">
-                            </div>
-                        </div>
-
-                        <div class="dynamic-setting-group" data-for="motionblur">
-                             <div class="slider-input-group">
-                                <label>Angle:</label>
-                                <input type="range" id="motion-angle" min="0" max="360" value="0">
-                                <input type="number" id="motion-angle-num" value="0" min="0" max="360">
-                            </div>
-                            <div class="slider-input-group">
-                                <label>Distance:</label>
-                                <input type="range" id="motion-dist" min="1" max="100" value="10">
-                                <input type="number" id="motion-dist-num" value="10" min="1" max="100">
+                            <div class="filter-settings-panel" data-for="chromatic">
+                                <div class="slider-input-group">
+                                    <label>Offset X:</label>
+                                    <input type="range" id="chromatic-x" min="-20" max="20" value="5">
+                                    <input type="number" id="chromatic-x-num" value="5" min="-20" max="20">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Offset Y:</label>
+                                    <input type="range" id="chromatic-y" min="-20" max="20" value="0">
+                                    <input type="number" id="chromatic-y-num" value="0" min="-20" max="20">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="lsd">
-                             <div class="slider-input-group">
-                                <label>Intensity:</label>
-                                <input type="range" id="lsd-intensity" min="0" max="100" value="50">
-                                <input type="number" id="lsd-intensity-num" value="50" min="0" max="100">
+                        <!-- Depth Map -->
+                        <div class="filter-item-container" data-filter-name="depth">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="depth">⨀</button>
+                                <button class="filter-option" data-filter="depth">Depth Map</button>
+                                <button class="filter-settings-toggle" data-filter="depth">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="depth">
+                                <label class="radio-option" style="margin-bottom:10px;"><input type="checkbox" id="depth-invert"> Invert Depth</label>
+                                <div class="slider-input-group">
+                                    <label>Contrast:</label>
+                                    <input type="range" id="depth-contrast" min="0" max="100" value="50">
+                                    <input type="number" id="depth-contrast-num" value="50" min="0" max="100">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="fisheye">
-                             <div class="slider-input-group">
-                                <label>Amount:</label>
-                                <input type="range" id="fisheye-amount" min="-100" max="100" value="50">
-                                <input type="number" id="fisheye-amount-num" value="50" min="-100" max="100">
+                        <!-- Duotone -->
+                        <div class="filter-item-container" data-filter-name="duotone">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="duotone">⨀</button>
+                                <button class="filter-option" data-filter="duotone">Duotone</button>
+                                <button class="filter-settings-toggle" data-filter="duotone">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="duotone">
+                                <div class="gradient-editor">
+                                    <label>Color 1:</label>
+                                    <input type="color" id="duotone-color1" value="#000000">
+                                </div>
+                                <div class="gradient-editor">
+                                    <label>Color 2:</label>
+                                    <input type="color" id="duotone-color2" value="#ffffff">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="bit8">
-                             <div class="slider-input-group">
-                                <label>Pixel Size:</label>
-                                <input type="range" id="bit8-size" min="1" max="16" value="4">
-                                <input type="number" id="bit8-size-num" value="4" min="1" max="16">
+                        <!-- Edge Detect -->
+                        <div class="filter-item-container" data-filter-name="edge">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="edge">⨀</button>
+                                <button class="filter-option" data-filter="edge">Edge Detect</button>
+                                <button class="filter-settings-toggle" data-filter="edge">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="edge">
+                                <label>Algorithm:</label>
+                                <select id="edge-algo" style="width:100%; margin-bottom:10px;">
+                                    <option value="sobel">Sobel</option>
+                                    <option value="prewitt">Prewitt</option>
+                                    <option value="canny">Canny</option>
+                                </select>
+                                <label class="radio-option"><input type="checkbox" id="edge-invert"> Invert Output</label>
+                                <div class="slider-input-group" style="margin-top:10px;">
+                                    <label>Sensitivity:</label>
+                                    <input type="range" id="edge-sensitivity" min="1" max="20" value="5">
+                                    <input type="number" id="edge-sensitivity-num" value="5" min="1" max="20">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="bit16">
-                             <div class="slider-input-group">
-                                <label>Pixel Size:</label>
-                                <input type="range" id="bit16-size" min="1" max="16" value="2">
-                                <input type="number" id="bit16-size-num" value="2" min="1" max="16">
+                        <!-- Emboss -->
+                        <div class="filter-item-container" data-filter-name="emboss">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="emboss">⨀</button>
+                                <button class="filter-option" data-filter="emboss">Emboss</button>
+                                <button class="filter-settings-toggle" data-filter="emboss">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="emboss">
+                                <div class="slider-input-group">
+                                    <label>Strength:</label>
+                                    <input type="range" id="emboss-strength" min="0" max="100" value="100">
+                                    <input type="number" id="emboss-strength-num" value="100" min="0" max="100">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="parallax">
-                             <div class="slider-input-group">
-                                <label>Amount:</label>
-                                <input type="range" id="parallax-amount" min="-50" max="50" value="15">
-                                <input type="number" id="parallax-amount-num" value="15" min="-50" max="50">
+                        <!-- Fish Eye Lens -->
+                        <div class="filter-item-container" data-filter-name="fisheye">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="fisheye">⨀</button>
+                                <button class="filter-option" data-filter="fisheye">Fish Eye Lens</button>
+                                <button class="filter-settings-toggle" data-filter="fisheye">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="fisheye">
+                                <div class="slider-input-group">
+                                    <label>Amount:</label>
+                                    <input type="range" id="fisheye-amount" min="-100" max="100" value="50">
+                                    <input type="number" id="fisheye-amount-num" value="50" min="-100" max="100">
+                                </div>
                             </div>
                         </div>
 
-                        <div class="dynamic-setting-group" data-for="common">
-                            <div class="slider-input-group">
-                                <label>Strength:</label>
-                                <input type="range" id="editor-strength" min="0" max="100" value="100">
-                                <input type="number" id="editor-strength-num" value="100" min="0" max="100">
+                        <!-- Gamma -->
+                        <div class="filter-item-container" data-filter-name="gamma">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="gamma">⨀</button>
+                                <button class="filter-option" data-filter="gamma">Gamma</button>
+                                <button class="filter-settings-toggle" data-filter="gamma">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="gamma">
+                                <div class="slider-input-group">
+                                    <label>Value:</label>
+                                    <input type="range" id="gamma-value" min="0.1" max="3.0" step="0.1" value="1.0">
+                                    <input type="number" id="gamma-value-num" value="1.0" min="0.1" max="3.0" step="0.1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Glitch -->
+                        <div class="filter-item-container" data-filter-name="glitch">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="glitch">⨀</button>
+                                <button class="filter-option" data-filter="glitch">Glitch</button>
+                                <button class="filter-settings-toggle" data-filter="glitch">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="glitch">
+                                <label>Glitch Type:</label>
+                                <select id="glitch-type" style="width:100%; margin-bottom:10px;">
+                                    <option value="rgb">RGB Shift</option>
+                                    <option value="slice">Horizontal Slice</option>
+                                    <option value="jitter">Jitter</option>
+                                </select>
+                                <div class="slider-input-group">
+                                    <label>Amount:</label>
+                                    <input type="range" id="glitch-amount" min="0" max="50" value="10">
+                                    <input type="number" id="glitch-amount-num" value="10" min="0" max="50">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Seed:</label>
+                                    <input type="range" id="glitch-seed" min="0" max="100" value="0">
+                                    <input type="number" id="glitch-seed-num" value="0" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invert -->
+                        <div class="filter-item-container" data-filter-name="invert">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="invert">⨀</button>
+                                <button class="filter-option" data-filter="invert">Invert</button>
+                            </div>
+                        </div>
+
+                        <!-- Kaleidoscope -->
+                        <div class="filter-item-container" data-filter-name="kaleidoscope">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="kaleidoscope">⨀</button>
+                                <button class="filter-option" data-filter="kaleidoscope">Kaleidoscope</button>
+                                <button class="filter-settings-toggle" data-filter="kaleidoscope">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="kaleidoscope">
+                                <div class="slider-input-group">
+                                    <label>Segments:</label>
+                                    <input type="range" id="kal-segments" min="2" max="12" value="6">
+                                    <input type="number" id="kal-segments-num" value="6" min="2" max="12">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kuwahara -->
+                        <div class="filter-item-container" data-filter-name="kuwahara">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="kuwahara">⨀</button>
+                                <button class="filter-option" data-filter="kuwahara">Kuwahara (Oil)</button>
+                                <button class="filter-settings-toggle" data-filter="kuwahara">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="kuwahara">
+                                <div class="slider-input-group">
+                                    <label>Radius:</label>
+                                    <input type="range" id="kuwahara-radius" min="2" max="10" value="3">
+                                    <input type="number" id="kuwahara-radius-num" value="3" min="2" max="10">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LSD -->
+                        <div class="filter-item-container" data-filter-name="lsd">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="lsd">⨀</button>
+                                <button class="filter-option" data-filter="lsd">LSD</button>
+                                <button class="filter-settings-toggle" data-filter="lsd">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="lsd">
+                                <div class="slider-input-group">
+                                    <label>Intensity:</label>
+                                    <input type="range" id="lsd-intensity" min="0" max="100" value="50">
+                                    <input type="number" id="lsd-intensity-num" value="50" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Matrix/Neo -->
+                        <div class="filter-item-container" data-filter-name="neo">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="neo">⨀</button>
+                                <button class="filter-option" data-filter="neo">Matrix / Neo</button>
+                                <button class="filter-settings-toggle" data-filter="neo">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="neo">
+                                <div class="slider-input-group">
+                                    <label>Threshold:</label>
+                                    <input type="range" id="neo-threshold" min="0" max="255" value="50">
+                                    <input type="number" id="neo-threshold-num" value="50" min="0" max="255">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Motion Blur -->
+                        <div class="filter-item-container" data-filter-name="motionblur">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="motionblur">⨀</button>
+                                <button class="filter-option" data-filter="motionblur">Motion Blur</button>
+                                <button class="filter-settings-toggle" data-filter="motionblur">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="motionblur">
+                                <div class="slider-input-group">
+                                    <label>Angle:</label>
+                                    <input type="range" id="motion-angle" min="0" max="360" value="0">
+                                    <input type="number" id="motion-angle-num" value="0" min="0" max="360">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Distance:</label>
+                                    <input type="range" id="motion-dist" min="1" max="100" value="10">
+                                    <input type="number" id="motion-dist-num" value="10" min="1" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Noise -->
+                        <div class="filter-item-container" data-filter-name="noise">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="noise">⨀</button>
+                                <button class="filter-option" data-filter="noise">Noise</button>
+                                <button class="filter-settings-toggle" data-filter="noise">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="noise">
+                                <div class="slider-input-group">
+                                    <label>Amount:</label>
+                                    <input type="range" id="noise-amount" min="0" max="100" value="20">
+                                    <input type="number" id="noise-amount-num" value="20" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Normal Map -->
+                        <div class="filter-item-container" data-filter-name="normal">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="normal">⨀</button>
+                                <button class="filter-option" data-filter="normal">Normal Map</button>
+                                <button class="filter-settings-toggle" data-filter="normal">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="normal">
+                                <label class="radio-option" style="margin-bottom:10px;"><input type="checkbox" id="normal-invert-y"> Invert Y</label>
+                                <div class="slider-input-group">
+                                    <label>Strength:</label>
+                                    <input type="range" id="normal-strength" min="1" max="100" value="50">
+                                    <input type="number" id="normal-strength-num" value="50" min="1" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parallax Filter -->
+                        <div class="filter-item-container" data-filter-name="parallax">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="parallax">⨀</button>
+                                <button class="filter-option" data-filter="parallax">Parallax Filter</button>
+                                <button class="filter-settings-toggle" data-filter="parallax">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="parallax">
+                                <div class="slider-input-group">
+                                    <label>Amount:</label>
+                                    <input type="range" id="parallax-amount" min="-50" max="50" value="15">
+                                    <input type="number" id="parallax-amount-num" value="15" min="-50" max="50">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pixelate -->
+                        <div class="filter-item-container" data-filter-name="pixelate">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="pixelate">⨀</button>
+                                <button class="filter-option" data-filter="pixelate">Pixelate</button>
+                                <button class="filter-settings-toggle" data-filter="pixelate">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="pixelate">
+                                <div class="slider-input-group">
+                                    <label>Block Size:</label>
+                                    <input type="range" id="pixelate-size" min="2" max="64" value="8">
+                                    <input type="number" id="pixelate-size-num" value="8" min="2" max="64">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Posterize -->
+                        <div class="filter-item-container" data-filter-name="posterize">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="posterize">⨀</button>
+                                <button class="filter-option" data-filter="posterize">Posterize</button>
+                                <button class="filter-settings-toggle" data-filter="posterize">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="posterize">
+                                <div class="slider-input-group">
+                                    <label>Levels:</label>
+                                    <input type="range" id="posterize-levels" min="2" max="32" value="4">
+                                    <input type="number" id="posterize-levels-num" value="4" min="2" max="32">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- RGB Pixels -->
+                        <div class="filter-item-container" data-filter-name="rgb">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="rgb">⨀</button>
+                                <button class="filter-option" data-filter="rgb">RGB Pixels</button>
+                                <button class="filter-settings-toggle" data-filter="rgb">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="rgb">
+                                <div class="slider-input-group">
+                                    <label>Offset:</label>
+                                    <input type="range" id="rgb-offset" min="0" max="50" value="5">
+                                    <input type="number" id="rgb-offset-num" value="5" min="0" max="50">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sepia -->
+                        <div class="filter-item-container" data-filter-name="sepia">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="sepia">⨀</button>
+                                <button class="filter-option" data-filter="sepia">Sepia</button>
+                                <button class="filter-settings-toggle" data-filter="sepia">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="sepia">
+                                <div class="slider-input-group">
+                                    <label>Intensity:</label>
+                                    <input type="range" id="sepia-intensity" min="0" max="100" value="100">
+                                    <input type="number" id="sepia-intensity-num" value="100" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Solarize -->
+                        <div class="filter-item-container" data-filter-name="solarize">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="solarize">⨀</button>
+                                <button class="filter-option" data-filter="solarize">Solarize</button>
+                                <button class="filter-settings-toggle" data-filter="solarize">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="solarize">
+                                <div class="slider-input-group">
+                                    <label>Threshold:</label>
+                                    <input type="range" id="solarize-threshold" min="0" max="255" value="128">
+                                    <input type="number" id="solarize-threshold-num" value="128" min="0" max="255">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Swirl -->
+                        <div class="filter-item-container" data-filter-name="swirl">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="swirl">⨀</button>
+                                <button class="filter-option" data-filter="swirl">Swirl</button>
+                                <button class="filter-settings-toggle" data-filter="swirl">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="swirl">
+                                <div class="slider-input-group">
+                                    <label>Angle:</label>
+                                    <input type="range" id="swirl-angle" min="-10" max="10" step="0.1" value="3">
+                                    <input type="number" id="swirl-angle-num" value="3" min="-10" max="10" step="0.1">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Radius:</label>
+                                    <input type="range" id="swirl-radius" min="0" max="100" value="50">
+                                    <input type="number" id="swirl-radius-num" value="50" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Threshold -->
+                        <div class="filter-item-container" data-filter-name="threshold">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="threshold">⨀</button>
+                                <button class="filter-option" data-filter="threshold">Threshold</button>
+                                <button class="filter-settings-toggle" data-filter="threshold">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="threshold">
+                                <div class="slider-input-group">
+                                    <label>Level:</label>
+                                    <input type="range" id="threshold-level" min="0" max="255" value="128">
+                                    <input type="number" id="threshold-level-num" value="128" min="0" max="255">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tilt Shift -->
+                        <div class="filter-item-container" data-filter-name="tiltshift">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="tiltshift">⨀</button>
+                                <button class="filter-option" data-filter="tiltshift">Tilt Shift</button>
+                                <button class="filter-settings-toggle" data-filter="tiltshift">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="tiltshift">
+                                <div class="slider-input-group">
+                                    <label>Blur Radius:</label>
+                                    <input type="range" id="tilt-blur" min="0" max="20" value="5">
+                                    <input type="number" id="tilt-blur-num" value="5" min="0" max="20">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Position:</label>
+                                    <input type="range" id="tilt-pos" min="0" max="100" value="50">
+                                    <input type="number" id="tilt-pos-num" value="50" min="0" max="100">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Area Size:</label>
+                                    <input type="range" id="tilt-area" min="0" max="100" value="30">
+                                    <input type="number" id="tilt-area-num" value="30" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vignette -->
+                        <div class="filter-item-container" data-filter-name="vignette">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="vignette">⨀</button>
+                                <button class="filter-option" data-filter="vignette">Vignette</button>
+                                <button class="filter-settings-toggle" data-filter="vignette">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="vignette">
+                                <div class="slider-input-group">
+                                    <label>Amount:</label>
+                                    <input type="range" id="vignette-amount" min="0" max="100" value="50">
+                                    <input type="number" id="vignette-amount-num" value="50" min="0" max="100">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Size:</label>
+                                    <input type="range" id="vignette-size" min="0" max="100" value="50">
+                                    <input type="number" id="vignette-size-num" value="50" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Wes Anderson -->
+                        <div class="filter-item-container" data-filter-name="wes">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="wes">⨀</button>
+                                <button class="filter-option" data-filter="wes">Wes Anderson</button>
                             </div>
                         </div>
                     </div>
@@ -2046,57 +2344,75 @@ function processUpscaleSmart(imgData, options) {
                     
                     <div id="dither-gradient-controls" style="display:none;">
                         <div class="dither-color-stops" id="dither-gradient-stops">
-                            
                         </div>
                         <button id="dither-add-stop" class="add-stop-btn" title="Add Stop">+</button>
                     </div>
                 </div>
 
                 <div id="subtab-adjustments" class="sub-tab-content">
-                    <div class="slider-input-group">
-                        <label>Brightness:</label>
-                        <input type="range" id="adj-bright" min="-100" max="100" value="0">
-                        <input type="number" id="adj-bright-num" value="0" min="-100" max="100">
+                    <button id="reset-all-adj" style="margin-bottom: 15px; width: 100%; font-weight: bold; background: var(--button-bg); color: var(--text-color); border: 1px solid var(--frame-color); padding: 8px; border-radius: 3px; cursor: pointer;"><b>↺</b> Reset All Adjustments</button>
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Brightness:</label>
+                            <input type="range" id="adj-bright" min="-100" max="100" value="0">
+                            <input type="number" id="adj-bright-num" value="0" min="-100" max="100">
+                        </div>
                     </div>
-                    <div class="slider-input-group">
-                        <label>Contrast:</label>
-                        <input type="range" id="adj-contrast" min="-100" max="100" value="0">
-                        <input type="number" id="adj-contrast-num" value="0" min="-100" max="100">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Contrast:</label>
+                            <input type="range" id="adj-contrast" min="-100" max="100" value="0">
+                            <input type="number" id="adj-contrast-num" value="0" min="-100" max="100">
+                        </div>
                     </div>
-                    <div class="slider-input-group">
-                        <label>Saturation:</label>
-                        <input type="range" id="adj-sat" min="-100" max="100" value="0">
-                        <input type="number" id="adj-sat-num" value="0" min="-100" max="100">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Saturation:</label>
+                            <input type="range" id="adj-sat" min="-100" max="100" value="0">
+                            <input type="number" id="adj-sat-num" value="0" min="-100" max="100">
+                        </div>
                     </div>
-                    <div class="slider-input-group">
-                        <label>Hue:</label>
-                        <input type="range" id="adj-hue" min="-180" max="180" value="0">
-                        <input type="number" id="adj-hue-num" value="0" min="-180" max="180">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Hue:</label>
+                            <input type="range" id="adj-hue" min="-180" max="180" value="0">
+                            <input type="number" id="adj-hue-num" value="0" min="-180" max="180">
+                        </div>
                     </div>
-                    <div class="slider-input-group">
-                        <label>Blur:</label>
-                        <input type="range" id="adj-blur" min="0" max="20" value="0">
-                        <input type="number" id="adj-blur-num" value="0" min="0" max="20">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Blur:</label>
+                            <input type="range" id="adj-blur" min="0" max="20" value="0">
+                            <input type="number" id="adj-blur-num" value="0" min="0" max="20">
+                        </div>
                     </div>
-                    <div class="slider-input-group">
-                        <label>Sharpen:</label>
-                        <input type="range" id="adj-sharp" min="0" max="20" value="0">
-                        <input type="number" id="adj-sharp-num" value="0" min="0" max="20">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Sharpen:</label>
+                            <input type="range" id="adj-sharp" min="0" max="20" value="0">
+                            <input type="number" id="adj-sharp-num" value="0" min="0" max="20">
+                        </div>
                     </div>
-                    <div class="slider-input-group">
-                        <label>Grain:</label>
-                        <input type="range" id="adj-grain" min="0" max="100" value="0">
-                        <input type="number" id="adj-grain-num" value="0" min="0" max="100">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Grain:</label>
+                            <input type="range" id="adj-grain" min="0" max="100" value="0">
+                            <input type="number" id="adj-grain-num" value="0" min="0" max="100">
+                        </div>
                     </div>
-                    <div class="slider-input-group">
-                        <label>Bloom:</label>
-                        <input type="range" id="adj-bloom" min="0" max="100" value="0">
-                        <input type="number" id="adj-bloom-num" value="0" min="0" max="100">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Bloom:</label>
+                            <input type="range" id="adj-bloom" min="0" max="100" value="0">
+                            <input type="number" id="adj-bloom-num" value="0" min="0" max="100">
+                        </div>
                     </div>
-                     <div class="slider-input-group">
-                        <label>Haze:</label>
-                        <input type="range" id="adj-haze" min="0" max="100" value="0">
-                        <input type="number" id="adj-haze-num" value="0" min="0" max="100">
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Haze:</label>
+                            <input type="range" id="adj-haze" min="0" max="100" value="0">
+                            <input type="number" id="adj-haze-num" value="0" min="0" max="100">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2138,7 +2454,7 @@ function processUpscaleSmart(imgData, options) {
                              <div class="slider-input-group">
                                 <label>Precision:</label>
                                 <input type="range" id="search-effort" min="1" max="5" value="3">
-                                <span id="search-effort-val">Med</span>
+                                <span id="search-effort-val" style="min-width: 40px; text-align: center;">Med</span>
                             </div>
                             <p id="precision-desc" class="desc-text" style="display:block;">Balanced speed and accuracy. Recommended for most edits.</p>
                             
@@ -2217,14 +2533,14 @@ function processUpscaleSmart(imgData, options) {
                              <div class="slider-input-group" style="margin-top:15px;">
                                  <label>Tile Size:</label>
                                  <input type="range" id="onx-tile-size" min="16" max="1024" step="16" value="128">
-                                 <span id="onx-tile-size-val">128</span>
+                                 <span id="onx-tile-size-val" style="min-width: 40px; text-align: center;">128</span>
                              </div>
                              <p class="desc-text" style="display:block; border-color:var(--accent-color);">Values below 256 recommended for stability. Larger values = faster but risk crashes.</p>
                              
                              <div class="slider-input-group">
                                  <label>Scale:</label>
                                  <input type="range" id="onx-scale" min="1.0" max="8.0" step="0.5" value="1.0">
-                                 <span id="onx-scale-val">1.0x</span>
+                                 <span id="onx-scale-val" style="min-width: 40px; text-align: center;">1.0x</span>
                              </div>
 
                              <div style="margin-top: 10px;">
@@ -2279,7 +2595,7 @@ function processUpscaleSmart(imgData, options) {
                             <div class="slider-input-group" style="margin-top: 20px;">
                                 <label for="upscale-scale">Target Scale:</label>
                                 <input type="range" id="upscale-scale" min="1.0" max="4.0" step="0.5" value="1.0">
-                                <span id="upscale-scale-val">1.0x</span>
+                                <span id="upscale-scale-val" style="min-width: 40px; text-align: center;">1.0x</span>
                             </div>
                             
                             <div id="upscale-custom-options-container" style="display: none; margin-bottom: 20px; border-bottom: 1px solid var(--settings-outline); padding-bottom: 10px;">
@@ -2405,7 +2721,7 @@ function processUpscaleSmart(imgData, options) {
     </script>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;">
-    <!-- Initially I made multiple files of .js and .html, but considering portability, I eventually merged them together. Enjoy the mess.-->
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if(window.ort) {
@@ -2418,6 +2734,7 @@ function processUpscaleSmart(imgData, options) {
             const maskCanvas = document.getElementById('mask-canvas');
             const previewCanvas = document.getElementById('preview-canvas');
             const streamingCanvas = document.getElementById('streaming-canvas');
+            const gridOverlay = document.getElementById('grid-overlay');
             const frame = document.querySelector('.frame');
             const container = document.getElementById('canvas-container');
             const ctx = maskCanvas.getContext('2d', { willReadFrequently: true });
@@ -2425,6 +2742,7 @@ function processUpscaleSmart(imgData, options) {
             const previewCtx = previewCanvas.getContext('2d');
             
             const uploadBtn = document.getElementById('upload-button');
+            const removeImgBtn = document.getElementById('remove-image-button');
             const runOnxBtn = document.getElementById('run-onx-button');
             const runOnxBtn2 = document.getElementById('run-onx-button-2');
             const upscaleLoadBtn = document.getElementById('upscale-load-preset');
@@ -2445,9 +2763,11 @@ function processUpscaleSmart(imgData, options) {
             const imageInput = document.getElementById('image-input');
             const loadingOverlay = document.getElementById('loading-overlay');
             const statusPill = document.getElementById('status-pill');
+            const asciiAnim = document.getElementById('ascii-anim');
             const cornerIndicator = document.getElementById('corner-indicator');
             const compareBtn = document.getElementById('compare-button');
             const canvasCompareBtn = document.getElementById('canvas-compare-button');
+            const gridToggleBtn = document.getElementById('grid-toggle-button');
             const scaleSlider = document.getElementById('upscale-scale');
             const scaleVal = document.getElementById('upscale-scale-val');
             const resultCountSlider = document.getElementById('result-count');
@@ -2506,6 +2826,7 @@ function processUpscaleSmart(imgData, options) {
             const redoBtn = document.getElementById('redo-button');
             const themeBtn = document.getElementById('theme-toggle-button');
             const fullscreenBtn = document.getElementById('fullscreen-button');
+            const resetViewBtn = document.getElementById('reset-view-button');
             const brushColorRadios = document.getElementsByName('brush-color');
             const canvasActions = document.getElementById('canvas-actions');
             const emptyStateText = document.getElementById('empty-state-text');
@@ -2526,9 +2847,7 @@ function processUpscaleSmart(imgData, options) {
             
             const modeEraserBtn = document.getElementById('mode-eraser');
             const modeUpscalerBtn = document.getElementById('mode-upscaler');
-            const editorFilterList = document.getElementById('editor-filter-list');
             const ditherAlgoList = document.getElementById('dither-algo-list');
-            const editorStrengthSlider = document.getElementById('editor-strength');
             const ditherAddStopBtn = document.getElementById('dither-add-stop');
             const ditherGradientContainer = document.getElementById('dither-gradient-stops');
             
@@ -2544,6 +2863,7 @@ function processUpscaleSmart(imgData, options) {
             const magnifierCrosshair = document.getElementById('magnifier-crosshair');
             const magnifierZoomSlider = document.getElementById('magnifier-zoom');
             const magnifierOffsetSlider = document.getElementById('magnifier-offset');
+            const resetAllAdjBtn = document.getElementById('reset-all-adj');
 
             let currentTool = 'pan';
             let previousTool = 'pan';
@@ -2579,7 +2899,8 @@ function processUpscaleSmart(imgData, options) {
             let magnifierOffset = 45;
             
             let preCustomImageSrc = null; 
-            let activeEditorFilter = 'none';
+            let activeFilters = new Set();
+            let lockedFilters = new Set();
             let activeDitherAlgo = 'bayer';
             let ditherGradientColors = ['#000000', '#ffffff'];
             let activeColorStopIndex = -1;
@@ -2594,7 +2915,7 @@ function processUpscaleSmart(imgData, options) {
             let processTimeout;
             let cornerAnimationInterval;
             
-            const defaultOnxModel = 'real-esrgan-x4.onnx';
+            const defaultOnxModel = '(Coming Soon)';
 
             const resizeObserver = new ResizeObserver(() => {
                 resizeCanvas();
@@ -2604,10 +2925,10 @@ function processUpscaleSmart(imgData, options) {
 
             const themes = {
                 dark: {
-                    '--bg-color':'#000000','--frame-color':'#ffffff','--text-color':'#ffffff','--button-bg':'#111111','--button-text':'#ffffff','--settings-bg':'#000000','--settings-outline':'#555555','--slider-track':'#555555','--slider-thumb':'#ffffff','--checkbox-color':'#333333','--number-input-bg':'#000000','--number-input-outline-color':'#555555','--glass-bg':'rgba(20, 20, 20, 0.85)','--compare-active-bg':'#ffffff','--compare-active-text':'#000000', '--accent-color': '#00ff9d', '--desc-bg': '#111111'
+                    '--bg-color':'#000000','--frame-color':'#ffffff','--text-color':'#ffffff','--button-bg':'#111111','--button-text':'#ffffff','--settings-bg':'#000000','--settings-outline':'#555555','--slider-track':'#555555','--slider-thumb':'#ffffff','--checkbox-color':'#333333','--number-input-bg':'#000000','--number-input-outline-color':'#555555','--glass-bg':'rgba(20, 20, 20, 0.85)','--compare-active-bg':'#ffffff','--compare-active-text':'#000000', '--accent-color': '#ff4d4d', '--desc-bg': '#111111'
                 },
                 light: {
-                    '--bg-color':'#f0f0f0','--frame-color':'#000000','--text-color':'#000000','--button-bg':'#ffffff','--button-text':'#000000','--settings-bg':'#ffffff','--settings-outline':'#cccccc','--slider-track':'#cccccc','--slider-thumb':'#000000','--checkbox-color':'#aaaaaa','--number-input-bg':'#ffffff','--number-input-outline-color':'#cccccc','--glass-bg':'rgba(255, 255, 255, 0.85)','--compare-active-bg':'#000000','--compare-active-text':'#ffffff', '--accent-color': '#009dff', '--desc-bg': '#f5f5f5'
+                    '--bg-color':'#f0f0f0','--frame-color':'#000000','--text-color':'#000000','--button-bg':'#ffffff','--button-text':'#000000','--settings-bg':'#ffffff','--settings-outline':'#cccccc','--slider-track':'#cccccc','--slider-thumb':'#000000','--checkbox-color':'#aaaaaa','--number-input-bg':'#ffffff','--number-input-outline-color':'#cccccc','--glass-bg':'rgba(255, 255, 255, 0.85)','--compare-active-bg':'#000000','--compare-active-text':'#ffffff', '--accent-color': '#000000', '--desc-bg': '#f5f5f5'
                 }
             };
 
@@ -2621,9 +2942,11 @@ function processUpscaleSmart(imgData, options) {
                 updateUpscaleControlsVisibility();
                 renderDitherGradientStops();
                 loadModelList();
+                injectResetButtons();
                 debugModeCheck.checked = true;
                 setMode('inpaint');
                 sidePanel.style.display = 'none';
+                updateControlVisibilities();
                 
                 document.querySelectorAll('input[type="range"]').forEach(range => {
                     const numInput = document.getElementById(range.id + '-num');
@@ -2643,17 +2966,40 @@ function processUpscaleSmart(imgData, options) {
                     animIdx = (animIdx + 1) % frames.length;
                 }, 600);
             }
-            
-            async function loadModelList() {
-                try {
-                    const response = await fetch('src/models/list.json');
-                    if (!response.ok) throw new Error("List not found");
-                    const models = await response.json();
-                    populateModelSelect(models);
-                } catch (e) {
-                    populateModelSelect([defaultOnxModel]);
-                }
+
+            function injectResetButtons() {
+                document.querySelectorAll('.slider-input-group').forEach(group => {
+                    const range = group.querySelector('input[type="range"]');
+                    const num = group.querySelector('input[type="number"]');
+                    if(range && num) {
+                        const defaultVal = range.value;
+                        const btn = document.createElement('button');
+                        btn.innerHTML = '<b>↺</b>';
+                        btn.className = 'reset-val-btn';
+                        btn.title = 'Reset';
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            range.value = defaultVal;
+                            num.value = defaultVal;
+                            range.dispatchEvent(new Event('input'));
+                            range.dispatchEvent(new Event('change'));
+                        };
+                        group.appendChild(btn);
+                    }
+                });
             }
+            
+			async function loadModelList() {
+			    try {
+			        const response = await fetch('src/models/list.json?t=' + new Date().getTime());
+			        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+			        const models = await response.json();
+			        populateModelSelect(models);
+			    } catch (e) {
+			        console.error("ONNX List Load Error:", e);
+			        populateModelSelect([defaultOnxModel]);
+			    }
+			}
             
             function populateModelSelect(models) {
                 onxModelSelect.innerHTML = '';
@@ -2685,17 +3031,56 @@ function processUpscaleSmart(imgData, options) {
                  a.download = name;
                  a.click();
             }
-
+            
             function debouncedRunProcess() {
-                clearTimeout(processTimeout);
-                processTimeout = setTimeout(() => {
-                    if(activeEditorFilter || currentMode !== 'editor') runProcess(false);
-                }, 50);
+   			 clearTimeout(processTimeout);
+   			 processTimeout = setTimeout(() => {
+   			     runProcess(false);
+			    }, 50);
+			}
+			
+            function updateControlVisibilities() {
+                if (sidePanel.style.display === 'none') {
+                    toolSelector.style.display = 'none';
+                    runOnxBtn.style.display = 'none';
+                } else {
+                    if (currentMode === 'inpaint') {
+                        toolSelector.style.display = 'flex';
+                        runOnxBtn.style.display = 'block';
+                    } else if (currentMode === 'upscale') {
+                        toolSelector.style.display = 'none';
+                        runOnxBtn.style.display = 'block'; 
+                    } else if (currentMode === 'editor') {
+                        toolSelector.style.display = 'none';
+                        runOnxBtn.style.display = 'none';
+                    }
+                }
             }
 
             function setupEventListeners() {
                 uploadBtn.addEventListener('click', () => imageInput.click());
                 imageInput.addEventListener('change', handleImageUpload);
+                
+                removeImgBtn.addEventListener('click', () => {
+                    mainImage.src = '';
+                    originalImage.src = '';
+                    mainImage.style.display = 'none';
+                    originalImage.style.display = 'none';
+                    emptyStateText.style.display = 'block';
+                    canvasActions.style.display = 'none';
+                    resultsBar.innerHTML = '';
+                    resultsBar.classList.remove('active');
+                    removeImgBtn.style.display = 'none';
+                    originalImageBitmap = null;
+                    currentImageBitmap = null;
+                    generatedResults = [];
+                    runOnxBtn.disabled = true;
+                    clearMask();
+                    compareBtn.disabled = true;
+                    canvasCompareBtn.disabled = true;
+                    if(worker) worker.terminate();
+                    worker = null;
+                });
 
                 editorBtn.addEventListener('click', () => {
                     if (sidePanel.style.display === 'flex' && currentMode === 'editor') {
@@ -2704,6 +3089,7 @@ function processUpscaleSmart(imgData, options) {
                         sidePanel.style.display = 'flex';
                         setMode('editor');
                     }
+                    updateControlVisibilities();
                 });
 
                 toolsBtn.addEventListener('click', () => {
@@ -2713,6 +3099,11 @@ function processUpscaleSmart(imgData, options) {
                         sidePanel.style.display = 'flex';
                         setMode(currentMode === 'editor' ? lastToolMode : currentMode);
                     }
+                    updateControlVisibilities();
+                });
+                
+                resetAllAdjBtn.addEventListener('click', () => {
+                    document.getElementById('subtab-adjustments').querySelectorAll('.reset-val-btn').forEach(btn => btn.click());
                 });
 
                 mainToolBtn.addEventListener('click', (e) => {
@@ -2863,6 +3254,7 @@ function processUpscaleSmart(imgData, options) {
                     const isActive = frame.classList.toggle('fullscreen-active');
                     if (isActive) {
                         sidePanel.style.display = 'none';
+                        updateControlVisibilities();
                     } else {
                         zoomScale = 1.0;
                         panX = 0;
@@ -2870,6 +3262,17 @@ function processUpscaleSmart(imgData, options) {
                         updateZoom();
                     }
                     setTimeout(resizeCanvas, 50);
+                });
+                
+                resetViewBtn.addEventListener('click', () => {
+                    zoomScale = 1.0;
+                    panX = 0;
+                    panY = 0;
+                    updateZoom();
+                });
+                
+                gridToggleBtn.addEventListener('click', () => {
+                    gridOverlay.classList.toggle('active');
                 });
 
                 window.addEventListener('resize', () => {
@@ -2904,8 +3307,8 @@ function processUpscaleSmart(imgData, options) {
                     btn.addEventListener('touchend', (e) => { e.preventDefault(); showResult(); });
                 });
                 
-                modeEraserBtn.addEventListener('click', () => setMode('inpaint'));
-                modeUpscalerBtn.addEventListener('click', () => setMode('upscale'));
+                modeEraserBtn.addEventListener('click', () => { setMode('inpaint'); updateControlVisibilities(); });
+                modeUpscalerBtn.addEventListener('click', () => { setMode('upscale'); updateControlVisibilities(); });
 
                 runOnxBtn.addEventListener('click', () => runProcess(false));
                 runOnxBtn2.addEventListener('click', () => runProcess(false));
@@ -3002,31 +3405,7 @@ function processUpscaleSmart(imgData, options) {
                     });
                 });
                 
-                editorFilterList.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        editorFilterList.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
-                        activeEditorFilter = btn.dataset.filter;
-                        
-                        document.querySelectorAll('.dynamic-setting-group').forEach(el => el.classList.remove('active'));
-                        const specific = document.querySelector(`.dynamic-setting-group[data-for="${activeEditorFilter}"]`);
-                        const common = document.querySelector(`.dynamic-setting-group[data-for="common"]`);
-                        if(specific) specific.classList.add('active');
-                        else if(common && activeEditorFilter !== 'none') common.classList.add('active');
-                        
-                        const settingsTabLink = document.getElementById('editor-settings-tab-link');
-                        if (activeEditorFilter === 'none') {
-                            settingsTabLink.style.display = 'none';
-                            if (settingsTabLink.classList.contains('active')) {
-                                document.querySelector('[data-subtab="filters"]').click();
-                            }
-                        } else {
-                            settingsTabLink.style.display = 'block';
-                        }
-
-                        runProcess(false);
-                    });
-                });
+                setupFilterUI();
                 
                 ditherAlgoList.querySelectorAll('button').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -3066,13 +3445,13 @@ function processUpscaleSmart(imgData, options) {
                 document.querySelectorAll('#editor-view input, #editor-view select').forEach(el => {
                     const eventType = el.type === 'range' ? 'input' : 'change';
                     el.addEventListener(eventType, () => {
-                        if(activeEditorFilter) debouncedRunProcess();
+                        if(activeFilters.size > 0 || currentMode === 'editor') debouncedRunProcess();
                     });
                 });
                 
                 document.getElementById('dither-map').addEventListener('change', (e) => {
                     document.getElementById('dither-gradient-controls').style.display = e.target.value === 'gradient' ? 'block' : 'none';
-                    if(activeEditorFilter) runProcess(false);
+                    if(activeFilters.size > 0 || currentMode === 'editor') runProcess(false);
                 });
 
                 document.addEventListener('keydown', (e) => {
@@ -3190,6 +3569,84 @@ function processUpscaleSmart(imgData, options) {
                     if (e.touches.length === 0) isPanning = false;
                 });
             }
+            
+            function setupFilterUI() {
+                document.querySelectorAll('.filter-item-container').forEach(container => {
+                    const fName = container.dataset.filterName;
+                    const optBtn = container.querySelector('.filter-option');
+                    const lockBtn = container.querySelector('.filter-lock-btn');
+                    const toggleBtn = container.querySelector('.filter-settings-toggle');
+                    const panel = container.querySelector('.filter-settings-panel');
+                    
+                    if (optBtn) {
+                        optBtn.addEventListener('click', () => {
+                            if (fName === 'none') {
+                                activeFilters.clear();
+                                lockedFilters.clear();
+                            } else {
+                                if (activeFilters.has(fName) && !lockedFilters.has(fName)) {
+                                    activeFilters.delete(fName);
+                                } else {
+                                    for (let f of activeFilters) {
+                                        if (!lockedFilters.has(f)) activeFilters.delete(f);
+                                    }
+                                    activeFilters.add(fName);
+                                }
+                            }
+                            renderFilterUI();
+                            runProcess(false);
+                        });
+                    }
+                    
+                    if (lockBtn) {
+                        lockBtn.addEventListener('click', () => {
+                            if (lockedFilters.has(fName)) {
+                                lockedFilters.delete(fName);
+                            } else {
+                                lockedFilters.add(fName);
+                                activeFilters.add(fName);
+                            }
+                            renderFilterUI();
+                            runProcess(false);
+                        });
+                    }
+                    
+                    if (toggleBtn && panel) {
+                        toggleBtn.addEventListener('click', () => {
+                            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+                        });
+                    }
+                });
+            }
+            
+            function renderFilterUI() {
+                document.querySelectorAll('.filter-item-container').forEach(container => {
+                    const fName = container.dataset.filterName;
+                    const optBtn = container.querySelector('.filter-option');
+                    const lockBtn = container.querySelector('.filter-lock-btn');
+                    
+                    if (fName === 'none') {
+                        if (activeFilters.size === 0) optBtn.classList.add('active');
+                        else optBtn.classList.remove('active');
+                        return;
+                    }
+                    
+                    if (optBtn) {
+                        if (activeFilters.has(fName)) optBtn.classList.add('active');
+                        else optBtn.classList.remove('active');
+                    }
+                    
+                    if (lockBtn) {
+                        if (lockedFilters.has(fName)) {
+                            lockBtn.classList.add('locked');
+                            lockBtn.innerText = '⨁';
+                        } else {
+                            lockBtn.classList.remove('locked');
+                            lockBtn.innerText = '⨀';
+                        }
+                    }
+                });
+            }
 
             function renderDitherGradientStops() {
                 ditherGradientContainer.innerHTML = '';
@@ -3229,6 +3686,7 @@ function processUpscaleSmart(imgData, options) {
                 maskCanvas.style.transform = transform;
                 previewCanvas.style.transform = transform;
                 streamingCanvas.style.transform = transform;
+                gridOverlay.style.transform = transform;
             }
             
             function updatePrecisionDesc(val) {
@@ -3336,12 +3794,11 @@ function processUpscaleSmart(imgData, options) {
                 toolsView.style.display = 'none';
                 
                 if (mode === 'editor') {
-                    sidePanelTitle.innerText = 'Editor';
+                    sidePanelTitle.innerText = 'Edit';
                     editorView.style.display = 'block';
                     maskCanvas.style.display = 'none';
                     setTool('pan');
                     
-                    toolSelector.style.display = 'none';
                     fsToolContainer.style.display = 'none';
                     fsSaveBtn.style.display = 'block';
                     
@@ -3354,7 +3811,7 @@ function processUpscaleSmart(imgData, options) {
                     lastWorkerMode = 'editor';
                 } else {
                     lastToolMode = mode;
-                    sidePanelTitle.innerText = 'Tools';
+                    sidePanelTitle.innerText = 'Modifier';
                     toolsView.style.display = 'block';
                     lastWorkerMode = mode;
                     
@@ -3367,7 +3824,6 @@ function processUpscaleSmart(imgData, options) {
                         maskCanvas.style.display = 'block';
                         setTool('brush');
 
-                        toolSelector.style.display = 'flex'; 
                         fsToolContainer.style.display = 'block';
                         fsSaveBtn.style.display = 'none';
                     } else if (mode === 'upscale') {
@@ -3379,7 +3835,6 @@ function processUpscaleSmart(imgData, options) {
                         maskCanvas.style.display = 'none';
                         setTool('pan');
 
-                        toolSelector.style.display = 'none';
                         fsToolContainer.style.display = 'none';
                         fsSaveBtn.style.display = 'block';
                     }
@@ -3470,6 +3925,7 @@ function processUpscaleSmart(imgData, options) {
                     originalImage.style.display = 'block';
                     emptyStateText.style.display = 'none';
                     canvasActions.style.display = 'flex';
+                    removeImgBtn.style.display = 'inline-block';
                     
                     maskCanvas.width = mainImage.naturalWidth;
                     maskCanvas.height = mainImage.naturalHeight;
@@ -3539,7 +3995,7 @@ function processUpscaleSmart(imgData, options) {
                     renderH = renderW / imgRatio;
                 }
 
-                [mainImage, originalImage, maskCanvas, previewCanvas, streamingCanvas].forEach(c => {
+                [mainImage, originalImage, maskCanvas, previewCanvas, streamingCanvas, gridOverlay].forEach(c => {
                     c.style.width = `${renderW}px`;
                     c.style.height = `${renderH}px`;
                     c.style.top = `50%`;
@@ -3747,10 +4203,10 @@ function processUpscaleSmart(imgData, options) {
 
             function getFullImageData() {
                 const c = document.createElement('canvas');
-                if (originalImageBitmap) {
-                    c.width = originalImageBitmap.width;
-                    c.height = originalImageBitmap.height;
-                    c.getContext('2d').drawImage(originalImageBitmap, 0, 0);
+                if (currentImageBitmap) {
+                    c.width = currentImageBitmap.width;
+                    c.height = currentImageBitmap.height;
+                    c.getContext('2d').drawImage(currentImageBitmap, 0, 0);
                 } else {
                     c.width = mainImage.naturalWidth;
                     c.height = mainImage.naturalHeight;
@@ -3874,7 +4330,7 @@ function processUpscaleSmart(imgData, options) {
                 if(targetAlpha > 0) return; 
 
                 let r=255, g=255, b=255;
-                if(currentBrushColor === 'black') { r=0;g=0;b=0; }
+                if(currentBrushColor === 'black') { r255;g=0;b=0; }
                 else if(currentBrushColor === 'red') { r=255;g=0;b=0; }
 
                 const stack = [startX, startY];
@@ -3975,22 +4431,25 @@ function processUpscaleSmart(imgData, options) {
                 redoBtn.disabled = historyStep >= history.length - 1;
             }
 
+            // Redefining updateUIState to implement the ASCII animation and hide the loading overlay/spinner
             function updateUIState(processing, msg = "Processing...") {
                 isProcessing = processing;
                 
                 if(processing) {
                     if (currentMode === 'editor') {
                         startCornerAnimation();
+                        asciiAnim.style.display = 'block';
                     } else {
                         frame.classList.add('processing');
                         statusPill.style.display = 'block';
                         statusPill.innerText = msg;
-                        loadingOverlay.style.display = 'flex';
+                        asciiAnim.style.display = 'block';
+                        loadingOverlay.style.display = 'none'; // Replaced with ascii animation
                         runOnxBtn.innerText = "CANCEL";
                         runOnxBtn.classList.add('cancel-mode');
                         
                         if(currentMode === 'upscale' && upscaleAlgoSelect.value === 'onx_upscale') {
-                            loadingOverlay.style.display = 'none';
+                            asciiAnim.style.display = 'block';
                             originalImage.classList.remove('overlay-active');
                             originalImage.style.display = 'block';
                             originalImage.style.opacity = '1';
@@ -4002,6 +4461,7 @@ function processUpscaleSmart(imgData, options) {
                     }
                 } else {
                     stopCornerAnimation();
+                    asciiAnim.style.display = 'none';
                     
                     frame.classList.remove('processing');
                     statusPill.style.display = 'none';
@@ -4038,11 +4498,10 @@ function processUpscaleSmart(imgData, options) {
                     if (worker) worker.terminate();
                     updateUIState(false);
                     worker = null;
-                    return;
                 }
                 
                 if (currentMode === 'editor') {
-                    if (!activeEditorFilter && !document.getElementById('dither-enable').checked && 
+                    if (activeFilters.size === 0 && !document.getElementById('dither-enable').checked && 
                         parseInt(document.getElementById('adj-bright').value) === 0 &&
                         parseInt(document.getElementById('adj-contrast').value) === 0 &&
                         parseInt(document.getElementById('adj-sat').value) === 0 &&
@@ -4052,7 +4511,6 @@ function processUpscaleSmart(imgData, options) {
                         parseInt(document.getElementById('adj-grain').value) === 0 &&
                         parseInt(document.getElementById('adj-bloom').value) === 0 &&
                         parseInt(document.getElementById('adj-haze').value) === 0) {
-                        return;
                     }
                 }
 
@@ -4220,7 +4678,7 @@ function processUpscaleSmart(imgData, options) {
                     } else if (msg.type === 'complete') {
                         updateUIState(false);
                         if (isCustomUpscale || currentMode === 'editor') {
-                           
+                           // No extra actions needed for custom upscale / editor
                         } else if(generatedResults.length > 0) {
                             if (!debugMode) selectResult(0); 
                             resultsBar.classList.add('active');
@@ -4236,8 +4694,6 @@ function processUpscaleSmart(imgData, options) {
 
                 const editorOptions = {};
                 if (currentMode === 'editor') {
-                    editorOptions.filter = activeEditorFilter;
-                    editorOptions.strength = parseInt(editorStrengthSlider.value);
                     editorOptions.ditherEnable = document.getElementById('dither-enable').checked;
                     editorOptions.ditherAlgo = activeDitherAlgo;
                     editorOptions.ditherStrength = parseInt(document.getElementById('dither-strength').value);
@@ -4257,54 +4713,82 @@ function processUpscaleSmart(imgData, options) {
                         bloom: parseInt(document.getElementById('adj-bloom').value),
                         haze: parseInt(document.getElementById('adj-haze').value)
                     };
-
-                    editorOptions.asciiMode = document.getElementById('ascii-mode').value;
-                    editorOptions.asciiSize = parseInt(document.getElementById('ascii-size').value);
-                    editorOptions.asciiChars = document.getElementById('ascii-chars').value;
                     
-                    editorOptions.edgeAlgo = document.getElementById('edge-algo').value;
-                    editorOptions.edgeInvert = document.getElementById('edge-invert').checked;
-                    editorOptions.edgeSensitivity = parseInt(document.getElementById('edge-sensitivity').value);
-                    
-                    editorOptions.glitchType = document.getElementById('glitch-type').value;
-                    editorOptions.glitchAmount = parseInt(document.getElementById('glitch-amount').value);
-                    editorOptions.glitchSeed = parseInt(document.getElementById('glitch-seed').value);
-                    
-                    editorOptions.pixelateSize = parseInt(document.getElementById('pixelate-size').value);
-                    editorOptions.noiseAmount = parseInt(document.getElementById('noise-amount').value);
-                    editorOptions.posterizeLevels = parseInt(document.getElementById('posterize-levels').value);
-                    
-                    editorOptions.solarizeThreshold = parseInt(document.getElementById('solarize-threshold').value);
-                    editorOptions.embossStrength = parseInt(document.getElementById('emboss-strength').value);
-                    editorOptions.vignetteAmount = parseInt(document.getElementById('vignette-amount').value);
-                    editorOptions.vignetteSize = parseInt(document.getElementById('vignette-size').value);
-                    editorOptions.rgbOffset = parseInt(document.getElementById('rgb-offset').value);
-                    editorOptions.sepiaIntensity = parseInt(document.getElementById('sepia-intensity').value);
-                    editorOptions.thresholdLevel = parseInt(document.getElementById('threshold-level').value);
-                    editorOptions.gammaValue = parseFloat(document.getElementById('gamma-value').value);
-                    editorOptions.chromaticX = parseInt(document.getElementById('chromatic-x').value);
-                    editorOptions.chromaticY = parseInt(document.getElementById('chromatic-y').value);
-                    editorOptions.crtScanline = parseInt(document.getElementById('crt-scanline').value);
-                    editorOptions.crtCurvature = parseInt(document.getElementById('crt-curvature').value);
-                    editorOptions.neoThreshold = parseInt(document.getElementById('neo-threshold').value);
-                    editorOptions.duotoneColor1 = document.getElementById('duotone-color1').value;
-                    editorOptions.duotoneColor2 = document.getElementById('duotone-color2').value;
-
-                    editorOptions.kuwaharaRadius = parseInt(document.getElementById('kuwahara-radius').value);
-                    editorOptions.tiltBlur = parseInt(document.getElementById('tilt-blur').value);
-                    editorOptions.tiltPos = parseInt(document.getElementById('tilt-pos').value);
-                    editorOptions.tiltArea = parseInt(document.getElementById('tilt-area').value);
-                    editorOptions.kalSegments = parseInt(document.getElementById('kal-segments').value);
-                    editorOptions.swirlAngle = parseFloat(document.getElementById('swirl-angle').value);
-                    editorOptions.swirlRadius = parseInt(document.getElementById('swirl-radius').value);
-
-                    editorOptions.motionAngle = parseInt(document.getElementById('motion-angle').value);
-                    editorOptions.motionDistance = parseInt(document.getElementById('motion-dist').value);
-                    editorOptions.lsdIntensity = parseInt(document.getElementById('lsd-intensity').value);
-                    editorOptions.fisheyeAmount = parseInt(document.getElementById('fisheye-amount').value);
-                    editorOptions.bit8Size = parseInt(document.getElementById('bit8-size').value);
-                    editorOptions.bit16Size = parseInt(document.getElementById('bit16-size').value);
-                    editorOptions.parallaxAmount = parseInt(document.getElementById('parallax-amount').value);
+                    editorOptions.filters = [];
+                    activeFilters.forEach(fName => {
+                        const f = { name: fName };
+                        if (fName === 'threshold') f.thresholdLevel = parseInt(document.getElementById('threshold-level').value);
+                        else if (fName === 'pixelate') f.pixelateSize = parseInt(document.getElementById('pixelate-size').value);
+                        else if (fName === 'noise') f.noiseAmount = parseInt(document.getElementById('noise-amount').value);
+                        else if (fName === 'posterize') f.posterizeLevels = parseInt(document.getElementById('posterize-levels').value);
+                        else if (fName === 'solarize') f.solarizeThreshold = parseInt(document.getElementById('solarize-threshold').value);
+                        else if (fName === 'emboss') f.embossStrength = parseInt(document.getElementById('emboss-strength').value);
+                        else if (fName === 'vignette') {
+                            f.vignetteAmount = parseInt(document.getElementById('vignette-amount').value);
+                            f.vignetteSize = parseInt(document.getElementById('vignette-size').value);
+                        }
+                        else if (fName === 'rgb') f.rgbOffset = parseInt(document.getElementById('rgb-offset').value);
+                        else if (fName === 'sepia') f.sepiaIntensity = parseInt(document.getElementById('sepia-intensity').value);
+                        else if (fName === 'gamma') f.gammaValue = parseFloat(document.getElementById('gamma-value').value);
+                        else if (fName === 'chromatic') {
+                            f.chromaticX = parseInt(document.getElementById('chromatic-x').value);
+                            f.chromaticY = parseInt(document.getElementById('chromatic-y').value);
+                        }
+                        else if (fName === 'crt') {
+                            f.crtScanline = parseInt(document.getElementById('crt-scanline').value);
+                            f.crtCurvature = parseInt(document.getElementById('crt-curvature').value);
+                        }
+                        else if (fName === 'neo') f.neoThreshold = parseInt(document.getElementById('neo-threshold').value);
+                        else if (fName === 'duotone') {
+                            f.duotoneColor1 = document.getElementById('duotone-color1').value;
+                            f.duotoneColor2 = document.getElementById('duotone-color2').value;
+                        }
+                        else if (fName === 'kuwahara') f.kuwaharaRadius = parseInt(document.getElementById('kuwahara-radius').value);
+                        else if (fName === 'tiltshift') {
+                            f.tiltBlur = parseInt(document.getElementById('tilt-blur').value);
+                            f.tiltPos = parseInt(document.getElementById('tilt-pos').value);
+                            f.tiltArea = parseInt(document.getElementById('tilt-area').value);
+                        }
+                        else if (fName === 'kaleidoscope') f.kalSegments = parseInt(document.getElementById('kal-segments').value);
+                        else if (fName === 'swirl') {
+                            f.swirlAngle = parseFloat(document.getElementById('swirl-angle').value);
+                            f.swirlRadius = parseInt(document.getElementById('swirl-radius').value);
+                        }
+                        else if (fName === 'motionblur') {
+                            f.motionAngle = parseInt(document.getElementById('motion-angle').value);
+                            f.motionDistance = parseInt(document.getElementById('motion-dist').value);
+                        }
+                        else if (fName === 'lsd') f.lsdIntensity = parseInt(document.getElementById('lsd-intensity').value);
+                        else if (fName === 'fisheye') f.fisheyeAmount = parseInt(document.getElementById('fisheye-amount').value);
+                        else if (fName === 'bit8') f.bit8Size = parseInt(document.getElementById('bit8-size').value);
+                        else if (fName === 'bit16') f.bit16Size = parseInt(document.getElementById('bit16-size').value);
+                        else if (fName === 'parallax') f.parallaxAmount = parseInt(document.getElementById('parallax-amount').value);
+                        else if (fName === 'ascii') {
+                            f.asciiMode = document.getElementById('ascii-mode').value;
+                            f.asciiSize = parseInt(document.getElementById('ascii-size').value);
+                            f.asciiChars = document.getElementById('ascii-chars').value;
+                        }
+                        else if (fName === 'edge') {
+                            f.edgeAlgo = document.getElementById('edge-algo').value;
+                            f.edgeInvert = document.getElementById('edge-invert').checked;
+                            f.edgeSensitivity = parseInt(document.getElementById('edge-sensitivity').value);
+                        }
+                        else if (fName === 'glitch') {
+                            f.glitchType = document.getElementById('glitch-type').value;
+                            f.glitchAmount = parseInt(document.getElementById('glitch-amount').value);
+                            f.glitchSeed = parseInt(document.getElementById('glitch-seed').value);
+                        }
+                        else if (fName === 'depth') {
+                            f.depthContrast = parseInt(document.getElementById('depth-contrast').value);
+                            f.depthInvert = document.getElementById('depth-invert').checked;
+                        }
+                        else if (fName === 'normal') {
+                            f.normalStrength = parseInt(document.getElementById('normal-strength').value);
+                            f.normalInvertY = document.getElementById('normal-invert-y').checked;
+                        }
+                        
+                        editorOptions.filters.push(f);
+                    });
                     
                     editorOptions.width = mainImage.naturalWidth;
                     editorOptions.height = mainImage.naturalHeight;
@@ -4420,3 +4904,4 @@ function processUpscaleSmart(imgData, options) {
 </body>
 </html>
 <!-- I am Bread -->
+	<!-- These are accumulation of different projects compiled into one, so don't mind the mess. -->
