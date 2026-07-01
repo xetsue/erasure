@@ -1689,7 +1689,7 @@ function processUpscaleSmart(imgData, options) {
 
                 <div class="canvas-container" id="canvas-container">
                     <img id="original-image" src="" alt="">
-                    
+                     <p id="placeholder-text">By Tsu.</p>
                     <canvas id="streaming-canvas"></canvas>
                     <img id="main-image" src="" alt="">
                     <canvas id="preview-canvas" style="display:none;"></canvas>
@@ -2428,6 +2428,8 @@ function processUpscaleSmart(imgData, options) {
                         <button class="eraser-tab-link active" data-erasertab="general">General</button>
                         <button class="eraser-tab-link" data-erasertab="brush">Brush</button>
                     </div>
+                    	<p>Change [Tool:Pan] to Brush to start highlighting, this option can be found next to Load button. <br></p>
+                    	
 
                     <div id="erasertab-general" class="eraser-tab-content active">
                         <div class="setting-group" id="inpaint-settings">
@@ -3822,7 +3824,7 @@ function processUpscaleSmart(imgData, options) {
                         debugContainer.style.display = 'none';
                         document.getElementById('debug-mode-check').checked = false;
                         maskCanvas.style.display = 'block';
-                        setTool('brush');
+                        setTool('pan');
 
                         fsToolContainer.style.display = 'block';
                         fsSaveBtn.style.display = 'none';
