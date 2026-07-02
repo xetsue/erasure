@@ -703,6 +703,14 @@ function processEditor(imgData, options) {
             currentBuffer[i+2] = Math.min(255, Math.max(0, currentBuffer[i+2] + noise));
         }
     }
+    
+    const tempAmt = adj.temp || 0;
+    if (tempAmt !== 0) {
+        for (let i = 0; i < len * 4; i += 4) {
+            currentBuffer[i] = Math.min(255, Math.max(0, currentBuffer[i] + tempAmt));
+            currentBuffer[i+2] = Math.min(255, Math.max(0, currentBuffer[i+2] - tempAmt));
+        }
+    }
 
     if (options.filters && options.filters.length > 0) {
         for (const f of options.filters) {
@@ -1259,6 +1267,22 @@ function processEditor(imgData, options) {
                     }
                 }
             }
+            else if (filter === 'grid') {
+                const gSize = Math.max(2, f.gridSize || 20);
+                const gThick = Math.max(1, f.gridThickness || 1);
+                function hexToRgb(h){if(!h)return{r:0,g:0,b:0};const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return{r,g,b};}
+                const gCol = hexToRgb(f.gridColor || '#000000');
+                for(let y=0; y<h; y++) {
+                    for(let x=0; x<w; x++) {
+                        if ((x % gSize < gThick) || (y % gSize < gThick)) {
+                            const i = (y*w+x)*4;
+                            currentBuffer[i] = gCol.r;
+                            currentBuffer[i+1] = gCol.g;
+                            currentBuffer[i+2] = gCol.b;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1683,7 +1707,41 @@ function processUpscaleSmart(imgData, options) {
         </div>
     </div>
 
-    
+    <div id="upload-options-modal" class="confirm-modal-overlay">
+        <div class="confirm-modal" style="min-width: 250px;">
+            <h4 style="margin-top: 0;">Load Project</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                <button id="load-opt-image">Image</button>
+                <button id="load-opt-ae">Save (.ae)</button>
+                <button id="load-opt-custom">Custom</button>
+            </div>
+            <button id="load-opt-cancel">Cancel</button>
+        </div>
+    </div>
+
+    <div id="custom-canvas-modal" class="confirm-modal-overlay">
+        <div class="confirm-modal" style="text-align: left; min-width: 250px;">
+            <h4 style="text-align: center; margin-top: 0;">Custom Canvas</h4>
+            <div class="slider-input-group">
+                <label>Width:</label>
+                <input type="number" id="custom-canvas-width" value="1000" style="flex:1;">
+            </div>
+            <div class="slider-input-group">
+                <label>Height:</label>
+                <input type="number" id="custom-canvas-height" value="1000" style="flex:1;">
+            </div>
+            <div class="slider-input-group">
+                <label>Color:</label>
+                <input type="color" id="custom-canvas-color" value="#000000" style="flex:1;">
+            </div>
+            <label class="radio-option" style="margin-bottom: 15px;"><input type="checkbox" id="custom-canvas-transparent" checked> Transparent</label>
+            <div class="confirm-actions">
+                <button id="custom-canvas-cancel">Cancel</button>
+                <button id="custom-canvas-create" style="background-color: var(--accent-color); color: #000; border-color: var(--accent-color);">Create</button>
+            </div>
+        </div>
+    </div>
+
     <div id="custom-save-modal" class="confirm-modal-overlay">
         <div class="confirm-modal" style="text-align: left; min-width: 320px;">
             <h4 style="text-align: center; margin-top: 0;">Save Image</h4>
@@ -1714,6 +1772,7 @@ function processUpscaleSmart(imgData, options) {
             <p style="font-size: 0.75em; text-align: center; opacity: 0.8; margin-top: 0;">Note: Compression are only for JPG/WEBP</p>
             <div class="confirm-actions"> 
                 <button id="save-modal-cancel">Cancel</button>
+                <button id="save-modal-download-ae" style="background-color: #2a2a2a; color: white; border-color: #555;">Download Save</button>
                 <button id="save-modal-download" style="background-color: var(--accent-color); color: #000; border-color: var(--accent-color);">Download</button>
             </div>
         </div>
@@ -1747,7 +1806,7 @@ function processUpscaleSmart(imgData, options) {
                 <div id="status-pill" class="status-pill">Ready</div>
 
                 <div class="action-buttons" id="canvas-actions">
-                    <button id="revert-button" title="Revert to Original">✖</button>
+                    <button id="revert-button" title="Revert to Original">⎋</button>
                     <button id="canvas-compare-button" title="Hold to Compare (Alt)" disabled><b>/</b></button>
                     <div id="corner-indicator" class="corner-indicator"></div>
                 </div>
@@ -1791,7 +1850,7 @@ function processUpscaleSmart(imgData, options) {
 
             <div class="controls">
                 <button id="upload-button">✚</button>
-                <button id="remove-image-button" style="display:none; background-color:#ff4444; border-color:#ff4444; color:white;">Remove</button>
+                <button id="remove-image-button" style="display:none; background-color:#ff4444; border-color:#ff4444; color:white;">Clear</button>
                 
                 <div class="tool-selector-container">
                     <button id="main-tool-button">Tool: Pan</button>
@@ -1826,6 +1885,10 @@ function processUpscaleSmart(imgData, options) {
                      <button id="editor-button">Edit</button>
                      <button id="tools-button">Modify</button>
                      <button id="overlay-button">Overlay</button>
+                </div>
+                <div id="overlay-layer-actions" style="display: none; gap: 5px; margin-left: 5px; border-left: 1px solid var(--settings-outline); padding-left: 5px;">
+                    <button id="ov-duplicate-btn" title="Duplicate Layer">⧉</button>
+                    <button id="ov-delete-btn" title="Delete Layer" style="background-color: #ff4444; border-color: #ff4444; color: white;">✖</button>
                 </div>
             </div>
         </div>
@@ -2084,6 +2147,31 @@ function processUpscaleSmart(imgData, options) {
                                     <label>Seed:</label>
                                     <input type="range" id="glitch-seed" min="0" max="100" value="0">
                                     <input type="number" id="glitch-seed-num" value="0" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Grid -->
+                        <div class="filter-item-container" data-filter-name="grid">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="grid">⨀</button>
+                                <button class="filter-option" data-filter="grid">Grid</button>
+                                <button class="filter-settings-toggle" data-filter="grid">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="grid">
+                                <div class="slider-input-group">
+                                    <label>Size:</label>
+                                    <input type="range" id="grid-size" min="2" max="200" value="20">
+                                    <input type="number" id="grid-size-num" value="20" min="2" max="200">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Thickness:</label>
+                                    <input type="range" id="grid-thickness" min="1" max="50" value="1">
+                                    <input type="number" id="grid-thickness-num" value="1" min="1" max="50">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Color:</label>
+                                    <input type="color" id="grid-color" value="#000000" style="flex:1; height: 30px; padding: 0;">
                                 </div>
                             </div>
                         </div>
@@ -2451,6 +2539,13 @@ function processUpscaleSmart(imgData, options) {
                     <button id="reset-all-adj" style="margin-bottom: 15px; width: 100%; font-weight: bold; background: var(--button-bg); color: var(--text-color); border: 1px solid var(--frame-color); padding: 8px; border-radius: 3px; cursor: pointer;"><b>↺</b> Reset All Adjustments</button>
                     <div class="adj-item">
                         <div class="slider-input-group">
+                            <label>Temp:</label>
+                            <input type="range" id="adj-temp" min="-100" max="100" value="0">
+                            <input type="number" id="adj-temp-num" value="0" min="-100" max="100">
+                        </div>
+                    </div>
+                    <div class="adj-item">
+                        <div class="slider-input-group">
                             <label>Brightness:</label>
                             <input type="range" id="adj-bright" min="-100" max="100" value="0">
                             <input type="number" id="adj-bright-num" value="0" min="-100" max="100">
@@ -2590,6 +2685,13 @@ function processUpscaleSmart(imgData, options) {
                             <label>Rotation:</label>
                             <input type="range" id="overlay-rotation" min="-180" max="180" value="0">
                             <input type="number" id="overlay-rotation-num" value="0" min="-180" max="180">
+                        </div>
+                    </div>
+                    <div class="setting-group">
+                        <h4>Flip</h4>
+                        <div style="display:flex; gap:10px; margin-bottom:10px;">
+                            <button id="ov-flip-x" style="flex:1;">Flip X</button>
+                            <button id="ov-flip-y" style="flex:1;">Flip Y</button>
                         </div>
                     </div>
                     <div class="setting-group">
@@ -2905,6 +3007,31 @@ function processUpscaleSmart(imgData, options) {
                                     <label>Seed:</label>
                                     <input type="range" id="ov-glitch-seed" min="0" max="100" value="0">
                                     <input type="number" id="ov-glitch-seed-num" value="0" min="0" max="100">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Grid -->
+                        <div class="filter-item-container" data-filter-name="grid">
+                            <div class="filter-row">
+                                <button class="filter-lock-btn" data-filter="grid">⨀</button>
+                                <button class="filter-option" data-filter="grid">Grid</button>
+                                <button class="filter-settings-toggle" data-filter="grid">⚙</button>
+                            </div>
+                            <div class="filter-settings-panel" data-for="grid">
+                                <div class="slider-input-group">
+                                    <label>Size:</label>
+                                    <input type="range" id="ov-grid-size" min="2" max="200" value="20">
+                                    <input type="number" id="ov-grid-size-num" value="20" min="2" max="200">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Thickness:</label>
+                                    <input type="range" id="ov-grid-thickness" min="1" max="50" value="1">
+                                    <input type="number" id="ov-grid-thickness-num" value="1" min="1" max="50">
+                                </div>
+                                <div class="slider-input-group">
+                                    <label>Color:</label>
+                                    <input type="color" id="ov-grid-color" value="#000000" style="flex:1; height: 30px; padding: 0;">
                                 </div>
                             </div>
                         </div>
@@ -3227,6 +3354,13 @@ function processUpscaleSmart(imgData, options) {
 
                 <div id="subtab-ov-adjust" class="sub-tab-content">
                     <button id="ov-reset-all-adj" style="margin-bottom: 15px; width: 100%; font-weight: bold; background: var(--button-bg); color: var(--text-color); border: 1px solid var(--frame-color); padding: 8px; border-radius: 3px; cursor: pointer;"><b>↺</b> Reset All Adjustments</button>
+                    <div class="adj-item">
+                        <div class="slider-input-group">
+                            <label>Temp:</label>
+                            <input type="range" id="ov-adj-temp" min="-100" max="100" value="0">
+                            <input type="number" id="ov-adj-temp-num" value="0" min="-100" max="100">
+                        </div>
+                    </div>
                     <div class="adj-item">
                         <div class="slider-input-group">
                             <label>Brightness:</label>
@@ -3605,6 +3739,7 @@ function processUpscaleSmart(imgData, options) {
     </script>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;">
+    <input type="file" id="ae-input" accept=".ae" style="display: none;">
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -3982,6 +4117,9 @@ function processUpscaleSmart(imgData, options) {
                     this.alignYTop = document.getElementById('ov-align-y-top');
                     this.alignYCenter = document.getElementById('ov-align-y-center');
                     this.alignYBottom = document.getElementById('ov-align-y-bottom');
+
+                    this.flipXBtn = document.getElementById('ov-flip-x');
+                    this.flipYBtn = document.getElementById('ov-flip-y');
                 },
                 bindEvents() {
                     this.addBtn.addEventListener('click', () => this.fileInput.click());
@@ -4042,6 +4180,15 @@ function processUpscaleSmart(imgData, options) {
                     this.bindSlider(this.scaleH, this.scaleHNum, (val) => this.handleScaleInput('height', val));
                     this.bindSlider(this.rotation, this.rotationNum, (val) => this.updateActiveLayer('rotation', val));
 
+                    this.flipXBtn.addEventListener('click', () => {
+                        const layer = this.getActiveLayer();
+                        if(layer && !layer.locked) { layer.flipX = !layer.flipX; this.markChanged(); this.renderAll(); this.renderUI(); }
+                    });
+                    this.flipYBtn.addEventListener('click', () => {
+                        const layer = this.getActiveLayer();
+                        if(layer && !layer.locked) { layer.flipY = !layer.flipY; this.markChanged(); this.renderAll(); this.renderUI(); }
+                    });
+
                     this.alignXLeft.addEventListener('click', () => this.alignX('left'));
                     this.alignXCenter.addEventListener('click', () => this.alignX('center'));
                     this.alignXRight.addEventListener('click', () => this.alignX('right'));
@@ -4062,6 +4209,7 @@ function processUpscaleSmart(imgData, options) {
                     this.textItalicBtn.addEventListener('click', () => this.toggleActiveTextLayer('isItalic'));
                     this.textUnderlineBtn.addEventListener('click', () => this.toggleActiveTextLayer('isUnderline'));
 
+                    this.bindSlider(document.getElementById('ov-adj-temp'), document.getElementById('ov-adj-temp-num'), (val) => this.updateAdjustment('temp', val));
                     this.bindSlider(document.getElementById('ov-adj-bright'), document.getElementById('ov-adj-bright-num'), (val) => this.updateAdjustment('brightness', val));
                     this.bindSlider(document.getElementById('ov-adj-contrast'), document.getElementById('ov-adj-contrast-num'), (val) => this.updateAdjustment('contrast', val));
                     this.bindSlider(document.getElementById('ov-adj-sat'), document.getElementById('ov-adj-sat-num'), (val) => this.updateAdjustment('saturation', val));
@@ -4073,15 +4221,17 @@ function processUpscaleSmart(imgData, options) {
                     this.bindSlider(document.getElementById('ov-adj-haze'), document.getElementById('ov-adj-haze-num'), (val) => this.updateAdjustment('haze', val));
                     
                     this.resetAdjBtn.addEventListener('click', () => {
-                        ['ov-adj-bright', 'ov-adj-contrast', 'ov-adj-sat', 'ov-adj-hue', 'ov-adj-blur', 'ov-adj-sharp', 'ov-adj-grain', 'ov-adj-bloom', 'ov-adj-haze'].forEach(id => {
+                        ['ov-adj-temp', 'ov-adj-bright', 'ov-adj-contrast', 'ov-adj-sat', 'ov-adj-hue', 'ov-adj-blur', 'ov-adj-sharp', 'ov-adj-grain', 'ov-adj-bloom', 'ov-adj-haze'].forEach(id => {
                             const slider = document.getElementById(id);
                             const num = document.getElementById(id + '-num');
-                            slider.value = 0;
-                            num.value = 0;
+                            if(slider && num) {
+                                slider.value = 0;
+                                num.value = 0;
+                            }
                         });
                         const layer = this.getActiveLayer();
                         if(layer) {
-                            layer.adjustments = { brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 };
+                            layer.adjustments = { temp: 0, brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 };
                             layer.needsCacheUpdate = true;
                             this.markChanged();
                             this.renderAll();
@@ -4099,8 +4249,62 @@ function processUpscaleSmart(imgData, options) {
                             }
                         });
                     });
+
+                    document.getElementById('ov-delete-btn').addEventListener('click', () => {
+                        const idx = this.layers.findIndex(l => l.id === this.activeLayerId);
+                        if(idx !== -1) {
+                            if(confirm(`Delete layer "${this.layers[idx].name}"?`)) {
+                                this.layers.splice(idx, 1);
+                                this.activeLayerId = this.layers.length > 0 ? this.layers[0].id : null;
+                                this.markChanged();
+                                this.updateLayerListUI();
+                                this.syncSidebarUI();
+                                this.renderAll();
+                            }
+                        }
+                    });
+
+                    document.getElementById('ov-duplicate-btn').addEventListener('click', () => {
+					    const layer = this.getActiveLayer();
+					    if(!layer) return;
+					    
+					    const baseName = layer.name.replace(/^\[\d+\]\s*/, '');
+					    
+					    let maxNumber = 1;
+					    this.layers.forEach(l => {
+					        const lBase = l.name.replace(/^\[\d+\]\s*/, '');
+					        if (lBase === baseName) {
+					            const match = l.name.match(/^\[(\d+)\]/);
+					            const num = match ? parseInt(match[1]) : 1;
+					            if (num >= maxNumber) maxNumber = num + 1;
+					        }
+					    });
+					    
+					    const newName = `[${maxNumber}] ${baseName}`;
+					
+					    const newLayer = { 
+					        ...layer, 
+					        id: 'layer_' + (this.layerIdCounter++), 
+					        activeFilters: new Set(layer.activeFilters), 
+					        lockedFilters: new Set(layer.lockedFilters), 
+					        adjustments: {...layer.adjustments}, 
+					        chromaKey: {...layer.chromaKey}, 
+					        cachedCanvas: document.createElement('canvas'), 
+					        name: newName,
+					        x: layer.x + 20, 
+					        y: layer.y + 20 
+					    };
+					    newLayer.needsCacheUpdate = true;
+					    this.layers.unshift(newLayer);
+					    this.activeLayerId = newLayer.id;
+					    this.markChanged();
+					    this.updateLayerListUI();
+					    this.syncSidebarUI();
+					    this.renderAll();
+					});
                 },
                 bindSlider(slider, num, callback) {
+                    if(!slider || !num) return;
                     slider.addEventListener('input', (e) => {
                         num.value = e.target.value;
                         callback(parseFloat(e.target.value));
@@ -4134,50 +4338,55 @@ function processUpscaleSmart(imgData, options) {
                 handleImageUpload(e) {
                     const file = e.target.files[0];
                     if (!file) return;
-                    const url = URL.createObjectURL(file);
-                    const img = new Image();
-                    img.onload = () => {
-                        const mw = mainImage.naturalWidth || 800;
-                        const mh = mainImage.naturalHeight || 600;
-                        let w = img.width;
-                        let h = img.height;
-                        const scale = Math.min((mw / 2) / w, (mh / 2) / h, 1);
-                        w = w * scale;
-                        h = h * scale;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const mw = mainImage.naturalWidth || 800;
+                            const mh = mainImage.naturalHeight || 600;
+                            let w = img.width;
+                            let h = img.height;
+                            const scale = Math.min((mw / 2) / w, (mh / 2) / h, 1);
+                            w = w * scale;
+                            h = h * scale;
 
-                        const layer = {
-                            id: 'layer_' + (this.layerIdCounter++),
-                            type: 'image',
-                            name: file.name,
-                            imgObj: img,
-                            x: mw / 2,
-                            y: mh / 2,
-                            width: w,
-                            height: h,
-                            originalWidth: img.width,
-                            originalHeight: img.height,
-                            rotation: 0,
-                            opacity: 100,
-                            blendMode: 'source-over',
-                            locked: false,
-                            hidden: false,
-                            chromaKey: { type: 'none', color: '#000000', tolerance: 10 },
-                            cachedCanvas: document.createElement('canvas'),
-                            needsCacheUpdate: true,
-                            adjustments: { brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 },
-                            activeFilters: new Set(),
-                            lockedFilters: new Set()
+                            const layer = {
+                                id: 'layer_' + (this.layerIdCounter++),
+                                type: 'image',
+                                name: file.name,
+                                imgObj: img,
+                                x: mw / 2,
+                                y: mh / 2,
+                                width: w,
+                                height: h,
+                                originalWidth: img.width,
+                                originalHeight: img.height,
+                                rotation: 0,
+                                flipX: false,
+                                flipY: false,
+                                opacity: 100,
+                                blendMode: 'source-over',
+                                locked: false,
+                                hidden: false,
+                                chromaKey: { type: 'none', color: '#000000', tolerance: 10 },
+                                cachedCanvas: document.createElement('canvas'),
+                                needsCacheUpdate: true,
+                                adjustments: { temp: 0, brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 },
+                                activeFilters: new Set(),
+                                lockedFilters: new Set()
+                            };
+
+                            this.layers.unshift(layer);
+                            this.activeLayerId = layer.id;
+                            this.markChanged();
+                            this.updateLayerListUI();
+                            this.syncSidebarUI();
+                            this.renderAll();
+                            this.fileInput.value = '';
                         };
-
-                        this.layers.unshift(layer);
-                        this.activeLayerId = layer.id;
-                        this.markChanged();
-                        this.updateLayerListUI();
-                        this.syncSidebarUI();
-                        this.renderAll();
-                        this.fileInput.value = '';
+                        img.src = ev.target.result;
                     };
-                    img.src = url;
+                    reader.readAsDataURL(file);
                 },
                 handleTextAdd() {
                     const mw = mainImage.naturalWidth || 800;
@@ -4203,6 +4412,8 @@ function processUpscaleSmart(imgData, options) {
                         originalWidth: 100,
                         originalHeight: 100,
                         rotation: 0,
+                        flipX: false,
+                        flipY: false,
                         opacity: 100,
                         blendMode: 'source-over',
                         locked: false,
@@ -4210,7 +4421,7 @@ function processUpscaleSmart(imgData, options) {
                         chromaKey: { type: 'none', color: '#000000', tolerance: 10 },
                         cachedCanvas: document.createElement('canvas'),
                         needsCacheUpdate: true,
-                        adjustments: { brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 },
+                        adjustments: { temp: 0, brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 },
                         activeFilters: new Set(),
                         lockedFilters: new Set()
                     };
@@ -4363,27 +4574,10 @@ function processUpscaleSmart(imgData, options) {
                             this.renderUI();
                         };
 
-                        const delBtn = document.createElement('button');
-                        delBtn.className = 'layer-btn';
-                        delBtn.innerHTML = '✖';
-                        delBtn.onclick = () => {
-                            if(confirm(`Delete layer "${layer.name}"?`)) {
-                                this.layers.splice(index, 1);
-                                if(this.activeLayerId === layer.id) {
-                                    this.activeLayerId = this.layers.length > 0 ? this.layers[0].id : null;
-                                }
-                                this.markChanged();
-                                this.updateLayerListUI();
-                                this.syncSidebarUI();
-                                this.renderAll();
-                            }
-                        };
-
                         controls.appendChild(upBtn);
                         controls.appendChild(downBtn);
                         controls.appendChild(lockBtn);
                         controls.appendChild(hideBtn);
-                        controls.appendChild(delBtn);
 
                         item.appendChild(dragHandle);
                         item.appendChild(name);
@@ -4391,6 +4585,7 @@ function processUpscaleSmart(imgData, options) {
                         this.layerList.appendChild(item);
                         
                         dragHandle.addEventListener('mousedown', (e) => this.startLayerDrag(e, index));
+                        dragHandle.addEventListener('touchstart', (e) => this.startLayerDrag(e, index), {passive: false});
                     });
 
                     if (mainImage && mainImage.src && mainImage.style.display !== 'none') {
@@ -4452,9 +4647,10 @@ function processUpscaleSmart(imgData, options) {
                 },
                 startLayerDrag(e, index) {
                     e.preventDefault();
-                    let startY = e.clientY;
+                    let startY = e.touches ? e.touches[0].clientY : e.clientY;
                     const moveHandler = (ev) => {
-                        const diff = ev.clientY - startY;
+                        const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+                        const diff = clientY - startY;
                         if(diff > 30) {
                             this.reorderLayer(index, 1);
                             endHandler();
@@ -4466,9 +4662,13 @@ function processUpscaleSmart(imgData, options) {
                     const endHandler = () => {
                         window.removeEventListener('mousemove', moveHandler);
                         window.removeEventListener('mouseup', endHandler);
+                        window.removeEventListener('touchmove', moveHandler);
+                        window.removeEventListener('touchend', endHandler);
                     };
                     window.addEventListener('mousemove', moveHandler);
                     window.addEventListener('mouseup', endHandler);
+                    window.addEventListener('touchmove', moveHandler, {passive: false});
+                    window.addEventListener('touchend', endHandler);
                 },
                 getActiveLayer() {
                     if (this.activeLayerId === 'base_layer') return undefined;
@@ -4559,6 +4759,8 @@ function processUpscaleSmart(imgData, options) {
                     this.resetColorPickerState();
                     const layer = this.getActiveLayer();
                     
+                    const layerActions = document.getElementById('overlay-layer-actions');
+                    
                     if (layer && layer.type === 'text') {
                         this.tabStyling.style.display = 'block';
                         this.textContentInput.value = layer.textContent;
@@ -4577,11 +4779,14 @@ function processUpscaleSmart(imgData, options) {
                     }
 
                     const subTabs = document.querySelectorAll('#overlay-view .sub-tab-content input, #overlay-view .sub-tab-content select, #overlay-view .sub-tab-content button:not(#ov-reset-all-adj):not(#overlay-chroma-picker-btn)');
-                    if(!layer) {
+                    if(!layer || layer.id === 'base_layer') {
                         subTabs.forEach(el => el.setAttribute('disabled', 'true'));
+                        if(layerActions) layerActions.style.display = 'none';
                         return;
                     }
+                    
                     subTabs.forEach(el => el.removeAttribute('disabled'));
+                    if(layerActions) layerActions.style.display = 'flex';
 
                     this.blendMode.value = layer.blendMode;
                     this.opacity.value = layer.opacity;
@@ -4600,8 +4805,8 @@ function processUpscaleSmart(imgData, options) {
                     this.rotationNum.value = layer.rotation;
 
                     const adj = layer.adjustments;
-                    ['bright', 'contrast', 'sat', 'hue', 'blur', 'sharp', 'grain', 'bloom', 'haze'].forEach(k => {
-                        const map = { bright: 'brightness', contrast: 'contrast', sat: 'saturation', hue: 'hue', blur: 'blur', sharp: 'sharp', grain: 'grain', bloom: 'bloom', haze: 'haze' };
+                    ['temp', 'bright', 'contrast', 'sat', 'hue', 'blur', 'sharp', 'grain', 'bloom', 'haze'].forEach(k => {
+                        const map = { temp: 'temp', bright: 'brightness', contrast: 'contrast', sat: 'saturation', hue: 'hue', blur: 'blur', sharp: 'sharp', grain: 'grain', bloom: 'bloom', haze: 'haze' };
                         const v = adj[map[k]];
                         const s = document.getElementById(`ov-adj-${k}`);
                         if(s) {
@@ -4755,6 +4960,15 @@ function processUpscaleSmart(imgData, options) {
                     let dataModified = false;
                     const imgData = tCtx.getImageData(0, 0, c.width, c.height);
                     const data = imgData.data;
+                    
+                    const tempAmt = adj.temp || 0;
+                    if (tempAmt !== 0) {
+                        dataModified = true;
+                        for(let i=0; i<data.length; i+=4) {
+                            data[i] = Math.min(255, Math.max(0, data[i] + tempAmt));
+                            data[i+2] = Math.min(255, Math.max(0, data[i+2] - tempAmt));
+                        }
+                    }
 
                     if (adj.sharp > 0 || adj.bloom > 0 || adj.haze > 0 || adj.grain > 0) {
                         dataModified = true;
@@ -5320,6 +5534,18 @@ function processUpscaleSmart(imgData, options) {
                                         data[i] *= vig; data[i+1] *= vig; data[i+2] *= vig;
                                     }
                                 }
+                            } else if (fname === 'grid') {
+                                const gSize = Math.max(2, parseInt(document.getElementById('ov-grid-size').value) || 20);
+                                const gThick = Math.max(1, parseInt(document.getElementById('ov-grid-thickness').value) || 1);
+                                const gCol = this.hexToRgb(document.getElementById('ov-grid-color').value || '#000000');
+                                for(let y=0; y<h; y++) {
+                                    for(let x=0; x<w; x++) {
+                                        if ((x % gSize < gThick) || (y % gSize < gThick)) {
+                                            const i = (y*w+x)*4;
+                                            data[i] = gCol.r; data[i+1] = gCol.g; data[i+2] = gCol.b; data[i+3] = 255;
+                                        }
+                                    }
+                                }
                             }
                         });
                     }
@@ -5349,6 +5575,7 @@ function processUpscaleSmart(imgData, options) {
                         overlayCtx.globalCompositeOperation = layer.blendMode;
                         overlayCtx.translate(layer.x, layer.y);
                         overlayCtx.rotate(layer.rotation * Math.PI / 180);
+                        overlayCtx.scale(layer.flipX ? -1 : 1, layer.flipY ? -1 : 1);
                         overlayCtx.drawImage(layer.cachedCanvas, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
                         overlayCtx.restore();
                     }
@@ -5420,6 +5647,7 @@ function processUpscaleSmart(imgData, options) {
                     overlayUICtx.lineWidth = 3 * factor;
                     overlayUICtx.translate(layer.x, layer.y);
                     overlayUICtx.rotate(layer.rotation * Math.PI / 180);
+                    overlayUICtx.scale(layer.flipX ? -1 : 1, layer.flipY ? -1 : 1);
                     const hw = layer.width / 2;
                     const hh = layer.height / 2;
                     overlayUICtx.strokeRect(-hw, -hh, layer.width, layer.height);
@@ -5478,10 +5706,11 @@ function processUpscaleSmart(imgData, options) {
                     const angle = -layer.rotation * Math.PI / 180;
                     const cos = Math.cos(angle);
                     const sin = Math.sin(angle);
-                    return {
-                        x: dx * cos - dy * sin,
-                        y: dx * sin + dy * cos
-                    };
+                    let lx = dx * cos - dy * sin;
+                    let ly = dx * sin + dy * cos;
+                    if(layer.flipX) lx = -lx;
+                    if(layer.flipY) ly = -ly;
+                    return { x: lx, y: ly };
                 },
                 hitTest(px, py) {
                     const factor = mainImage.naturalWidth / overlayUICanvas.getBoundingClientRect().width;
@@ -5578,8 +5807,8 @@ function processUpscaleSmart(imgData, options) {
                         this.rotation.value = Math.round(layer.rotation);
                         this.rotationNum.value = Math.round(layer.rotation);
                     } else if (this.isScaling) {
-                        const localStart = this.transformPointToLayerSpace(this.startX, this.startY, {x: layer.x, y: layer.y, rotation: layer.rotation});
-                        const localEnd = this.transformPointToLayerSpace(coords.x, coords.y, {x: layer.x, y: layer.y, rotation: layer.rotation});
+                        const localStart = this.transformPointToLayerSpace(this.startX, this.startY, {x: layer.x, y: layer.y, rotation: layer.rotation, flipX: false, flipY: false});
+                        const localEnd = this.transformPointToLayerSpace(coords.x, coords.y, {x: layer.x, y: layer.y, rotation: layer.rotation, flipX: false, flipY: false});
                         const ldx = localEnd.x - localStart.x;
                         const ldy = localEnd.y - localStart.y;
                         let newW = this.initialLayerState.w;
@@ -5879,31 +6108,131 @@ function processUpscaleSmart(imgData, options) {
             }
 
             function setupEventListeners() {
-                uploadBtn.addEventListener('click', () => imageInput.click());
-                imageInput.addEventListener('change', handleImageUpload);
+                uploadBtn.addEventListener('click', () => {
+                    document.getElementById('upload-options-modal').style.display = 'flex';
+                });
                 
+                document.getElementById('load-opt-cancel').addEventListener('click', () => {
+                    document.getElementById('upload-options-modal').style.display = 'none';
+                });
+                
+                document.getElementById('load-opt-image').addEventListener('click', () => {
+                    document.getElementById('upload-options-modal').style.display = 'none';
+                    imageInput.click();
+                });
+                
+                document.getElementById('load-opt-custom').addEventListener('click', () => {
+                    document.getElementById('upload-options-modal').style.display = 'none';
+                    document.getElementById('custom-canvas-modal').style.display = 'flex';
+                });
+                
+                document.getElementById('load-opt-ae').addEventListener('click', () => {
+                    document.getElementById('upload-options-modal').style.display = 'none';
+                    document.getElementById('ae-input').click();
+                });
+                
+                document.getElementById('custom-canvas-cancel').addEventListener('click', () => {
+                    document.getElementById('custom-canvas-modal').style.display = 'none';
+                });
+                
+                document.getElementById('custom-canvas-create').addEventListener('click', () => {
+                    const w = parseInt(document.getElementById('custom-canvas-width').value) || 1000;
+                    const h = parseInt(document.getElementById('custom-canvas-height').value) || 1000;
+                    const color = document.getElementById('custom-canvas-color').value;
+                    const isTrans = document.getElementById('custom-canvas-transparent').checked;
+
+                    const c = document.createElement('canvas');
+                    c.width = w; c.height = h;
+                    const ctx = c.getContext('2d');
+                    if(!isTrans) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(0,0,w,h);
+                    } else {
+                        ctx.clearRect(0,0,w,h);
+                    }
+
+                    document.getElementById('custom-canvas-modal').style.display = 'none';
+                    originalFileName = "custom_canvas.png";
+                    handleImageDataUrl(c.toDataURL());
+                });
+
+                imageInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    originalFileName = file.name;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        handleImageDataUrl(ev.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                    e.target.value = '';
+                });
+                
+                document.getElementById('ae-input').addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if(!file) return;
+                    const text = await file.text();
+                    try {
+                        const data = JSON.parse(text);
+                        originalFileName = data.originalFileName || "project.png";
+                        await handleImageDataUrl(data.baseImage);
+                        
+                        if(data.layers) {
+                            OverlayUI.layers = [];
+                            for(const lData of data.layers) {
+                                const layer = { 
+                                    ...lData, 
+                                    activeFilters: new Set(lData.activeFilters), 
+                                    lockedFilters: new Set(lData.lockedFilters), 
+                                    cachedCanvas: document.createElement('canvas'), 
+                                    needsCacheUpdate: true 
+                                };
+                                if(layer.type === 'image') {
+                                    const img = new Image();
+                                    await new Promise(res => { img.onload = res; img.src = layer.imgObj; });
+                                    layer.imgObj = img;
+                                } else if(layer.type === 'text') {
+                                    layer.textCanvas = document.createElement('canvas');
+                                    OverlayUI.updateTextLayer(layer, true);
+                                }
+                                OverlayUI.layers.push(layer);
+                            }
+                            OverlayUI.activeLayerId = OverlayUI.layers.length > 0 ? OverlayUI.layers[0].id : null;
+                            OverlayUI.updateLayerListUI();
+                            OverlayUI.syncSidebarUI();
+                            OverlayUI.renderAll();
+                        }
+                    } catch(err) {
+                        alert("Failed to load .ae file");
+                    }
+                    e.target.value = '';
+                });
+
                 removeImgBtn.addEventListener('click', () => {
-                    mainImage.src = '';
-                    originalImage.src = '';
-                    mainImage.style.display = 'none';
-                    originalImage.style.display = 'none';
-                    emptyStateText.style.display = 'block';
-                    canvasActions.style.display = 'none';
-                    resultsBar.innerHTML = '';
-                    resultsBar.classList.remove('active');
-                    removeImgBtn.style.display = 'none';
-                    originalImageBitmap = null;
-                    currentImageBitmap = null;
-                    generatedResults = [];
-                    runOnxBtn.disabled = true;
-                    clearMask();
-                    compareBtn.disabled = true;
-                    canvasCompareBtn.disabled = true;
-                    if(worker) worker.terminate();
-                    worker = null;
-                    OverlayUI.reset();
-                    overlayCanvas.style.display = 'none';
-                    overlayUICanvas.style.display = 'none';
+                    if (confirm("Clear canvas? This will remove the image and all overlays.")) {
+                        mainImage.src = '';
+                        originalImage.src = '';
+                        mainImage.style.display = 'none';
+                        originalImage.style.display = 'none';
+                        emptyStateText.style.display = 'block';
+                        canvasActions.style.display = 'none';
+                        resultsBar.innerHTML = '';
+                        resultsBar.classList.remove('active');
+                        removeImgBtn.style.display = 'none';
+                        originalImageBitmap = null;
+                        currentImageBitmap = null;
+                        generatedResults = [];
+                        runOnxBtn.disabled = true;
+                        clearMask();
+                        compareBtn.disabled = true;
+                        canvasCompareBtn.disabled = true;
+                        if(worker) worker.terminate();
+                        worker = null;
+                        OverlayUI.reset();
+                        overlayCanvas.style.display = 'none';
+                        overlayUICanvas.style.display = 'none';
+                        originalFileName = "image.png";
+                    }
                 });
 
                 editorBtn.addEventListener('click', () => attemptModeSwitch('editor'));
@@ -6259,6 +6588,29 @@ function processUpscaleSmart(imgData, options) {
                     OverlayUI.openSaveDialog();
                 });
                 
+                document.getElementById('save-modal-download-ae').addEventListener('click', () => {
+                    customSaveModal.style.display = 'none';
+                    const exportData = {
+                        baseImage: mainImage.src, 
+                        originalFileName: originalFileName,
+                        layers: OverlayUI.layers.map(l => ({
+                            ...l,
+                            imgObj: l.type === 'image' ? l.imgObj.src : null,
+                            cachedCanvas: null,
+                            textCanvas: null,
+                            activeFilters: Array.from(l.activeFilters),
+                            lockedFilters: Array.from(l.lockedFilters)
+                        }))
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(exportData)], {type: 'application/json'});
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = originalFileName.split('.')[0] + ".ae";
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                });
+
                 saveCancelBtn.addEventListener('click', () => customSaveModal.style.display = 'none');
                 saveDownloadBtn.addEventListener('click', () => {
                     if(currentMode === 'overlay') OverlayUI.executeSave();
@@ -6877,17 +7229,19 @@ function processUpscaleSmart(imgData, options) {
                 saveState();
             }
 
-            async function handleImageUpload(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                originalFileName = file.name;
-                originalImageBlob = file;
-                const bmp = await createImageBitmap(file);
-                originalImageBitmap = bmp;
-                currentImageBitmap = bmp;
+            async function handleImageDataUrl(url) {
+                try {
+                    const res = await fetch(url);
+                    const blob = await res.blob();
+                    originalImageBlob = blob;
+                    const bmp = await createImageBitmap(blob);
+                    originalImageBitmap = bmp;
+                    currentImageBitmap = bmp;
+                } catch(err) {
+                    console.error("Failed to load image URL as blob", err);
+                    return;
+                }
                 
-                const url = URL.createObjectURL(file);
                 compareBtn.disabled = true;
                 canvasCompareBtn.disabled = true;
                 
@@ -7492,6 +7846,7 @@ function processUpscaleSmart(imgData, options) {
                 
                 if (currentMode === 'editor') {
                     if (activeFilters.size === 0 && !document.getElementById('dither-enable').checked && 
+                        parseInt(document.getElementById('adj-temp').value) === 0 &&
                         parseInt(document.getElementById('adj-bright').value) === 0 &&
                         parseInt(document.getElementById('adj-contrast').value) === 0 &&
                         parseInt(document.getElementById('adj-sat').value) === 0 &&
@@ -7693,6 +8048,7 @@ function processUpscaleSmart(imgData, options) {
                     editorOptions.ditherGradient = ditherGradientColors;
                     
                     editorOptions.adjustments = {
+                        temp: parseInt(document.getElementById('adj-temp').value),
                         brightness: parseInt(document.getElementById('adj-bright').value),
                         contrast: parseInt(document.getElementById('adj-contrast').value),
                         saturation: parseInt(document.getElementById('adj-sat').value),
@@ -7775,6 +8131,11 @@ function processUpscaleSmart(imgData, options) {
                         else if (fName === 'normal') {
                             f.normalStrength = parseInt(document.getElementById('normal-strength').value);
                             f.normalInvertY = document.getElementById('normal-invert-y').checked;
+                        }
+                        else if (fName === 'grid') {
+                            f.gridSize = parseInt(document.getElementById('grid-size').value);
+                            f.gridThickness = parseInt(document.getElementById('grid-thickness').value);
+                            f.gridColor = document.getElementById('grid-color').value;
                         }
                         
                         editorOptions.filters.push(f);
@@ -7892,6 +8253,6 @@ function processUpscaleSmart(imgData, options) {
         });
     </script>
 </body>
-</html>
-<!-- I am Bread -->
-	<!-- These are accumulation of different projects compiled into one, As of July 2026, the Overlay and Compressor was added into this compilation. -->
+	</html>
+	<!-- I am Bread -->
+	<!-- These are accumulation of different projects compiled into one, As of July 2026, Major Update: Overlay and Compressor was added into this compilation. This was a massive push.-->
