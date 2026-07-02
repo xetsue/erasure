@@ -6026,7 +6026,9 @@ function processUpscaleSmart(imgData, options) {
                  c.width = w; c.height = h;
                  const tempCtx = c.getContext('2d');
                  
-                 if (currentImageBitmap) {
+                 if (currentMode === 'editor' || (currentMode === 'upscale' && upscaleAlgoSelect.value === 'custom')) {
+                     tempCtx.drawImage(mainImage, 0, 0, w, h);
+                 } else if (currentImageBitmap) {
                      tempCtx.drawImage(currentImageBitmap, 0, 0, w, h);
                  } else {
                      tempCtx.drawImage(mainImage, 0, 0, w, h);
@@ -8253,6 +8255,6 @@ function processUpscaleSmart(imgData, options) {
         });
     </script>
 </body>
-	</html>
+</html>
 	<!-- I am Bread -->
 	<!-- These are accumulation of different projects compiled into one, As of July 2026, Major Update: Overlay and Compressor was added into this compilation. This was a massive push.-->
