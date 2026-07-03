@@ -65,13 +65,18 @@ C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip)
 ### Filters Demo
 This photo was made by me in Blender 2.90 and rendered out to be used on the web-app for demonstration. 
 
+#### Original Image
+
+><img width="1081" height="1080" alt="1000632193" src="https://github.com/user-attachments/assets/7f686cdd-8fa1-455c-8dea-6e16ef69f7f1" />
+
+#### Processed
+
 ><img width="1081" height="1080" alt="1000632235" src="https://github.com/user-attachments/assets/4b165c92-6c86-411d-8c42-1a5226adb60f" />
 ><img width="1081" height="1080" alt="1000632208" src="https://github.com/user-attachments/assets/c049e6fd-b388-42de-aa05-6c4dbb1cc995" />
 ><img width="1081" height="1080" alt="1000632194" src="https://github.com/user-attachments/assets/e353c147-5591-4897-812d-bc27f1a1277f" />
 ><img width="1081" height="1080" alt="1000632190" src="https://github.com/user-attachments/assets/d4df1a36-f6f9-4188-b132-cd4a9c89fa13" />
 ><img width="1081" height="1080" alt="1000632191" src="https://github.com/user-attachments/assets/7b7c3238-fedb-47e8-acaf-d29087baec66" />
 ><img width="1081" height="1080" alt="1000632189" src="https://github.com/user-attachments/assets/37a2ee47-0f07-4f1f-acb5-bfaa94b11776" />
-><img width="1081" height="1080" alt="1000632193" src="https://github.com/user-attachments/assets/7f686cdd-8fa1-455c-8dea-6e16ef69f7f1" />
 ><img width="1081" height="1080" alt="1000632994" src="https://github.com/user-attachments/assets/ccad657d-09df-4cc1-9635-8a9f4555f474" />
 
 
