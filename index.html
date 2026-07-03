@@ -1785,10 +1785,11 @@ function processUpscaleSmart(imgData, options) {
 
     <div class="header">
         <div class="header-left">
-        	<button id="grid-toggle-button" title="Toggle Grid">▦</button>
-            <button id="compare-button" title="Hold to Compare (Alt)" disabled><b> (•ᴗ•) </b></button>
-            <div class="ascii-frame" id="ascii-anim">( =.=)</div>
-            <br><p id="message1" style="font-size: 9px; color: #333333;">Files Processed Offline <br>[ Privacy Matters ] </p>
+			<button id="fullscreenBtn">⛶</button>
+        	<button id="grid-toggle-button" title="Toggle Grid">⌗</button>
+            <button id="compare-button" title="Hold to Compare (Alt)" disabled><b>⎅</b></button>
+            <div class="ascii-frame" id="ascii-anim">:)</div>
+            <br><p id="message1" style="font-size: 9px; color: #6e6e6e;">Files Processed Offline <br>[ Privacy Matters ] </p>
             <div id="onx-estimation" style="font-size: 0.8em; color: var(--accent-color); margin-top: 5px; display: none;"></div>
         </div>
         <div class="header-branding">
@@ -1807,7 +1808,7 @@ function processUpscaleSmart(imgData, options) {
 
                 <div class="action-buttons" id="canvas-actions">
                     <button id="revert-button" title="Revert to Original">⎋</button>
-                    <button id="canvas-compare-button" title="Hold to Compare (Alt)" disabled><b>/</b></button>
+                    <button id="canvas-compare-button" title="Hold to Compare (Alt)" disabled><b>⎅</b></button>
                     <div id="corner-indicator" class="corner-indicator"></div>
                 </div>
                 
@@ -3736,6 +3737,29 @@ function processUpscaleSmart(imgData, options) {
     <script> setTimeout(function() {
             document.getElementById('message1').style.display = 'none';
         }, 3000);
+    </script>
+
+	<script>
+        const button = document.getElementById('fullscreenBtn');
+
+        button.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen()
+                    .catch(err => {
+                        alert(`Error attempting to enable fullscreen mode: ${err.message}`);
+                    });
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) {
+                button.textContent = '⊠';
+            } else {
+                button.textContent = '⛶';
+            }
+        });
     </script>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;">
