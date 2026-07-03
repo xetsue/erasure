@@ -3,7 +3,9 @@
 
 Retro inspired web-based photo editor with save files support, layer of image or text overlays, image compressor, eraser and upscaler. 
 
-This editor is usable offline with privacy set in mind.
+This editor is usable offline with privacy set in mind. All files are processed on your phone, your data is yours to keep. 
+
+Happy Editing! ₍^. .^₎⟆ 
 > `Work In Progress`
 
 ## Features
