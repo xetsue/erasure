@@ -1,4 +1,6 @@
 # A/E-Lens | Erasure
+<img width="1080" height="1311" alt="1000632859" src="https://github.com/user-attachments/assets/dbc3a49f-dfd7-48cc-9d58-891d8179ae9d" />
+
 Retro inspired web-based photo editor with save files support, layer of image or text overlays, image compressor, eraser and upscaler. 
 
 This editor is usable offline with privacy set in mind.
@@ -12,27 +14,29 @@ This editor is usable offline with privacy set in mind.
 
 ## Usage
 
-A. Use the web-app [Here](https://xetsue.github.io/erasure)
+A. Direct: Use the web-app [Here](https://xetsue.github.io/erasure)
 
-B. [Without Upscaler] Download the index.html directly and open in any browser.
-> The only feature not available by doing this is the upscaler which requires an offline local server running to give permission to the file to run on your processor.
+B. Offline: Download the index.html directly and open in any browser.(Without Upscaler)
 
-C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip) .
+C. Offline Upscaler: [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip) .
 > Unzip anywhere, open folder, Right-click in the index.html folder, open in terminal, and run `python server.py`~
 
->The app should now be accessible on http://localhost:8001 or 8000 in your browser.
+> The app should now be accessible on http://localhost:8001 or 8000 in your browser.
 
->Normally, this app can be downloaded offline and run by simply opening the index.html in any browser. This method simply allow memory access to run upscaler features.
+<details>
+<summary>Info</summary>
+  
+> Upscaler initiation needs to be loaded real time to run. On Github, the pages handles these restriction and tells your browser to simply run the upscaler locally on your phone without issues. So I made `server.py` to allow running your own local offline server with python to utilize this.
 
-> Most browsers restrict direct access to device memory, this limits the ONNX initiation since it needs to be loaded real time to run. On Github, the pages handles these restriction and tells your browser to simply run the upscaler locally on your phone without issues. So I made `server.py` to allow running your own local offline server with python to utilize this.
-
+</details>
 
 ## Modifier [Experimental]
 - Eraser Tool: Legacy approach to blend and remove a targeted selection in an image. 
 
 - Legacy Upscaler: Upscale with traditional edge detection `Sobel/Prewitt/Canny` with anti-aliasing and customisable settings.
 
-- ONNX Upscaler: Models loads locally on your browser offline without third party processing. The `.onnx` models may offer significantly better results but sacrifices lower speed and more memory usage.
+- ONNX Upscaler: Models loads locally on your browser offline without third party processing.
+> The `.onnx` models may offer significantly better results but sacrifices lower speed and more memory usage.
 
 ## Eraser
 ><img width="1915" height="971" alt="Screenshot 2025-12-07 222114" src="https://github.com/user-attachments/assets/ded8d9de-3242-410c-991c-6e7f1434a948" />
@@ -41,6 +45,9 @@ C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip)
 
 
 ## Legacy Upscaler
+<details>
+  <summary>Showcase</summary>
+  
 ### Before
 [!] The image used is in may not give the best example. 
 >![field-ae lens (1) (1)](https://github.com/user-attachments/assets/a77b207d-0613-4d59-bf8d-d27bef23fddf)
@@ -52,15 +59,21 @@ C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip)
 
 ![MixCollage-07-Dec-2025-11-01-PM-6908](https://github.com/user-attachments/assets/6078e2d9-be39-41fd-8f44-fa96bf1b025f)
 
+</details>
+
 ## Editor
+<details><summary>Screenshots</summary>
+  
 ><img width="1917" height="970" alt="Screenshot 2025-12-07 230400" src="https://github.com/user-attachments/assets/2ef49853-ae8d-4fa5-b64a-e70d039dff1b" />
 ><img width="1919" height="976" alt="Screenshot 2025-12-07 230454" src="https://github.com/user-attachments/assets/ddcb03ae-67f2-4476-b721-80bd418872ed" />
 ><img width="1918" height="975" alt="Screenshot 2025-12-07 230535" src="https://github.com/user-attachments/assets/af81693d-edd3-4461-b6d0-fc077de4da0e" />
 ><img width="1080" height="1146" alt="1000632993" src="https://github.com/user-attachments/assets/e6f675f2-41d0-4151-a35f-28c8fc772cc7" />
 ><img width="1080" height="1184" alt="1000632991" src="https://github.com/user-attachments/assets/70634c69-a3e9-4d65-95b8-20dbcedda630" />
 ><img width="1080" height="1410" alt="1000632989" src="https://github.com/user-attachments/assets/91c6796b-af1a-4e6f-91d3-c2e8b0e79eae" />
+</details>
 
->
+
+
 
 ### Filters Demo
 This photo was made by me in Blender 2.90 and rendered out to be used on the web-app for demonstration. 
