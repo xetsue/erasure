@@ -56,15 +56,22 @@ C. [ONNX Version](https://github.com/xetsue/erasure/archive/refs/heads/main.zip)
 ><img width="1917" height="970" alt="Screenshot 2025-12-07 230400" src="https://github.com/user-attachments/assets/2ef49853-ae8d-4fa5-b64a-e70d039dff1b" />
 ><img width="1919" height="976" alt="Screenshot 2025-12-07 230454" src="https://github.com/user-attachments/assets/ddcb03ae-67f2-4476-b721-80bd418872ed" />
 ><img width="1918" height="975" alt="Screenshot 2025-12-07 230535" src="https://github.com/user-attachments/assets/af81693d-edd3-4461-b6d0-fc077de4da0e" />
+><img width="1080" height="1146" alt="1000632993" src="https://github.com/user-attachments/assets/e6f675f2-41d0-4151-a35f-28c8fc772cc7" />
+><img width="1080" height="1184" alt="1000632991" src="https://github.com/user-attachments/assets/70634c69-a3e9-4d65-95b8-20dbcedda630" />
+><img width="1080" height="1410" alt="1000632989" src="https://github.com/user-attachments/assets/91c6796b-af1a-4e6f-91d3-c2e8b0e79eae" />
+
+>
 
 ### Filters Demo
 This photo was made by me in Blender 2.90 and rendered out to be used on the web-app for demonstration. 
 
 ><img width="1081" height="1080" alt="1000632235" src="https://github.com/user-attachments/assets/4b165c92-6c86-411d-8c42-1a5226adb60f" />
-<img width="1081" height="1080" alt="1000632208" src="https://github.com/user-attachments/assets/c049e6fd-b388-42de-aa05-6c4dbb1cc995" />
-<img width="1081" height="1080" alt="1000632194" src="https://github.com/user-attachments/assets/e353c147-5591-4897-812d-bc27f1a1277f" />
-<img width="1081" height="1080" alt="1000632190" src="https://github.com/user-attachments/assets/d4df1a36-f6f9-4188-b132-cd4a9c89fa13" />
-<img width="1081" height="1080" alt="1000632191" src="https://github.com/user-attachments/assets/7b7c3238-fedb-47e8-acaf-d29087baec66" />
-<img width="1081" height="1080" alt="1000632189" src="https://github.com/user-attachments/assets/37a2ee47-0f07-4f1f-acb5-bfaa94b11776" />
-<img width="1081" height="1080" alt="1000632193" src="https://github.com/user-attachments/assets/7f686cdd-8fa1-455c-8dea-6e16ef69f7f1" />
+><img width="1081" height="1080" alt="1000632208" src="https://github.com/user-attachments/assets/c049e6fd-b388-42de-aa05-6c4dbb1cc995" />
+><img width="1081" height="1080" alt="1000632194" src="https://github.com/user-attachments/assets/e353c147-5591-4897-812d-bc27f1a1277f" />
+><img width="1081" height="1080" alt="1000632190" src="https://github.com/user-attachments/assets/d4df1a36-f6f9-4188-b132-cd4a9c89fa13" />
+><img width="1081" height="1080" alt="1000632191" src="https://github.com/user-attachments/assets/7b7c3238-fedb-47e8-acaf-d29087baec66" />
+><img width="1081" height="1080" alt="1000632189" src="https://github.com/user-attachments/assets/37a2ee47-0f07-4f1f-acb5-bfaa94b11776" />
+><img width="1081" height="1080" alt="1000632193" src="https://github.com/user-attachments/assets/7f686cdd-8fa1-455c-8dea-6e16ef69f7f1" />
+><img width="1081" height="1080" alt="1000632994" src="https://github.com/user-attachments/assets/ccad657d-09df-4cc1-9635-8a9f4555f474" />
+
 
