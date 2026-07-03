@@ -3608,7 +3608,7 @@ function processUpscaleSmart(imgData, options) {
                             <div id="custom-upscale-actions" style="display: none;">
                                  <button id="upscale-load-preset">Load JSON</button>
                                  <button id="upscale-export-preset">Export JSON</button>
-                                 <input type="file" id="upscale-preset-input" accept=".json" style="display: none;">
+                                 <input type="file" id="upscale-preset-input" accept=".json,.ae" style="display: none;">
                             </div>
 
                             <div class="slider-input-group" style="margin-top: 20px;">
@@ -3763,7 +3763,7 @@ function processUpscaleSmart(imgData, options) {
     </script>
 
     <input type="file" id="image-input" accept="image/*" style="display: none;">
-    <input type="file" id="ae-input" accept=".ae" style="display: none;">
+    <input type="file" id="ae-input" accept=".json,.ae" style="display: none;">
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -6557,7 +6557,15 @@ function processUpscaleSmart(imgData, options) {
                     const blob = new Blob([JSON.stringify(settings)], {type: 'application/json'});
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
-                    a.download = 'upscale_preset.json';
+                    
+                    const now = new Date();
+                    const hh = String(now.getHours()).padStart(2, '0');
+                    const mm = String(now.getMinutes()).padStart(2, '0');
+                    const MM = String(now.getMonth() + 1).padStart(2, '0');
+                    const DD = String(now.getDate()).padStart(2, '0');
+                    const YYYY = now.getFullYear();
+                    a.download = `${hh}-${mm}_${MM}-${DD}-${YYYY}.ae`;
+                    
                     a.click();
                 });
 
@@ -6632,7 +6640,15 @@ function processUpscaleSmart(imgData, options) {
                     const blob = new Blob([JSON.stringify(exportData)], {type: 'application/json'});
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
-                    a.download = originalFileName.split('.')[0] + ".ae";
+                    
+                    const now = new Date();
+                    const hh = String(now.getHours()).padStart(2, '0');
+                    const mm = String(now.getMinutes()).padStart(2, '0');
+                    const MM = String(now.getMonth() + 1).padStart(2, '0');
+                    const DD = String(now.getDate()).padStart(2, '0');
+                    const YYYY = now.getFullYear();
+                    a.download = `${hh}-${mm}_${MM}-${DD}-${YYYY}.ae`;
+                    
                     a.click();
                     URL.revokeObjectURL(a.href);
                 });
@@ -8280,5 +8296,5 @@ function processUpscaleSmart(imgData, options) {
     </script>
 </body>
 </html>
-	<!-- I am Bread -->
+<!-- I am Bread -->
 	<!-- These are accumulation of different projects compiled into one, As of July 2026, Major Update: Overlay and Compressor was added into this compilation. This was a massive push.-->
