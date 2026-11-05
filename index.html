@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A/E Lens - Erasure</title>
     <script src="coi-serviceworker.js"></script>
-    <script src="src/js/ort.webgpu.min.js"></script>
-    <script src="src/js/ae.onnx.js"></script>
+    <script src="src/js/ort.webgpu.min.js" onerror="console.warn('ONNX Runtime unavailable; non-ONNX editor tools remain available.')"></script>
+    <script src="src/js/ae.onnx.js" onerror="console.warn('ONNX services unavailable; non-ONNX editor tools remain available.')"></script>
     <style>
         :root {
             --bg-color: #000000;
@@ -163,8 +163,8 @@
         .header-controls { display: flex; gap: 8px; align-items: center; }
         .header-btn { padding: 4px 10px; font-size: 1.1em; border-radius: 3px; }
         
-        .eraser-tab-link, .sub-tab-link { flex: 0 0 auto; background: none; border: none; padding: 8px 12px; color: var(--text-color); opacity: 0.6; cursor: pointer; border-bottom: 2px solid transparent; text-align: center; }
-        .eraser-tab-link.active, .sub-tab-link.active { opacity: 1; border-bottom-color: var(--accent-color); font-weight: bold; }
+        .eraser-tab-link, .sub-tab-link { flex: 0 0 auto; background: transparent; border: 1px solid transparent; padding: 8px 12px; color: var(--text-color); opacity: 0.68; cursor: pointer; border-radius: 5px; text-align: center; transition: background-color .18s, color .18s, opacity .18s; }
+        .eraser-tab-link.active, .sub-tab-link.active { opacity: 1; background: var(--accent-color); color: #000; border-color: var(--accent-color); font-weight: bold; }
         
         .eraser-tab-content, .sub-tab-content { display: none; }
         .eraser-tab-content.active, .sub-tab-content.active { display: block; }
@@ -235,6 +235,26 @@
         .color-stop-preview:hover::after { content: 'x'; position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.5); color: white; font-size: 12px; }
         .add-stop-btn { width: 30px; height: 30px; border: 1px dashed var(--settings-outline); background: none; color: var(--text-color); cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 16px; border-radius: 3px; padding: 0; }
         .add-stop-btn:hover { border-color: var(--frame-color); background: rgba(255,255,255,0.1); }
+        .add-menu-wrap { position: relative; flex: 1; }
+        #add-overlay-menu-btn { width: 100%; background: var(--accent-color); color: #000; border: none; font-weight: bold; }
+        .add-overlay-popup { position: absolute; top: calc(100% + 6px); left: 0; width: 100%; min-width: 210px; max-height: min(70vh, 520px); overflow-y: auto; box-sizing: border-box; display: none; flex-direction: column; gap: 5px; padding: 8px; background: var(--glass-bg); border: 1px solid var(--settings-outline); border-radius: 5px; backdrop-filter: blur(12px); z-index: 20010; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+        .add-overlay-popup.active { display: flex; }
+        .add-overlay-popup button { width: 100%; text-align: left; }
+        .add-overlay-popup .add-choice { display: flex; justify-content: space-between; align-items: center; }
+        .shape-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin-top: 5px; }
+        .shape-choice-grid button { text-align: center; padding: 9px 6px; }
+        .shape-choice-grid button:hover { border-color: var(--accent-color); }
+        .overlay-border-settings { display: block; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px solid var(--settings-outline); background: transparent; border-radius: 0; }
+        .overlay-border-settings .slider-input-group, #subtab-ov-shapes .slider-input-group { margin-bottom: 10px; }
+        .overlay-image-dropzone { display:none; min-height:105px; margin:0 0 14px; padding:16px; border:2px dashed var(--settings-outline); border-radius:7px; color:var(--text-color); text-align:center; align-items:center; justify-content:center; flex-direction:column; gap:7px; cursor:pointer; background:rgba(255,255,255,.025); }
+        .overlay-image-dropzone.visible { display:flex; }
+        .overlay-image-dropzone.drag-active { border-color:var(--accent-color); background:rgba(255,255,255,.09); }
+        .overlay-dropzone-dismiss { position:absolute; top:5px; right:7px; border:0; background:transparent; color:var(--text-color); font-size:21px; line-height:1; padding:3px 5px; cursor:pointer; }
+        .overlay-image-dropzone { position:relative; }
+        .overlay-image-dropzone strong { color:var(--accent-color); }
+        .overlay-image-dropzone small { opacity:.7; }
+        .frame.file-drop-active { outline: 3px dashed var(--accent-color); outline-offset: -8px; }
+        .frame.file-drop-active::after { content: 'DROP IMAGE OR PROJECT FILE'; position: absolute; inset: 0; z-index: 30000; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.55); color: #fff; font-weight: bold; letter-spacing: .08em; pointer-events: none; }
         #tooltip-popup { position: fixed; background: var(--settings-bg); border: 1px solid var(--settings-outline); padding: 5px; border-radius: 3px; z-index: 20002; display: none; flex-direction: column; gap: 5px; }
         #tooltip-popup button { background: none; border: none; color: var(--text-color); text-align: left; padding: 5px 10px; cursor: pointer; }
         #tooltip-popup button:hover { background: var(--settings-outline); }
@@ -314,6 +334,21 @@
             }
         }
     </style>
+
+<style id="ux-enhancements">
+.frame:not(.fullscreen-active){resize:horizontal;min-width:320px;max-width:100%;overflow:hidden;}
+#add-overlay-popup{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(320px,90vw);max-height:75vh;z-index:30000;box-shadow:0 18px 60px #0009;}
+#add-overlay-popup.active{display:flex;}
+#add-overlay-popup:before{content:"Add to canvas";font-weight:700;padding:7px 9px;border-bottom:1px solid var(--settings-outline);}
+#overlay-outline-details,#overlay-blend-details{border:1px solid var(--settings-outline);border-radius:5px;margin:12px 0;padding:8px;}
+#overlay-outline-details>summary,#overlay-blend-details>summary{cursor:pointer;font-weight:700;}
+#overlay-blend-details h4{margin:14px 0 8px;}
+#canvas-context-menu{position:fixed;z-index:40000;display:none;min-width:150px;padding:5px;background:var(--glass-bg);border:1px solid var(--settings-outline);border-radius:6px;box-shadow:0 8px 24px #0008;backdrop-filter:blur(12px)}
+#canvas-context-menu button{display:block;width:100%;text-align:left;padding:8px;border:0;background:transparent;color:var(--text-color);cursor:pointer}
+#canvas-context-menu button:hover{background:var(--accent-color);color:#000}
+.sub-tab-bar{scrollbar-width:thin;overscroll-behavior-x:contain}
+.overlay-dropzone-dismiss{position:absolute;right:6px;top:5px;width:27px;height:27px;padding:0;border:0;background:transparent;color:var(--text-color);font-size:20px;cursor:pointer}
+</style>
 </head>
 <body>
     <script id="worker-source" type="javascript/worker">
@@ -1694,7 +1729,7 @@ function processUpscaleSmart(imgData, options) {
         </div>
     </div>
 
-    <!-- Mode Switch Warning, incase I can't find it-->
+    
     <div id="mode-switch-modal" class="confirm-modal-overlay">
         <div class="confirm-modal" style="min-width: 320px;">
             <h4>Switch Mode?</h4>
@@ -1811,7 +1846,7 @@ function processUpscaleSmart(imgData, options) {
                     <div id="corner-indicator" class="corner-indicator"></div>
                 </div>
                 
-                <button id="fullscreen-button" class="fullscreen-btn">⛶</button>
+                <button id="fullscreen-button" class="fullscreen-btn" title="Enter fullscreen">⛶</button>
                 <button id="reset-view-button" class="fullscreen-btn" style="right: 35px;" title="Reset View">▣</button>
                 
                 <div class="fs-tool-overlay">
@@ -1913,14 +1948,14 @@ function processUpscaleSmart(imgData, options) {
 
                 <div id="subtab-filters" class="sub-tab-content active">
                     <div class="filter-list-box" id="editor-filter-list">
-                        <!-- None -->
+                        
                         <div class="filter-item-container" data-filter-name="none">
                             <div class="filter-row">
                                 <button class="filter-option active" data-filter="none" style="padding-left:10px;">None</button>
                             </div>
                         </div>
                         
-                        <!-- ascii ₍^. .^₎⟆  sniffs-->
+                        
                         <div class="filter-item-container" data-filter-name="ascii">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="ascii">⨀</button>
@@ -1944,7 +1979,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- BIT16 -->
+                        
                         <div class="filter-item-container" data-filter-name="bit16">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="bit16">⨀</button>
@@ -1960,7 +1995,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- BIT8 -->
+                        
                         <div class="filter-item-container" data-filter-name="bit8">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="bit8">⨀</button>
@@ -1976,7 +2011,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- CRT -->
+                        
                         <div class="filter-item-container" data-filter-name="crt">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="crt">⨀</button>
@@ -1997,7 +2032,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Chromatic -->
+                        
                         <div class="filter-item-container" data-filter-name="chromatic">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="chromatic">⨀</button>
@@ -2018,7 +2053,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Depth Map -->
+                        
                         <div class="filter-item-container" data-filter-name="depth">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="depth">⨀</button>
@@ -2035,7 +2070,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Duotone -->
+                        
                         <div class="filter-item-container" data-filter-name="duotone">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="duotone">⨀</button>
@@ -2054,7 +2089,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Edge Detect -->
+                        
                         <div class="filter-item-container" data-filter-name="edge">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="edge">⨀</button>
@@ -2077,7 +2112,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Emboss -->
+                        
                         <div class="filter-item-container" data-filter-name="emboss">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="emboss">⨀</button>
@@ -2093,7 +2128,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Fish Eye Lens -->
+                        
                         <div class="filter-item-container" data-filter-name="fisheye">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="fisheye">⨀</button>
@@ -2109,7 +2144,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Gamma -->
+                        
                         <div class="filter-item-container" data-filter-name="gamma">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="gamma">⨀</button>
@@ -2125,7 +2160,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Glitch -->
+                        
                         <div class="filter-item-container" data-filter-name="glitch">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="glitch">⨀</button>
@@ -2152,7 +2187,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
                         
-                        <!-- Grid -->
+                        
                         <div class="filter-item-container" data-filter-name="grid">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="grid">⨀</button>
@@ -2177,7 +2212,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Invert -->
+                        
                         <div class="filter-item-container" data-filter-name="invert">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="invert">⨀</button>
@@ -2185,7 +2220,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Kaleidoscope -->
+                        
                         <div class="filter-item-container" data-filter-name="kaleidoscope">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="kaleidoscope">⨀</button>
@@ -2201,7 +2236,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Kuwahara -->
+                        
                         <div class="filter-item-container" data-filter-name="kuwahara">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="kuwahara">⨀</button>
@@ -2217,7 +2252,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- LSD -->
+                        
                         <div class="filter-item-container" data-filter-name="lsd">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="lsd">⨀</button>
@@ -2233,7 +2268,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Matrix/Neo -->
+                        
                         <div class="filter-item-container" data-filter-name="neo">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="neo">⨀</button>
@@ -2249,7 +2284,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Motion Blur -->
+                        
                         <div class="filter-item-container" data-filter-name="motionblur">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="motionblur">⨀</button>
@@ -2270,7 +2305,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Noise -->
+                        
                         <div class="filter-item-container" data-filter-name="noise">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="noise">⨀</button>
@@ -2286,7 +2321,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Normal Map -->
+                        
                         <div class="filter-item-container" data-filter-name="normal">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="normal">⨀</button>
@@ -2303,7 +2338,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Parallax Filter -->
+                        
                         <div class="filter-item-container" data-filter-name="parallax">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="parallax">⨀</button>
@@ -2319,7 +2354,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Pixelate -->
+                        
                         <div class="filter-item-container" data-filter-name="pixelate">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="pixelate">⨀</button>
@@ -2335,7 +2370,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Posterize -->
+                        
                         <div class="filter-item-container" data-filter-name="posterize">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="posterize">⨀</button>
@@ -2351,7 +2386,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- RGB Pixels -->
+                        
                         <div class="filter-item-container" data-filter-name="rgb">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="rgb">⨀</button>
@@ -2367,7 +2402,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Sepia -->
+                        
                         <div class="filter-item-container" data-filter-name="sepia">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="sepia">⨀</button>
@@ -2383,7 +2418,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Solarize -->
+                        
                         <div class="filter-item-container" data-filter-name="solarize">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="solarize">⨀</button>
@@ -2399,7 +2434,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Swirl -->
+                        
                         <div class="filter-item-container" data-filter-name="swirl">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="swirl">⨀</button>
@@ -2420,7 +2455,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Threshold -->
+                        
                         <div class="filter-item-container" data-filter-name="threshold">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="threshold">⨀</button>
@@ -2436,7 +2471,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Tilt Shift -->
+                        
                         <div class="filter-item-container" data-filter-name="tiltshift">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="tiltshift">⨀</button>
@@ -2462,7 +2497,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Vignette -->
+                        
                         <div class="filter-item-container" data-filter-name="vignette">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="vignette">⨀</button>
@@ -2483,7 +2518,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Wes Anderson -->
+                        
                         <div class="filter-item-container" data-filter-name="wes">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="wes">⨀</button>
@@ -2611,18 +2646,46 @@ function processUpscaleSmart(imgData, options) {
                 </div>
             </div>
 
-            <!-- Overlay Views  -->
+            
             <div id="overlay-view" class="settings-content-scrollable" style="display: none;">
                 <div style="display:flex; justify-content:space-between; margin-bottom: 15px; gap: 10px;">
-                    <button id="add-overlay-btn" style="flex:1; background-color: var(--accent-color); color: #000; border: none; font-weight: bold;">+ Add Image</button>
-                    <button id="add-text-btn" style="flex:1; background-color: var(--accent-color); color: #000; border: none; font-weight: bold;">+ Add Text</button>
+                    <div class="add-menu-wrap">
+                        <button id="add-overlay-menu-btn" type="button" aria-haspopup="true" aria-expanded="false">Add +</button>
+                        <div id="add-overlay-popup" class="add-overlay-popup" role="menu">
+                            <button type="button" class="add-choice" id="add-choice-image">Image <span>▧</span></button>
+                            <button type="button" class="add-choice" id="add-choice-text">Text <span>T</span></button>
+                            <button type="button" class="add-choice" id="add-choice-shapes">Shapes <span>◇</span></button>
+                            <div id="add-shape-picker" style="display:none; border-top:1px solid var(--settings-outline); padding-top:8px; margin-top:3px;">
+                                <div style="font-size:0.8em; opacity:.7; margin:0 0 7px;">Choose a shape</div>
+                                <div class="shape-choice-grid">
+                                    <button type="button" data-shape="arrow">↗ Arrow</button>
+                                    <button type="button" data-shape="double-arrow">↔ Double Arrow</button>
+                                    <button type="button" data-shape="line">／ Line</button>
+                                    <button type="button" data-shape="square">□ Square</button>
+                                    <button type="button" data-shape="rectangle">▭ Rectangle</button>
+                                    <button type="button" data-shape="circle">○ Circle</button>
+                                    <button type="button" data-shape="star">☆ Star</button>
+                                    <button type="button" data-shape="triangle">△ Equilateral Triangle</button>
+                                    <button type="button" data-shape="pentagon">⬠ Pentagon</button>
+                                    <button type="button" data-shape="hexagon">⬡ Hexagon</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <input type="file" id="overlay-input" accept="image/*" style="display: none;">
+                </div>
+                <div id="overlay-image-dropzone" class="overlay-image-dropzone" role="group" aria-label="Overlay image drop area">
+                    <button type="button" id="overlay-image-dropzone-dismiss" class="overlay-dropzone-dismiss" aria-label="Dismiss overlay image drop area" title="Dismiss">⨂</button>
+                    <strong>Drop an image here</strong>
+                    <span>or click to browse files</span>
+                    <small>PNG · JPG · WebP · GIF · SVG</small>
                 </div>
                 <div class="sub-tab-bar">
                     <button class="sub-tab-link active" data-subtab="ov-general">General</button>
                     <button class="sub-tab-link" data-subtab="ov-transform">Transform</button>
                     <button class="sub-tab-link" data-subtab="ov-move">Move</button>
                     <button class="sub-tab-link" data-subtab="ov-styling" id="tab-ov-styling" style="display:none;">Styling</button>
+                    <button class="sub-tab-link" data-subtab="ov-shapes" id="tab-ov-shapes" style="display:none;">Shapes</button>
                     <button class="sub-tab-link" data-subtab="ov-filter">Filter</button>
                     <button class="sub-tab-link" data-subtab="ov-adjust">Adjust</button>
                     <button class="sub-tab-link" data-subtab="ov-layer">Layer</button>
@@ -2630,6 +2693,32 @@ function processUpscaleSmart(imgData, options) {
 
                 <div id="subtab-ov-general" class="sub-tab-content active">
                     <div class="setting-group">
+                    <details id="overlay-outline-details">
+                        <summary>Outline</summary>
+                        <label class="radio-option" style="font-weight:bold; margin-top:10px;">
+                            <input type="checkbox" id="overlay-border-enabled"> Enable outline
+                        </label>
+                        <div id="overlay-border-settings" class="overlay-border-settings">
+                            <div class="slider-input-group">
+                                <label>Thickness:</label>
+                                <input type="range" id="overlay-border-width" min="1" max="80" value="6">
+                                <input type="number" id="overlay-border-width-num" min="1" max="80" value="6">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Color:</label>
+                                <input type="color" id="overlay-border-color" value="#ffffff" style="flex:1; height:30px; padding:0;">
+                            </div>
+                            <div class="slider-input-group">
+                                <label>Corner Radius:</label>
+                                <input type="range" id="overlay-border-radius" min="0" max="200" value="0">
+                                <input type="number" id="overlay-border-radius-num" min="0" max="200" value="0">
+                            </div>
+                        </div>
+                    </details>
+
+                    <details id="overlay-blend-details">
+                        <summary>Blend</summary>
+                        <h4>Mode</h4>
                         <label>Blend Mode:</label>
                         <select id="overlay-blend-mode" style="width: 100%; padding: 5px; margin-bottom: 15px;">
                             <option value="source-over">Normal</option>
@@ -2645,11 +2734,6 @@ function processUpscaleSmart(imgData, options) {
                             <option value="difference">Difference</option>
                             <option value="exclusion">Exclusion</option>
                         </select>
-                        <div class="slider-input-group">
-                            <label>Opacity:</label>
-                            <input type="range" id="overlay-opacity" min="0" max="100" value="100">
-                            <input type="number" id="overlay-opacity-num" value="100" min="0" max="100">
-                        </div>
                         <h4>Chroma Key</h4>
                         <label class="radio-option"><input type="radio" name="chroma-key" value="none" checked> None</label>
                         <label class="radio-option"><input type="radio" name="chroma-key" value="red"> Red Key</label>
@@ -2665,6 +2749,15 @@ function processUpscaleSmart(imgData, options) {
                             <input type="range" id="overlay-chroma-tolerance" min="0" max="100" value="10">
                             <input type="number" id="overlay-chroma-tolerance-num" value="10" min="0" max="100">
                         </div>
+
+                    </details>
+
+                        <div class="slider-input-group">
+                            <label>Opacity:</label>
+                            <input type="range" id="overlay-opacity" min="0" max="100" value="100">
+                            <input type="number" id="overlay-opacity-num" value="100" min="0" max="100">
+                        </div>
+
                     </div>
                 </div>
 
@@ -2771,16 +2864,40 @@ function processUpscaleSmart(imgData, options) {
                     <p class="desc-text" style="display:block;">Text can also apply adjustments, transformation, filter, or mask.</p>
                 </div>
 
+                <div id="subtab-ov-shapes" class="sub-tab-content">
+                    <div class="setting-group">
+                        <h4 id="shape-type-heading">Shape</h4>
+                        <div class="slider-input-group">
+                            <label>Color:</label>
+                            <input type="color" id="shape-color-input" value="#ff3b30" style="flex:1; height:32px; padding:0;">
+                        </div>
+                        <label class="radio-option" style="margin:8px 0 14px;">
+                            <input type="checkbox" id="shape-fill-toggle" checked> Fill
+                        </label>
+                        <div class="slider-input-group" id="shape-radius-group">
+                            <label>Corner Radius:</label>
+                            <input type="range" id="shape-corner-radius" min="0" max="100" value="0">
+                            <input type="number" id="shape-corner-radius-num" min="0" max="100" value="0">
+                        </div>
+                        <div class="slider-input-group" id="shape-stroke-group">
+                            <label>Thickness:</label>
+                            <input type="range" id="shape-stroke-width" min="1" max="60" value="8">
+                            <input type="number" id="shape-stroke-width-num" min="1" max="60" value="8">
+                        </div>
+                        <p class="desc-text" style="display:block;">Turn Fill off to create an outlined shape. Use Transform to resize or rotate it, and drag it directly on the canvas to reposition.</p>
+                    </div>
+                </div>
+
                 <div id="subtab-ov-filter" class="sub-tab-content">
                     <div class="filter-list-box" id="overlay-filter-list">
-                        <!-- None -->
+                        
                         <div class="filter-item-container" data-filter-name="none">
                             <div class="filter-row">
                                 <button class="filter-option active" data-filter="none" style="padding-left:10px;">None</button>
                             </div>
                         </div>
                         
-                        <!-- ascii ₍^. .^₎⟆  sniffs-->
+                        
                         <div class="filter-item-container" data-filter-name="ascii">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="ascii">⨀</button>
@@ -2804,7 +2921,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- BIT16 -->
+                        
                         <div class="filter-item-container" data-filter-name="bit16">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="bit16">⨀</button>
@@ -2820,7 +2937,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- BIT8 -->
+                        
                         <div class="filter-item-container" data-filter-name="bit8">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="bit8">⨀</button>
@@ -2836,7 +2953,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- CRT -->
+                        
                         <div class="filter-item-container" data-filter-name="crt">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="crt">⨀</button>
@@ -2857,7 +2974,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Chromatic -->
+                        
                         <div class="filter-item-container" data-filter-name="chromatic">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="chromatic">⨀</button>
@@ -2878,7 +2995,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Depth Map -->
+                        
                         <div class="filter-item-container" data-filter-name="depth">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="depth">⨀</button>
@@ -2895,7 +3012,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Duotone -->
+                        
                         <div class="filter-item-container" data-filter-name="duotone">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="duotone">⨀</button>
@@ -2914,7 +3031,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Edge Detect -->
+                        
                         <div class="filter-item-container" data-filter-name="edge">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="edge">⨀</button>
@@ -2937,7 +3054,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Emboss -->
+                        
                         <div class="filter-item-container" data-filter-name="emboss">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="emboss">⨀</button>
@@ -2953,7 +3070,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Fish Eye Lens -->
+                        
                         <div class="filter-item-container" data-filter-name="fisheye">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="fisheye">⨀</button>
@@ -2969,7 +3086,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Gamma -->
+                        
                         <div class="filter-item-container" data-filter-name="gamma">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="gamma">⨀</button>
@@ -2985,7 +3102,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Glitch -->
+                        
                         <div class="filter-item-container" data-filter-name="glitch">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="glitch">⨀</button>
@@ -3012,7 +3129,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
                         
-                        <!-- Grid -->
+                        
                         <div class="filter-item-container" data-filter-name="grid">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="grid">⨀</button>
@@ -3037,7 +3154,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Invert -->
+                        
                         <div class="filter-item-container" data-filter-name="invert">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="invert">⨀</button>
@@ -3045,7 +3162,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Kaleidoscope -->
+                        
                         <div class="filter-item-container" data-filter-name="kaleidoscope">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="kaleidoscope">⨀</button>
@@ -3061,7 +3178,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Kuwahara -->
+                        
                         <div class="filter-item-container" data-filter-name="kuwahara">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="kuwahara">⨀</button>
@@ -3077,7 +3194,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- LSD -->
+                        
                         <div class="filter-item-container" data-filter-name="lsd">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="lsd">⨀</button>
@@ -3093,7 +3210,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Matrix/Neo -->
+                        
                         <div class="filter-item-container" data-filter-name="neo">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="neo">⨀</button>
@@ -3109,7 +3226,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Motion Blur -->
+                        
                         <div class="filter-item-container" data-filter-name="motionblur">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="motionblur">⨀</button>
@@ -3130,7 +3247,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Noise -->
+                        
                         <div class="filter-item-container" data-filter-name="noise">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="noise">⨀</button>
@@ -3146,7 +3263,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Normal Map -->
+                        
                         <div class="filter-item-container" data-filter-name="normal">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="normal">⨀</button>
@@ -3163,7 +3280,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Parallax Filter -->
+                        
                         <div class="filter-item-container" data-filter-name="parallax">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="parallax">⨀</button>
@@ -3179,7 +3296,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Pixelate -->
+                        
                         <div class="filter-item-container" data-filter-name="pixelate">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="pixelate">⨀</button>
@@ -3195,7 +3312,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Posterize -->
+                        
                         <div class="filter-item-container" data-filter-name="posterize">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="posterize">⨀</button>
@@ -3211,7 +3328,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- RGB Pixels -->
+                        
                         <div class="filter-item-container" data-filter-name="rgb">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="rgb">⨀</button>
@@ -3227,7 +3344,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Sepia -->
+                        
                         <div class="filter-item-container" data-filter-name="sepia">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="sepia">⨀</button>
@@ -3243,7 +3360,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Solarize -->
+                        
                         <div class="filter-item-container" data-filter-name="solarize">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="solarize">⨀</button>
@@ -3259,7 +3376,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Swirl -->
+                        
                         <div class="filter-item-container" data-filter-name="swirl">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="swirl">⨀</button>
@@ -3280,7 +3397,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Threshold -->
+                        
                         <div class="filter-item-container" data-filter-name="threshold">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="threshold">⨀</button>
@@ -3296,7 +3413,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Tilt Shift -->
+                        
                         <div class="filter-item-container" data-filter-name="tiltshift">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="tiltshift">⨀</button>
@@ -3322,7 +3439,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Vignette -->
+                        
                         <div class="filter-item-container" data-filter-name="vignette">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="vignette">⨀</button>
@@ -3343,7 +3460,7 @@ function processUpscaleSmart(imgData, options) {
                             </div>
                         </div>
 
-                        <!-- Wes Anderson -->
+                        
                         <div class="filter-item-container" data-filter-name="wes">
                             <div class="filter-row">
                                 <button class="filter-lock-btn" data-filter="wes">⨀</button>
@@ -3755,7 +3872,7 @@ function processUpscaleSmart(imgData, options) {
 
         document.addEventListener('fullscreenchange', () => {
             if (document.fullscreenElement) {
-                button.textContent = '⊠';
+                button.textContent = '⬚';
             } else {
                 button.textContent = '⛶';
             }
@@ -4022,6 +4139,8 @@ function processUpscaleSmart(imgData, options) {
             let originalImageBlob = null; 
             let history = [];
             let historyStep = -1;
+            let imageActionHistory = [];
+            let imageActionIndex = -1;
             let currentImageBitmap = null; 
             let originalImageBitmap = null; 
             let generatedResults = []; 
@@ -4091,6 +4210,9 @@ function processUpscaleSmart(imgData, options) {
                 initialLayerState: null,
                 activeTool: 'edit',
                 hasChanges: false,
+                history: [],
+                historyIndex: -1,
+                historyTimer: null,
                 
                 init() {
                     this.cacheDOM();
@@ -4098,9 +4220,15 @@ function processUpscaleSmart(imgData, options) {
                     this.setupFilterUI();
                 },
                 cacheDOM() {
-                    this.addBtn = document.getElementById('add-overlay-btn');
-                    this.addTextBtn = document.getElementById('add-text-btn');
+                    this.addMenuBtn = document.getElementById('add-overlay-menu-btn');
+                    this.addPopup = document.getElementById('add-overlay-popup');
+                    this.addImageChoice = document.getElementById('add-choice-image');
+                    this.addTextChoice = document.getElementById('add-choice-text');
+                    this.addShapesChoice = document.getElementById('add-choice-shapes');
+                    this.shapePicker = document.getElementById('add-shape-picker');
                     this.fileInput = document.getElementById('overlay-input');
+                    this.imageDropzone = document.getElementById('overlay-image-dropzone');
+                    this.imageDropzoneDismiss = document.getElementById('overlay-image-dropzone-dismiss');
                     this.layerList = document.getElementById('overlay-layer-list');
                     this.blendMode = document.getElementById('overlay-blend-mode');
                     this.opacity = document.getElementById('overlay-opacity');
@@ -4125,6 +4253,21 @@ function processUpscaleSmart(imgData, options) {
                     this.dpadRight = document.getElementById('dpad-right');
                     
                     this.tabStyling = document.getElementById('tab-ov-styling');
+                    this.tabShapes = document.getElementById('tab-ov-shapes');
+                    this.borderEnabled = document.getElementById('overlay-border-enabled');
+                    this.borderWidth = document.getElementById('overlay-border-width');
+                    this.borderWidthNum = document.getElementById('overlay-border-width-num');
+                    this.borderColor = document.getElementById('overlay-border-color');
+                    this.borderRadius = document.getElementById('overlay-border-radius');
+                    this.borderRadiusNum = document.getElementById('overlay-border-radius-num');
+                    this.shapeColor = document.getElementById('shape-color-input');
+                    this.shapeFill = document.getElementById('shape-fill-toggle');
+                    this.shapeStrokeWidth = document.getElementById('shape-stroke-width');
+                    this.shapeStrokeWidthNum = document.getElementById('shape-stroke-width-num');
+                    this.shapeCornerRadius = document.getElementById('shape-corner-radius');
+                    this.shapeCornerRadiusNum = document.getElementById('shape-corner-radius-num');
+                    this.shapeStrokeGroup = document.getElementById('shape-stroke-group');
+                    this.shapeTypeHeading = document.getElementById('shape-type-heading');
                     this.textContentInput = document.getElementById('text-content-input');
                     this.textFontFamily = document.getElementById('text-font-family');
                     this.textColorInput = document.getElementById('text-color-input');
@@ -4146,9 +4289,53 @@ function processUpscaleSmart(imgData, options) {
                     this.flipYBtn = document.getElementById('ov-flip-y');
                 },
                 bindEvents() {
-                    this.addBtn.addEventListener('click', () => this.fileInput.click());
-                    this.addTextBtn.addEventListener('click', () => this.handleTextAdd());
+                    this.addMenuBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.addPopup.classList.toggle('active');
+                        this.addMenuBtn.setAttribute('aria-expanded', this.addPopup.classList.contains('active') ? 'true' : 'false');
+                    });
+                    this.addImageChoice.addEventListener('click', () => {
+                        this.closeAddPopup();
+                        this.imageDropzone.classList.add('visible');
+                        this.imageDropzone.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    });
+                    this.imageDropzoneDismiss.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); this.imageDropzone.classList.remove('visible', 'drag-active'); });
+                    this.imageDropzone.addEventListener('click', (e) => { if (e.target.closest('#overlay-image-dropzone-dismiss')) return; this.fileInput.click(); });
+                    this.imageDropzone.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.fileInput.click(); }
+                    });
+                    this.imageDropzone.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); this.imageDropzone.classList.add('drag-active'); });
+                    this.imageDropzone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'; this.imageDropzone.classList.add('drag-active'); });
+                    this.imageDropzone.addEventListener('dragleave', (e) => { e.stopPropagation(); if (!this.imageDropzone.contains(e.relatedTarget)) this.imageDropzone.classList.remove('drag-active'); });
+                    this.addTextChoice.addEventListener('click', () => {
+                        this.closeAddPopup();
+                        this.handleTextAdd();
+                    });
+                    this.addShapesChoice.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.shapePicker.style.display = this.shapePicker.style.display === 'none' ? 'block' : 'none';
+                    });
+                    this.addPopup.querySelectorAll('[data-shape]').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            this.closeAddPopup();
+                            this.createShapeLayer(btn.dataset.shape);
+                        });
+                    });
+                    document.addEventListener('click', (e) => {
+                        if (!e.target.closest('.add-menu-wrap') && !this.addPopup.contains(e.target)) this.closeAddPopup();
+                    });
                     this.fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
+
+                    this.borderEnabled.addEventListener('change', () => {
+                        this.updateActiveLayer('borderEnabled', this.borderEnabled.checked);
+                    });
+                    this.bindSlider(this.borderWidth, this.borderWidthNum, (val) => this.updateActiveLayer('borderWidth', val));
+                    this.borderColor.addEventListener('input', () => this.updateActiveLayer('borderColor', this.borderColor.value));
+                    this.bindSlider(this.borderRadius, this.borderRadiusNum, (val) => this.updateActiveLayer('borderRadius', val));
+                    this.shapeColor.addEventListener('input', () => this.updateActiveLayer('shapeColor', this.shapeColor.value));
+                    this.shapeFill.addEventListener('change', () => { this.updateActiveLayer('shapeFill', this.shapeFill.checked); this.syncShapeControls(); });
+                    this.bindSlider(this.shapeStrokeWidth, this.shapeStrokeWidthNum, (val) => this.updateActiveLayer('shapeStrokeWidth', val));
+                    this.bindSlider(this.shapeCornerRadius, this.shapeCornerRadiusNum, (val) => this.updateActiveLayer('shapeCornerRadius', val));
                     
                     overlayUICanvas.addEventListener('mousedown', (e) => this.handlePointerDown(e));
                     window.addEventListener('mousemove', (e) => this.handlePointerMove(e));
@@ -4338,8 +4525,45 @@ function processUpscaleSmart(imgData, options) {
                         callback(parseFloat(e.target.value));
                     });
                 },
+                cloneHistoryLayers() {
+                    return this.layers.map(layer => ({
+                        ...layer,
+                        chromaKey: layer.chromaKey ? { ...layer.chromaKey } : layer.chromaKey,
+                        adjustments: layer.adjustments ? { ...layer.adjustments } : layer.adjustments,
+                        activeFilters: new Set(layer.activeFilters || []),
+                        lockedFilters: new Set(layer.lockedFilters || []),
+                        cachedCanvas: document.createElement('canvas'),
+                        needsCacheUpdate: true
+                    }));
+                },
+                captureHistory() {
+                    const snapshot = { layers: this.cloneHistoryLayers(), activeLayerId: this.activeLayerId };
+                    this.history = this.history.slice(0, this.historyIndex + 1);
+                    this.history.push(snapshot);
+                    if (this.history.length > 80) this.history.shift();
+                    this.historyIndex = this.history.length - 1;
+                    updateHistoryButtons();
+                },
                 markChanged() {
                     this.hasChanges = this.layers.length > 0;
+                    if (!this.history.length) {
+                        this.history.push({ layers: [], activeLayerId: null });
+                        this.historyIndex = 0;
+                    }
+                    clearTimeout(this.historyTimer);
+                    this.historyTimer = setTimeout(() => this.captureHistory(), 280);
+                    updateHistoryButtons();
+                },
+                applyHistorySnapshot(index) {
+                    if (index < 0 || index >= this.history.length) return false;
+                    clearTimeout(this.historyTimer);
+                    this.historyIndex = index;
+                    const snapshot = this.history[index];
+                    this.layers = snapshot.layers.map(layer => ({ ...layer, activeFilters: new Set(layer.activeFilters || []), lockedFilters: new Set(layer.lockedFilters || []), cachedCanvas: document.createElement('canvas'), needsCacheUpdate: true }));
+                    this.activeLayerId = snapshot.activeLayerId && this.layers.some(layer => layer.id === snapshot.activeLayerId) ? snapshot.activeLayerId : (this.layers[0]?.id || null);
+                    this.hasChanges = this.layers.length > 0;
+                    this.updateLayerListUI(); this.syncSidebarUI(); this.renderAll(); updateHistoryButtons();
+                    return true;
                 },
                 resetColorPickerState() {
                     this.isPickingColor = false;
@@ -4354,17 +4578,32 @@ function processUpscaleSmart(imgData, options) {
                     overlayUICanvas.style.cursor = '';
                     this.renderUI();
                 },
+                closeAddPopup() {
+                    this.addPopup.classList.remove('active');
+                    this.addMenuBtn.setAttribute('aria-expanded', 'false');
+                    this.shapePicker.style.display = 'none';
+                },
                 setTool(tool) {
                     this.activeTool = tool;
                     overlayUICanvas.style.pointerEvents = tool === 'pan' ? 'none' : 'auto';
                     this.renderUI();
                 },
                 handleImageUpload(e) {
-                    const file = e.target.files[0];
-                    if (!file) return;
+                    const file = e.target.files && e.target.files[0];
+                    if (file) this.handleImageFile(file).then(() => this.imageDropzone.classList.remove('visible')).catch(err => {
+                        console.error('Overlay image selection failed:', err);
+                        alert(`Unable to load overlay image: ${err?.message || 'unsupported image format'}`);
+                    });
+                    this.fileInput.value = '';
+                },
+                handleImageFile(file) {
+                    if (!file) return Promise.resolve(null);
+                    return new Promise((resolve, reject) => {
                     const reader = new FileReader();
+                    reader.onerror = () => reject(reader.error || new Error('Unable to read image file'));
                     reader.onload = (ev) => {
                         const img = new Image();
+                        img.onerror = () => reject(new Error('Unable to decode image file'));
                         img.onload = () => {
                             const mw = mainImage.naturalWidth || 800;
                             const mh = mainImage.naturalHeight || 600;
@@ -4393,6 +4632,10 @@ function processUpscaleSmart(imgData, options) {
                                 locked: false,
                                 hidden: false,
                                 chromaKey: { type: 'none', color: '#000000', tolerance: 10 },
+                                borderEnabled: false,
+                                borderWidth: 6,
+                                borderColor: '#ffffff',
+                                borderRadius: 0,
                                 cachedCanvas: document.createElement('canvas'),
                                 needsCacheUpdate: true,
                                 adjustments: { temp: 0, brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 },
@@ -4406,11 +4649,12 @@ function processUpscaleSmart(imgData, options) {
                             this.updateLayerListUI();
                             this.syncSidebarUI();
                             this.renderAll();
-                            this.fileInput.value = '';
+                            resolve(layer);
                         };
                         img.src = ev.target.result;
                     };
                     reader.readAsDataURL(file);
+                    });
                 },
                 handleTextAdd() {
                     const mw = mainImage.naturalWidth || 800;
@@ -4440,6 +4684,10 @@ function processUpscaleSmart(imgData, options) {
                         flipY: false,
                         opacity: 100,
                         blendMode: 'source-over',
+                        borderEnabled: false,
+                        borderWidth: 6,
+                        borderColor: '#ffffff',
+                        borderRadius: 0,
                         locked: false,
                         hidden: false,
                         chromaKey: { type: 'none', color: '#000000', tolerance: 10 },
@@ -4464,6 +4712,152 @@ function processUpscaleSmart(imgData, options) {
                     
                     document.getElementById('tab-ov-styling').click();
                     this.renderAll();
+                },
+                createShapeLayer(shapeType) {
+                    const mw = mainImage.naturalWidth || 800;
+                    const mh = mainImage.naturalHeight || 600;
+                    let width = 240;
+                    let height = 150;
+                    if (['square', 'circle', 'star', 'pentagon', 'hexagon'].includes(shapeType)) {
+                        width = 180;
+                        height = 180;
+                    } else if (shapeType === 'triangle') {
+                        width = 180;
+                        height = Math.round(width * Math.sqrt(3) / 2);
+                    }
+                    const labels = {
+                        arrow: 'Arrow', 'double-arrow': 'Double Arrow', line: 'Line', square: 'Square',
+                        rectangle: 'Rectangle', circle: 'Circle', star: 'Star', triangle: 'Equilateral Triangle',
+                        pentagon: 'Pentagon', hexagon: 'Hexagon'
+                    };
+                    const layer = {
+                        id: 'layer_' + (this.layerIdCounter++),
+                        type: 'shape',
+                        shapeType,
+                        name: '[Shape] ' + (labels[shapeType] || 'Shape'),
+                        shapeColor: '#ff3b30',
+                        shapeFill: true,
+                        shapeStrokeWidth: 8,
+                        shapeCornerRadius: 0,
+                        imgObj: null,
+                        x: mw / 2, y: mh / 2,
+                        width, height,
+                        originalWidth: width, originalHeight: height,
+                        rotation: 0, flipX: false, flipY: false,
+                        opacity: 100, blendMode: 'source-over',
+                        borderEnabled: false, borderWidth: 6, borderColor: '#ffffff', borderRadius: 0,
+                        locked: false, hidden: false,
+                        chromaKey: { type: 'none', color: '#000000', tolerance: 10 },
+                        cachedCanvas: document.createElement('canvas'), needsCacheUpdate: true,
+                        adjustments: { temp: 0, brightness: 0, contrast: 0, saturation: 0, hue: 0, blur: 0, sharp: 0, grain: 0, bloom: 0, haze: 0 },
+                        activeFilters: new Set(), lockedFilters: new Set()
+                    };
+                    this.layers.unshift(layer);
+                    this.activeLayerId = layer.id;
+                    this.markChanged();
+                    this.updateLayerListUI();
+                    this.syncSidebarUI();
+                    document.getElementById('tab-ov-shapes').click();
+                    this.renderAll();
+                },
+                roundedRectPath(ctx, x, y, width, height, radius) {
+                    const r = Math.max(0, Math.min(radius || 0, width / 2, height / 2));
+                    ctx.beginPath();
+                    ctx.moveTo(x + r, y);
+                    ctx.lineTo(x + width - r, y);
+                    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+                    ctx.lineTo(x + width, y + height - r);
+                    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+                    ctx.lineTo(x + r, y + height);
+                    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+                    ctx.lineTo(x, y + r);
+                    ctx.quadraticCurveTo(x, y, x + r, y);
+                    ctx.closePath();
+                },
+                drawShapePath(ctx, layer, width, height) {
+                    const type = layer.shapeType || 'rectangle';
+                    const lineWidth = Math.max(1, Number(layer.shapeStrokeWidth) || 8);
+                    const strokeVisible = !layer.shapeFill || type === 'line';
+                    const pad = strokeVisible ? Math.max(2, lineWidth / 2 + 2) : 2;
+                    const availableWidth = Math.max(1, width - pad * 2);
+                    const availableHeight = Math.max(1, height - pad * 2);
+                    const hw = availableWidth / 2;
+                    const hh = availableHeight / 2;
+                    ctx.beginPath();
+                    if (type === 'square' || type === 'rectangle') {
+                        const side = type === 'square' ? Math.min(availableWidth, availableHeight) : null;
+                        const rectWidth = side || availableWidth;
+                        const rectHeight = side || availableHeight;
+                        const radius = Math.max(0, Math.min(Number(layer.shapeCornerRadius) || 0, rectWidth / 2, rectHeight / 2));
+                        this.roundedRectPath(ctx, -rectWidth / 2, -rectHeight / 2, rectWidth, rectHeight, radius);
+                    } else if (type === 'circle') {
+                        ctx.arc(0, 0, Math.min(hw, hh), 0, Math.PI * 2);
+                    } else if (type === 'triangle') {
+                        const side = Math.min(availableWidth, availableHeight * 2 / Math.sqrt(3));
+                        const triangleHeight = side * Math.sqrt(3) / 2;
+                        ctx.moveTo(0, -triangleHeight / 2);
+                        ctx.lineTo(side / 2, triangleHeight / 2);
+                        ctx.lineTo(-side / 2, triangleHeight / 2);
+                        ctx.closePath();
+                    } else if (type === 'star') {
+                        const radius = Math.min(hw, hh);
+                        for (let i = 0; i < 10; i++) {
+                            const angle = -Math.PI / 2 + i * Math.PI / 5;
+                            const pointRadius = radius * (i % 2 === 0 ? 0.96 : 0.42);
+                            const px = Math.cos(angle) * pointRadius;
+                            const py = Math.sin(angle) * pointRadius;
+                            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                    } else if (type === 'pentagon' || type === 'hexagon') {
+                        const sides = type === 'pentagon' ? 5 : 6;
+                        const radius = Math.min(hw, hh);
+                        for (let i = 0; i < sides; i++) {
+                            const angle = -Math.PI / 2 + i * Math.PI * 2 / sides;
+                            const px = Math.cos(angle) * radius;
+                            const py = Math.sin(angle) * radius;
+                            if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                    } else if (type === 'double-arrow') {
+                        ctx.moveTo(-hw * 0.92, 0); ctx.lineTo(-hw * 0.55, -hh * 0.68);
+                        ctx.lineTo(-hw * 0.55, -hh * 0.2); ctx.lineTo(hw * 0.55, -hh * 0.2);
+                        ctx.lineTo(hw * 0.55, -hh * 0.68); ctx.lineTo(hw * 0.92, 0);
+                        ctx.lineTo(hw * 0.55, hh * 0.68); ctx.lineTo(hw * 0.55, hh * 0.2);
+                        ctx.lineTo(-hw * 0.55, hh * 0.2); ctx.lineTo(-hw * 0.55, hh * 0.68);
+                        ctx.closePath();
+                    } else if (type === 'line') {
+                        ctx.moveTo(-hw * 0.82, hh * 0.55);
+                        ctx.lineTo(hw * 0.82, -hh * 0.55);
+                    } else {
+                        ctx.moveTo(-hw * 0.88, -hh * 0.22);
+                        ctx.lineTo(hw * 0.25, -hh * 0.22);
+                        ctx.lineTo(hw * 0.25, -hh * 0.68);
+                        ctx.lineTo(hw * 0.92, 0);
+                        ctx.lineTo(hw * 0.25, hh * 0.68);
+                        ctx.lineTo(hw * 0.25, hh * 0.22);
+                        ctx.lineTo(-hw * 0.88, hh * 0.22);
+                        ctx.closePath();
+                    }
+                    ctx.fillStyle = layer.shapeColor || '#ff3b30';
+                    ctx.strokeStyle = layer.shapeColor || '#ff3b30';
+                    ctx.lineWidth = lineWidth;
+                    ctx.lineJoin = 'round';
+                    ctx.lineCap = 'round';
+                    if (layer.shapeFill && type !== 'line') ctx.fill();
+                    if (strokeVisible) ctx.stroke();
+                },
+                syncShapeControls() {
+                    const layer = this.getActiveLayer();
+                    const isRect = layer && ['square', 'rectangle'].includes(layer.shapeType);
+                    if (this.shapeCornerRadius) {
+                        this.shapeCornerRadius.disabled = !isRect;
+                        this.shapeCornerRadiusNum.disabled = !isRect;
+                    }
+                    const strokeEnabled = !!layer && layer.shapeFill === false;
+                    if (this.shapeStrokeWidth) this.shapeStrokeWidth.disabled = !strokeEnabled;
+                    if (this.shapeStrokeWidthNum) this.shapeStrokeWidthNum.disabled = !strokeEnabled;
+                    if (this.shapeStrokeGroup) this.shapeStrokeGroup.style.opacity = strokeEnabled ? '1' : '.45';
                 },
                 updateTextLayer(layer, isInitial = false) {
                     const canvas = layer.textCanvas;
@@ -4551,6 +4945,7 @@ function processUpscaleSmart(imgData, options) {
                     this.layers.forEach((layer, index) => {
                         const item = document.createElement('div');
                         item.className = `layer-item ${layer.id === this.activeLayerId ? 'active' : ''}`;
+                        item.title = layer.name || 'Layer';
                         
                         const dragHandle = document.createElement('span');
                         dragHandle.className = 'layer-drag-handle';
@@ -4559,6 +4954,7 @@ function processUpscaleSmart(imgData, options) {
                         const name = document.createElement('span');
                         name.className = 'layer-name';
                         name.innerText = layer.name;
+                        name.title = layer.name || 'Layer';
                         name.onclick = () => {
                             this.activeLayerId = layer.id;
                             this.updateLayerListUI();
@@ -4615,6 +5011,7 @@ function processUpscaleSmart(imgData, options) {
                     if (mainImage && mainImage.src && mainImage.style.display !== 'none') {
                         const item = document.createElement('div');
                         item.className = `layer-item ${this.activeLayerId === 'base_layer' ? 'active' : ''}`;
+                        item.title = '[Base] ' + (originalFileName || 'Base Image');
                         
                         const dragHandle = document.createElement('span');
                         dragHandle.className = 'layer-drag-handle';
@@ -4625,6 +5022,7 @@ function processUpscaleSmart(imgData, options) {
                         const name = document.createElement('span');
                         name.className = 'layer-name';
                         name.innerText = "[Base] " + (originalFileName || "Base Image");
+                        name.title = name.innerText;
                         name.onclick = () => {
                             this.activeLayerId = 'base_layer';
                             this.updateLayerListUI();
@@ -4702,9 +5100,8 @@ function processUpscaleSmart(imgData, options) {
                     const layer = this.getActiveLayer();
                     if(!layer) return;
                     layer[key] = value;
-                    if(key === 'rotation' || key === 'width' || key === 'height') {
-                        this.renderUI();
-                    }
+                    if (key.startsWith('border') || key.startsWith('shape')) layer.needsCacheUpdate = true;
+                    if(key === 'rotation' || key === 'width' || key === 'height') this.renderUI();
                     this.markChanged();
                     this.renderAll();
                 },
@@ -4785,8 +5182,12 @@ function processUpscaleSmart(imgData, options) {
                     
                     const layerActions = document.getElementById('overlay-layer-actions');
                     
-                    if (layer && layer.type === 'text') {
-                        this.tabStyling.style.display = 'block';
+                    const isTextLayer = !!layer && layer.type === 'text';
+                    const isShapeLayer = !!layer && layer.type === 'shape';
+                    this.tabStyling.style.display = isTextLayer ? 'block' : 'none';
+                    this.tabShapes.style.display = isShapeLayer ? 'block' : 'none';
+                    if (isTextLayer) {
+                        if (!this.tabStyling.classList.contains('active')) this.tabStyling.click();
                         this.textContentInput.value = layer.textContent;
                         this.textFontFamily.value = layer.fontFamily;
                         this.textColorInput.value = layer.fontColor;
@@ -4795,10 +5196,11 @@ function processUpscaleSmart(imgData, options) {
                         this.textBoldBtn.classList.toggle('active', layer.isBold);
                         this.textItalicBtn.classList.toggle('active', layer.isItalic);
                         this.textUnderlineBtn.classList.toggle('active', layer.isUnderline);
+                    } else if (isShapeLayer) {
+                        if (!this.tabShapes.classList.contains('active')) this.tabShapes.click();
                     } else {
-                        this.tabStyling.style.display = 'none';
-                        if (this.tabStyling.classList.contains('active')) {
-                            document.querySelector('.sub-tab-link[data-subtab="ov-general"]').click();
+                        if (this.tabStyling.classList.contains('active') || this.tabShapes.classList.contains('active')) {
+                            document.querySelector('#overlay-view .sub-tab-link[data-subtab="ov-general"]').click();
                         }
                     }
 
@@ -4814,6 +5216,22 @@ function processUpscaleSmart(imgData, options) {
 
                     this.blendMode.value = layer.blendMode;
                     this.opacity.value = layer.opacity;
+                    this.borderEnabled.checked = !!layer.borderEnabled;
+                    this.borderWidth.value = layer.borderWidth || 6;
+                    this.borderWidthNum.value = layer.borderWidth || 6;
+                    this.borderColor.value = layer.borderColor || '#ffffff';
+                    this.borderRadius.value = layer.borderRadius || 0;
+                    this.borderRadiusNum.value = layer.borderRadius || 0;
+                    if (isShapeLayer) {
+                        this.shapeTypeHeading.textContent = (layer.shapeType || 'shape').replace(/-/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
+                        this.shapeColor.value = layer.shapeColor || '#ff3b30';
+                        this.shapeFill.checked = layer.shapeFill !== false;
+                        this.shapeStrokeWidth.value = layer.shapeStrokeWidth || 8;
+                        this.shapeStrokeWidthNum.value = layer.shapeStrokeWidth || 8;
+                        this.shapeCornerRadius.value = layer.shapeCornerRadius || 0;
+                        this.shapeCornerRadiusNum.value = layer.shapeCornerRadius || 0;
+                        this.syncShapeControls();
+                    }
                     this.opacityNum.value = layer.opacity;
                     const ck = layer.chromaKey;
                     Array.from(this.chromaRadios).forEach(r => r.checked = (r.value === ck.type));
@@ -4973,13 +5391,48 @@ function processUpscaleSmart(imgData, options) {
                     const tCtx = c.getContext('2d');
                     tCtx.clearRect(0, 0, c.width, c.height);
 
+                    if (layer.type === 'shape') {
+                        tCtx.save();
+                        tCtx.translate(c.width / 2, c.height / 2);
+                        this.drawShapePath(tCtx, layer, c.width, c.height);
+                        tCtx.restore();
+                        if (layer.borderEnabled) {
+                            const bw = Math.max(1, Number(layer.borderWidth) || 6);
+                            tCtx.save();
+                            tCtx.strokeStyle = layer.borderColor || '#ffffff';
+                            tCtx.lineWidth = bw;
+                            this.roundedRectPath(tCtx, bw / 2, bw / 2, c.width - bw, c.height - bw, Math.max(0, (Number(layer.borderRadius) || 0) - bw / 2));
+                            tCtx.stroke();
+                            tCtx.restore();
+                        }
+                        layer.needsCacheUpdate = false;
+                        return;
+                    }
+
                     const adj = layer.adjustments;
                     
                     if (adj.brightness !== 0 || adj.contrast !== 0 || adj.saturation !== 0 || adj.hue !== 0 || adj.blur !== 0) {
                         tCtx.filter = `brightness(${100 + adj.brightness}%) contrast(${100 + adj.contrast}%) saturate(${100 + adj.saturation}%) hue-rotate(${adj.hue}deg) blur(${adj.blur}px)`;
                     }
-                    tCtx.drawImage(layer.imgObj, 0, 0);
+                    if (layer.borderEnabled) {
+                        tCtx.save();
+                        this.roundedRectPath(tCtx, 0, 0, c.width, c.height, Number(layer.borderRadius) || 0);
+                        tCtx.clip();
+                        tCtx.drawImage(layer.imgObj, 0, 0);
+                        tCtx.restore();
+                    } else {
+                        tCtx.drawImage(layer.imgObj, 0, 0);
+                    }
                     tCtx.filter = 'none';
+                    if (layer.borderEnabled) {
+                        const bw = Math.max(1, Number(layer.borderWidth) || 6);
+                        tCtx.save();
+                        tCtx.strokeStyle = layer.borderColor || '#ffffff';
+                        tCtx.lineWidth = bw;
+                        this.roundedRectPath(tCtx, bw / 2, bw / 2, c.width - bw, c.height - bw, Math.max(0, (Number(layer.borderRadius) || 0) - bw / 2));
+                        tCtx.stroke();
+                        tCtx.restore();
+                    }
 
                     let dataModified = false;
                     const imgData = tCtx.getImageData(0, 0, c.width, c.height);
@@ -5873,6 +6326,7 @@ function processUpscaleSmart(imgData, options) {
                 reset() {
                     this.layers = [];
                     this.activeLayerId = null;
+                    this.history = []; this.historyIndex = -1; clearTimeout(this.historyTimer);
                     this.hasChanges = false;
                     this.updateLayerListUI();
                     this.renderAll();
@@ -6133,7 +6587,220 @@ function processUpscaleSmart(imgData, options) {
                 updateControlVisibilities();
             }
 
+            function readFileAsDataURL(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error || new Error('Unable to read file'));
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            async function setBaseImageFromUrl(url, name, sourceBlob = null) {
+                if (name) originalFileName = name;
+                let onLoad, onError;
+                const imageLoaded = new Promise((resolve, reject) => {
+                    onLoad = () => resolve();
+                    onError = () => reject(new Error('The browser could not display the decoded image'));
+                    mainImage.addEventListener('load', onLoad, { once: true });
+                    mainImage.addEventListener('error', onError, { once: true });
+                });
+                try {
+                    await handleImageDataUrl(url, sourceBlob);
+                    await imageLoaded;
+                } catch (err) {
+                    mainImage.removeEventListener('load', onLoad);
+                    mainImage.removeEventListener('error', onError);
+                    throw err;
+                }
+            }
+
+            async function importBaseImageFile(file) {
+                imageActionHistory = []; imageActionIndex = -1;
+                const dataUrl = await readFileAsDataURL(file);
+                await setBaseImageFromUrl(dataUrl, file.name, file);
+            }
+
+            async function loadProjectFile(file) {
+                const data = JSON.parse(await file.text());
+                originalFileName = data.originalFileName || 'project.png';
+                await setBaseImageFromUrl(data.baseImage, originalFileName);
+                if (data.layers) {
+                    OverlayUI.layers = [];
+                    for (const lData of data.layers) {
+                        const layer = {
+                            ...lData,
+                            activeFilters: new Set(lData.activeFilters || []),
+                            lockedFilters: new Set(lData.lockedFilters || []),
+                            cachedCanvas: document.createElement('canvas'),
+                            needsCacheUpdate: true
+                        };
+                        if (layer.type === 'image') {
+                            const img = new Image();
+                            await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; img.src = layer.imgObj; });
+                            layer.imgObj = img;
+                        } else if (layer.type === 'text') {
+                            layer.textCanvas = document.createElement('canvas');
+                            OverlayUI.updateTextLayer(layer, true);
+                        }
+                        layer.borderEnabled = !!layer.borderEnabled;
+                        layer.borderWidth = layer.borderWidth || 6;
+                        layer.borderColor = layer.borderColor || '#ffffff';
+                        layer.borderRadius = layer.borderRadius || 0;
+                        OverlayUI.layers.push(layer);
+                    }
+                    OverlayUI.activeLayerId = OverlayUI.layers.length ? OverlayUI.layers[0].id : null;
+                    OverlayUI.updateLayerListUI();
+                    OverlayUI.syncSidebarUI();
+                    OverlayUI.renderAll();
+                }
+                setMode('overlay');
+                sidePanel.style.display = 'flex';
+                updateControlVisibilities();
+            }
+
+            function chooseImageImportMode(fileName = 'image') {
+                const dialog = document.getElementById('erasure-import-choice');
+                if (!mainImage.src || mainImage.style.display === 'none' || !mainImage.naturalWidth) return Promise.resolve('replace');
+                dialog.classList.add('active');
+                return new Promise(resolve => {
+                    const finish = value => { dialog.classList.remove('active'); replaceBtn.removeEventListener('click', onReplace); overlayBtn.removeEventListener('click', onOverlay); cancelBtn.removeEventListener('click', onCancel); dialog.removeEventListener('click', onBackdrop); resolve(value); };
+                    const replaceBtn = document.getElementById('erasure-import-replace');
+                    const overlayBtn = document.getElementById('erasure-import-overlay');
+                    const cancelBtn = document.getElementById('erasure-import-cancel');
+                    const onReplace = () => finish('replace');
+                    const onOverlay = () => finish('overlay');
+                    const onCancel = () => finish('cancel');
+                    const onBackdrop = event => { if (event.target === dialog) onCancel(); };
+                    replaceBtn.addEventListener('click', onReplace); overlayBtn.addEventListener('click', onOverlay); cancelBtn.addEventListener('click', onCancel); dialog.addEventListener('click', onBackdrop);
+                });
+            }
+
+            async function importExternalImageFiles(files, source = 'drop') {
+                const images = Array.from(files || []).filter(file => file && (/^image\//i.test(file.type || '') || /\.(png|jpe?g|gif|webp|bmp|avif|svg)$/i.test(file.name || '')));
+                if (!images.length) return;
+                const mode = currentMode === 'overlay' && source === 'drop-overlay' ? 'overlay' : await chooseImageImportMode(images[0].name);
+                if (mode === 'cancel') return;
+                if (mode === 'overlay') {
+                    setMode('overlay'); sidePanel.style.display = 'flex'; updateControlVisibilities();
+                    for (const file of images) await OverlayUI.handleImageFile(file);
+                } else {
+                    await importBaseImageFile(images[0]);
+                    if (images.length > 1) {
+                        setMode('overlay'); sidePanel.style.display = 'flex'; updateControlVisibilities();
+                        for (const file of images.slice(1)) await OverlayUI.handleImageFile(file);
+                    }
+                }
+            }
+
+            function setupFileDrop() {
+                const dropFrame = document.querySelector('.frame');
+                const isImageFile = (file) => !!file && (/^image\//i.test(file.type || '') || /\.(png|jpe?g|gif|webp|bmp|avif|svg)$/i.test(file.name || ''));
+                const isProjectFile = (file) => !!file && /\.(ae|json)$/i.test(file.name || '');
+                const isFileDrag = (e) => {
+                    const types = Array.from(e.dataTransfer?.types || []).map(type => String(type).toLowerCase());
+                    return types.includes('files') || !!e.dataTransfer?.files?.length || Array.from(e.dataTransfer?.items || []).some(item => item.kind === 'file');
+                };
+                const getDroppedFiles = (transfer) => {
+                    const direct = Array.from(transfer?.files || []).filter(Boolean);
+                    if (direct.length) return direct;
+                    return Array.from(transfer?.items || [])
+                        .filter(item => item.kind === 'file')
+                        .map(item => item.getAsFile?.())
+                        .filter(Boolean);
+                };
+
+                window.addEventListener('dragover', (e) => {
+                    if (!isFileDrag(e)) return;
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+                }, true);
+                window.addEventListener('drop', (e) => {
+                    if (isFileDrag(e)) e.preventDefault();
+                }, true);
+
+                document.addEventListener('dragenter', (e) => {
+                    if (!isFileDrag(e)) return;
+                    e.preventDefault();
+                    if (dropFrame) dropFrame.classList.add('file-drop-active');
+                    if (e.target?.closest?.('#overlay-image-dropzone')) e.target.closest('#overlay-image-dropzone').classList.add('drag-active');
+                });
+                document.addEventListener('dragover', (e) => {
+                    if (!isFileDrag(e)) return;
+                    e.preventDefault();
+                    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+                    if (dropFrame) dropFrame.classList.add('file-drop-active');
+                    if (e.target?.closest?.('#overlay-image-dropzone')) e.target.closest('#overlay-image-dropzone').classList.add('drag-active');
+                });
+                document.addEventListener('dragleave', (e) => {
+                    if (!e.relatedTarget || !document.documentElement.contains(e.relatedTarget)) {
+                        if (dropFrame) dropFrame.classList.remove('file-drop-active');
+                    }
+                    const zone = e.target?.closest?.('#overlay-image-dropzone');
+                    if (zone && !zone.contains(e.relatedTarget)) zone.classList.remove('drag-active');
+                });
+
+                document.addEventListener('drop', async (e) => {
+                    const files = getDroppedFiles(e.dataTransfer);
+                    if (!files.length) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                    if (dropFrame) dropFrame.classList.remove('file-drop-active');
+
+                    const overlayZone = e.target?.closest?.('#overlay-image-dropzone');
+                    if (overlayZone) {
+                        overlayZone.classList.remove('drag-active');
+                        const overlayFiles = files.filter(isImageFile);
+                        if (!overlayFiles.length) {
+                            alert('Please drop a supported image file.');
+                            return;
+                        }
+                        try {
+                            for (const file of overlayFiles) await OverlayUI.handleImageFile(file);
+                            overlayZone.classList.remove('visible');
+                        } catch (err) {
+                            console.error('Overlay image drop failed:', err);
+                            alert(`Unable to load overlay image: ${err?.message || 'unsupported image format'}`);
+                        }
+                        return;
+                    }
+
+                    const project = files.find(isProjectFile);
+                    if (project) {
+                        try {
+                            await loadProjectFile(project);
+                        } catch (err) {
+                            console.error('Project drop failed:', err);
+                            alert(`Unable to load project “${project.name}”. ${err?.message || 'Check the console for details.'}`);
+                        }
+                        return;
+                    }
+
+                    const images = files.filter(isImageFile);
+                    if (!images.length) {
+                        alert('No supported image files were found. Try PNG, JPG, GIF, WebP, BMP, AVIF, or SVG.');
+                        return;
+                    }
+                    try {
+                        await importExternalImageFiles(images, 'drop');
+                    } catch (err) {
+                        console.error('Image drop failed:', err);
+                        alert(`Unable to load “${images[0].name}”. ${err?.message || 'The format may not be supported by this browser.'}`);
+                    }
+                }, true);
+            }
+
             function setupEventListeners() {
+                setupFileDrop();
+                document.addEventListener('paste', async (event) => {
+                    const items = Array.from(event.clipboardData?.items || []);
+                    const imageFiles = items.filter(item => item.kind === 'file' && /^image\//i.test(item.type)).map(item => item.getAsFile()).filter(Boolean);
+                    if (!imageFiles.length) return;
+                    event.preventDefault();
+                    try { await importExternalImageFiles(imageFiles, 'paste'); }
+                    catch (error) { console.error('Clipboard image import failed:', error); alert(`Unable to paste image: ${error?.message || 'unsupported image format'}`); }
+                });
                 uploadBtn.addEventListener('click', () => {
                     document.getElementById('upload-options-modal').style.display = 'flex';
                 });
@@ -6185,52 +6852,16 @@ function processUpscaleSmart(imgData, options) {
                 imageInput.addEventListener('change', async (e) => {
                     const file = e.target.files[0];
                     if (!file) return;
-                    originalFileName = file.name;
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        handleImageDataUrl(ev.target.result);
-                    };
-                    reader.readAsDataURL(file);
+                    try { await importBaseImageFile(file); }
+                    catch (err) { console.error(err); alert('Unable to load image file.'); }
                     e.target.value = '';
                 });
                 
                 document.getElementById('ae-input').addEventListener('change', async (e) => {
                     const file = e.target.files[0];
-                    if(!file) return;
-                    const text = await file.text();
-                    try {
-                        const data = JSON.parse(text);
-                        originalFileName = data.originalFileName || "project.png";
-                        await handleImageDataUrl(data.baseImage);
-                        
-                        if(data.layers) {
-                            OverlayUI.layers = [];
-                            for(const lData of data.layers) {
-                                const layer = { 
-                                    ...lData, 
-                                    activeFilters: new Set(lData.activeFilters), 
-                                    lockedFilters: new Set(lData.lockedFilters), 
-                                    cachedCanvas: document.createElement('canvas'), 
-                                    needsCacheUpdate: true 
-                                };
-                                if(layer.type === 'image') {
-                                    const img = new Image();
-                                    await new Promise(res => { img.onload = res; img.src = layer.imgObj; });
-                                    layer.imgObj = img;
-                                } else if(layer.type === 'text') {
-                                    layer.textCanvas = document.createElement('canvas');
-                                    OverlayUI.updateTextLayer(layer, true);
-                                }
-                                OverlayUI.layers.push(layer);
-                            }
-                            OverlayUI.activeLayerId = OverlayUI.layers.length > 0 ? OverlayUI.layers[0].id : null;
-                            OverlayUI.updateLayerListUI();
-                            OverlayUI.syncSidebarUI();
-                            OverlayUI.renderAll();
-                        }
-                    } catch(err) {
-                        alert("Failed to load .ae file");
-                    }
+                    if (!file) return;
+                    try { await loadProjectFile(file); }
+                    catch (err) { console.error(err); alert('Failed to load .ae file'); }
                     e.target.value = '';
                 });
 
@@ -6466,6 +7097,8 @@ function processUpscaleSmart(imgData, options) {
                 
                 fullscreenBtn.addEventListener('click', () => {
                     const isActive = frame.classList.toggle('fullscreen-active');
+                    fullscreenBtn.textContent = isActive ? '⬚' : '⛶';
+                    fullscreenBtn.title = isActive ? 'Exit fullscreen' : 'Enter fullscreen';
                     if (isActive) {
                         sidePanel.style.display = 'none';
                         updateControlVisibilities();
@@ -6484,7 +7117,30 @@ function processUpscaleSmart(imgData, options) {
                     panY = 0;
                     updateZoom();
                 });
-                
+                let fullscreenPanDrag = null;
+                container.addEventListener('pointerdown', (e) => {
+                    if (!frame.classList.contains('fullscreen-active') || e.button !== 0 || e.target.closest('button,input,select,textarea')) return;
+                    fullscreenPanDrag = { x: e.clientX, y: e.clientY, id: e.pointerId };
+                    container.setPointerCapture(e.pointerId);
+                    container.style.cursor = 'grabbing';
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                }, true);
+                container.addEventListener('pointermove', (e) => {
+                    if (!fullscreenPanDrag) return;
+                    panX += e.clientX - fullscreenPanDrag.x;
+                    panY += e.clientY - fullscreenPanDrag.y;
+                    fullscreenPanDrag.x = e.clientX;
+                    fullscreenPanDrag.y = e.clientY;
+                    updateZoom();
+                }, true);
+                const stopFullscreenPan = () => {
+                    fullscreenPanDrag = null;
+                    container.style.cursor = '';
+                };
+                container.addEventListener('pointerup', stopFullscreenPan, true);
+                container.addEventListener('pointercancel', stopFullscreenPan, true);
+
                 gridToggleBtn.addEventListener('click', () => {
                     gridOverlay.classList.toggle('active');
                 });
@@ -6750,14 +7406,21 @@ function processUpscaleSmart(imgData, options) {
                 });
 
                 document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+                    const typing = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
+                    if (!typing && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
                         e.preventDefault();
-                        if(currentMode !== 'overlay') {
-                            if (e.shiftKey) redo(); else undo();
-                        }
+                        if (e.shiftKey) redo(); else undo();
+                        return;
                     }
-                    
-                    if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+                    if (!typing && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                        e.preventDefault(); redo(); return;
+                    }
+                    if (!typing && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'Delete' || e.key === 'Backspace') && currentMode === 'overlay') {
+                        const layer = OverlayUI.getActiveLayer();
+                        if (layer) { e.preventDefault(); const idx = OverlayUI.layers.findIndex(l => l.id === OverlayUI.activeLayerId); if (idx !== -1) { OverlayUI.layers.splice(idx, 1); OverlayUI.activeLayerId = OverlayUI.layers.length ? OverlayUI.layers[Math.min(idx, OverlayUI.layers.length - 1)].id : null; OverlayUI.markChanged(); OverlayUI.updateLayerListUI(); OverlayUI.syncSidebarUI(); OverlayUI.renderAll(); } }
+                        return;
+                    }
+                    if (typing) return;
                     
                     if (e.key === ' ' && currentTool !== 'pan' && currentMode !== 'overlay') {
                         previousTool = currentTool;
@@ -7271,17 +7934,28 @@ function processUpscaleSmart(imgData, options) {
                 saveState();
             }
 
-            async function handleImageDataUrl(url) {
+            async function handleImageDataUrl(url, sourceBlob = null) {
                 try {
-                    const res = await fetch(url);
-                    const blob = await res.blob();
+                    let blob = sourceBlob;
+                    if (!blob && typeof url === 'string' && url.startsWith('data:')) {
+                        const comma = url.indexOf(',');
+                        const header = url.slice(0, comma);
+                        const payload = url.slice(comma + 1);
+                        const binary = header.includes(';base64') ? atob(payload) : decodeURIComponent(payload);
+                        const bytes = new Uint8Array(binary.length);
+                        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                        blob = new Blob([bytes], { type: (header.match(/^data:([^;]+)/) || [])[1] || 'application/octet-stream' });
+                    }
+                    if (!blob) { const res = await fetch(url); if (!res.ok) throw new Error(`Image request failed (${res.status})`); blob = await res.blob(); }
                     originalImageBlob = blob;
-                    const bmp = await createImageBitmap(blob);
+                    let bmp;
+                    if (window.createImageBitmap) bmp = await createImageBitmap(blob);
+                    else bmp = await new Promise((resolve, reject) => { const image = new Image(); image.onload = () => { const c = document.createElement('canvas'); c.width = image.naturalWidth; c.height = image.naturalHeight; c.getContext('2d').drawImage(image, 0, 0); resolve(c); }; image.onerror = () => reject(new Error('Browser could not decode this image')); image.src = url; });
                     originalImageBitmap = bmp;
                     currentImageBitmap = bmp;
                 } catch(err) {
                     console.error("Failed to load image URL as blob", err);
-                    return;
+                    throw new Error(`Image decode failed: ${err?.message || err}`);
                 }
                 
                 compareBtn.disabled = true;
@@ -7772,7 +8446,31 @@ function processUpscaleSmart(imgData, options) {
                 updateHistoryButtons();
             }
 
+            function captureImageAction() {
+                if (!mainImage.src || !mainImage.naturalWidth) return;
+                const snapshot = { image: mainImage.src, name: originalFileName, layers: OverlayUI.cloneHistoryLayers(), activeLayerId: OverlayUI.activeLayerId, mode: currentMode };
+                imageActionHistory = imageActionHistory.slice(0, imageActionIndex + 1);
+                imageActionHistory.push(snapshot);
+                if (imageActionHistory.length > 30) imageActionHistory.shift();
+                imageActionIndex = imageActionHistory.length - 1;
+            }
+
+            async function restoreImageAction(index) {
+                if (index < 0 || index >= imageActionHistory.length) return false;
+                const snapshot = imageActionHistory[index];
+                imageActionIndex = index;
+                await setBaseImageFromUrl(snapshot.image, snapshot.name);
+                OverlayUI.layers = snapshot.layers.map(layer => ({ ...layer, activeFilters: new Set(layer.activeFilters || []), lockedFilters: new Set(layer.lockedFilters || []), cachedCanvas: document.createElement('canvas'), needsCacheUpdate: true }));
+                OverlayUI.activeLayerId = snapshot.activeLayerId && OverlayUI.layers.some(layer => layer.id === snapshot.activeLayerId) ? snapshot.activeLayerId : (OverlayUI.layers[0]?.id || null);
+                OverlayUI.updateLayerListUI(); OverlayUI.syncSidebarUI(); OverlayUI.renderAll();
+                if (snapshot.mode === 'overlay') { setMode('overlay'); sidePanel.style.display = 'flex'; updateControlVisibilities(); }
+                updateHistoryButtons();
+                return true;
+            }
+
             function undo() {
+                if (currentMode === 'overlay' && OverlayUI.history.length && OverlayUI.historyIndex > 0) { OverlayUI.applyHistorySnapshot(OverlayUI.historyIndex - 1); return; }
+                if (imageActionIndex > 0) { restoreImageAction(imageActionIndex - 1); return; }
                 if (historyStep > 0) {
                     historyStep--;
                     loadHistoryState();
@@ -7787,6 +8485,8 @@ function processUpscaleSmart(imgData, options) {
             }
 
             function redo() {
+                if (currentMode === 'overlay' && OverlayUI.historyIndex < OverlayUI.history.length - 1) { OverlayUI.applyHistorySnapshot(OverlayUI.historyIndex + 1); return; }
+                if (imageActionIndex >= 0 && imageActionIndex < imageActionHistory.length - 1) { restoreImageAction(imageActionIndex + 1); return; }
                 if (historyStep < history.length - 1) {
                     historyStep++;
                     loadHistoryState();
@@ -7813,6 +8513,11 @@ function processUpscaleSmart(imgData, options) {
             }
             
             function updateHistoryButtons() {
+                if (currentMode === 'overlay' && OverlayUI.history.length) {
+                    undoBtn.disabled = OverlayUI.historyIndex <= 0 && imageActionIndex <= 0;
+                    redoBtn.disabled = OverlayUI.historyIndex >= OverlayUI.history.length - 1 && !(imageActionIndex >= 0 && imageActionIndex < imageActionHistory.length - 1);
+                    return;
+                }
                 undoBtn.disabled = historyStep < 0;
                 redoBtn.disabled = historyStep >= history.length - 1;
             }
@@ -8291,10 +8996,300 @@ function processUpscaleSmart(imgData, options) {
                 }
             }
 
+            window.__erasureCropContext = {
+                getImage: () => mainImage,
+                getCompositeCanvas: () => {
+                    OverlayUI.renderAll();
+                    return overlayCanvas;
+                },
+                resetLayers: () => OverlayUI.reset(),
+                setImage: (url, name) => setBaseImageFromUrl(url, name),
+                getFileName: () => originalFileName,
+                captureAction: () => captureImageAction()
+            };
+
             init();
         });
     </script>
+
+<div id="canvas-context-menu" role="menu" aria-label="Canvas quick actions">
+    <button type="button" role="menuitem" data-action="save">Save</button>
+    <button type="button" role="menuitem" data-action="remove">Remove</button>
+    <button type="button" role="menuitem" data-action="undo">Undo</button>
+    <button type="button" role="menuitem" data-action="redo">Redo</button>
+    <button type="button" role="menuitem" data-action="crop">Crop</button>
+</div>
+<div id="erasure-import-choice" class="erasure-import-choice" role="dialog" aria-modal="true" aria-labelledby="erasure-import-choice-title">
+    <div class="erasure-import-choice-card">
+        <strong id="erasure-import-choice-title">How would you like to add this image?</strong>
+        <div class="erasure-import-choice-actions">
+            <button type="button" id="erasure-import-replace">Replace</button>
+            <button type="button" id="erasure-import-overlay">Overlay</button>
+            <button type="button" id="erasure-import-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+<style>
+.erasure-import-choice{position:fixed;inset:0;z-index:61000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55)}
+.erasure-import-choice.active{display:flex}
+.erasure-import-choice-card{background:var(--settings-bg,#111);color:var(--text-color,#fff);border:1px solid var(--settings-outline,#666);border-radius:10px;padding:20px;min-width:260px;max-width:calc(100vw - 36px);box-shadow:0 12px 36px #0009}
+.erasure-import-choice-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.erasure-import-choice-actions button{padding:9px 14px;border:1px solid var(--settings-outline,#666);border-radius:6px;background:var(--button-bg,#222);color:var(--button-text,#fff);cursor:pointer}
+.erasure-import-choice-actions button:first-child,.erasure-import-choice-actions button:nth-child(2){background:var(--accent-color,#b01105);color:#fff}
+</style>
+<div id="erasure-crop-overlay" aria-label="Crop image area">
+    <div id="erasure-crop-selection"></div>
+    <div id="erasure-crop-toolbar">
+        <button type="button" id="erasure-crop-cancel">Cancel</button>
+        <button type="button" id="erasure-crop-apply" class="primary">Apply crop</button>
+    </div>
+</div>
+<style id="erasure-integrated-ui">
+    #add-overlay-popup {
+        position: fixed !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: min(360px, calc(100vw - 28px)) !important;
+        max-height: 78vh !important;
+        overflow: auto !important;
+        z-index: 50002 !important;
+        background: var(--glass-bg);
+        border: 1px solid var(--accent-color);
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0 18px 60px #000b;
+    }
+    #add-overlay-popup.active { display: flex !important; flex-direction: column; gap: 8px; }
+    #add-overlay-popup .add-choice { padding: 12px; }
+    #add-overlay-popup:before { content: none !important; }
+    .add-panel-heading { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 10px; border-bottom: 1px solid var(--settings-outline); margin-bottom: 4px; }
+    .add-panel-heading button { width: 28px; height: 28px; border: 1px solid var(--settings-outline); border-radius: 5px; background: transparent; color: var(--text-color); font-size: 20px; line-height: 1; cursor: pointer; }
+    body.add-panel-open:after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,.48); z-index: 50001; }
+    #canvas-context-menu { position: fixed; z-index: 55000; display: none; min-width: 150px; padding: 5px; background: var(--glass-bg); border: 1px solid var(--settings-outline); border-radius: 6px; box-shadow: 0 8px 24px #0008; backdrop-filter: blur(12px); }
+    #canvas-context-menu button { display: block; width: 100%; text-align: left; padding: 8px; border: 0; background: transparent; color: var(--text-color); cursor: pointer; }
+    #canvas-context-menu button:hover, #canvas-context-menu button:focus-visible { background: var(--accent-color); color: #000; }
+    #overlay-image-dropzone { touch-action: manipulation; }
+    #overlay-image-dropzone-dismiss { position: absolute; right: 7px; top: 7px; z-index: 2; width: 28px; height: 28px; padding: 0; border: 1px solid var(--settings-outline); border-radius: 5px; background: var(--bg-filter); color: var(--text-color); font-size: 18px; line-height: 1; cursor: pointer; }
+    .sub-tab-bar { overflow-x: auto; white-space: nowrap; scrollbar-width: thin; overscroll-behavior-x: contain; }
+    .sub-tab-bar::-webkit-scrollbar { display: block; height: 5px; }
+    .frame.fullscreen-active #canvas-container { cursor: grab; touch-action: none; }
+    .frame.fullscreen-active #canvas-container:active { cursor: grabbing; }
+    #erasure-crop-overlay { position: fixed; inset: 0; z-index: 60000; display: none; touch-action: none; cursor: crosshair; background: rgba(0,0,0,.38); }
+    #erasure-crop-overlay.active { display: block; }
+    #erasure-crop-selection { position: absolute; border: 2px dashed #fff; background: rgba(255,255,255,.08); box-shadow: 0 0 0 9999px rgba(0,0,0,.34); pointer-events: none; }
+    #erasure-crop-toolbar { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; gap: 8px; z-index: 60001; background: var(--glass-bg); border: 1px solid var(--settings-outline); border-radius: 8px; padding: 9px; box-shadow: 0 8px 28px #0008; }
+    #erasure-crop-toolbar button { padding: 8px 14px; border: 1px solid var(--settings-outline); border-radius: 5px; background: var(--button-bg); color: var(--text-color); cursor: pointer; }
+    #erasure-crop-toolbar button.primary { background: var(--accent-color); color: #000; border-color: var(--accent-color); font-weight: 700; }
+</style>
+<script id="erasure-integrated-ui-logic">
+(() => {
+    const $ = (selector) => document.querySelector(selector);
+    const menu = $('#canvas-context-menu');
+    const canvas = $('#canvas-container');
+    const popup = $('#add-overlay-popup');
+    const addButton = $('#add-overlay-menu-btn');
+    const closeButton = $('#add-panel-close');
+
+    if (popup) {
+        document.body.appendChild(popup);
+        const syncPopupState = () => {
+            const open = popup.classList.contains('active');
+            document.body.classList.toggle('add-panel-open', open);
+            addButton?.setAttribute('aria-expanded', String(open));
+            popup.setAttribute('role', 'dialog');
+            popup.setAttribute('aria-modal', 'true');
+            popup.setAttribute('aria-label', 'Add to canvas');
+        };
+        new MutationObserver(syncPopupState).observe(popup, { attributes: true, attributeFilter: ['class'] });
+        syncPopupState();
+        closeButton?.addEventListener('click', () => popup.classList.remove('active'));
+        document.addEventListener('pointerdown', (event) => {
+            if (popup.classList.contains('active') && !popup.contains(event.target) && !addButton?.contains(event.target)) {
+                popup.classList.remove('active');
+            }
+        }, true);
+    }
+
+    document.addEventListener('contextmenu', (event) => {
+        if (!canvas?.contains(event.target) || !menu) return;
+        event.preventDefault();
+        menu.style.display = 'block';
+        const width = menu.offsetWidth || 170;
+        const height = menu.offsetHeight || 210;
+        menu.style.left = `${Math.max(4, Math.min(event.clientX, window.innerWidth - width - 4))}px`;
+        menu.style.top = `${Math.max(4, Math.min(event.clientY, window.innerHeight - height - 4))}px`;
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+        if (menu && !menu.contains(event.target)) menu.style.display = 'none';
+    });
+
+    menu?.addEventListener('click', (event) => {
+        const action = event.target.closest('[data-action]')?.dataset.action;
+        if (!action) return;
+        menu.style.display = 'none';
+        if (action === 'save') $('#export-button')?.click();
+        if (action === 'undo') $('#undo-button')?.click();
+        if (action === 'redo') $('#redo-button')?.click();
+        if (action === 'remove') document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }));
+        if (action === 'crop') window.ErasureCrop?.start();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            menu && (menu.style.display = 'none');
+            popup?.classList.remove('active');
+            if ($('#erasure-crop-overlay')?.classList.contains('active')) window.ErasureCrop?.cancel();
+        }
+    });
+
+    document.querySelectorAll('.sub-tab-bar').forEach((bar) => {
+        bar.addEventListener('wheel', (event) => {
+            if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+                bar.scrollLeft += event.deltaY;
+                event.preventDefault();
+            }
+        }, { passive: false });
+    });
+
+    document.addEventListener('pointerdown', (event) => {
+        document.querySelectorAll('.filter-item-container').forEach((row) => {
+            const panel = row.querySelector('.filter-settings-panel');
+            if (!panel || getComputedStyle(panel).display === 'none' || row.contains(event.target)) return;
+            panel.style.display = 'none';
+            row.querySelector('.filter-settings-toggle')?.setAttribute('aria-expanded', 'false');
+        });
+    }, true);
+
+    document.querySelectorAll('.filter-settings-panel').forEach((panel) => {
+        const row = panel.closest('.filter-item-container');
+        const toggle = row?.querySelector('.filter-settings-toggle');
+        if (!toggle) return;
+        const observer = new MutationObserver(() => toggle.setAttribute('aria-expanded', String(getComputedStyle(panel).display !== 'none')));
+        observer.observe(panel, { attributes: true, attributeFilter: ['style', 'class'] });
+        toggle.setAttribute('aria-expanded', String(getComputedStyle(panel).display !== 'none'));
+    });
+
+    const cropOverlay = $('#erasure-crop-overlay');
+    const cropSelection = $('#erasure-crop-selection');
+    const cropApply = $('#erasure-crop-apply');
+    const cropCancel = $('#erasure-crop-cancel');
+    let cropStart = null;
+    let cropRect = null;
+
+    const renderCropRect = (first, second) => {
+        const left = Math.min(first.x, second.x);
+        const top = Math.min(first.y, second.y);
+        const width = Math.abs(first.x - second.x);
+        const height = Math.abs(first.y - second.y);
+        cropSelection.style.left = `${left}px`;
+        cropSelection.style.top = `${top}px`;
+        cropSelection.style.width = `${width}px`;
+        cropSelection.style.height = `${height}px`;
+        cropRect = { left, top, width, height };
+    };
+
+    const finishCropDrag = () => { cropStart = null; };
+    const stopCrop = () => {
+        cropOverlay?.classList.remove('active');
+        if (cropSelection) {
+            cropSelection.style.width = '0';
+            cropSelection.style.height = '0';
+        }
+        cropStart = null;
+        cropRect = null;
+    };
+
+    window.ErasureCrop = {
+        start() {
+            const context = window.__erasureCropContext;
+            const image = context?.getImage();
+            if (!image?.naturalWidth) {
+                alert('Load an image before cropping.');
+                return;
+            }
+            const bounds = image.getBoundingClientRect();
+            cropOverlay.classList.add('active');
+            cropSelection.style.left = `${bounds.left}px`;
+            cropSelection.style.top = `${bounds.top}px`;
+            cropSelection.style.width = '0';
+            cropSelection.style.height = '0';
+            cropRect = null;
+        },
+        cancel: stopCrop
+    };
+
+    cropOverlay?.addEventListener('pointerdown', (event) => {
+        if (event.target.closest('#erasure-crop-toolbar')) return;
+        const image = window.__erasureCropContext?.getImage();
+        if (!image?.naturalWidth) return;
+        const bounds = image.getBoundingClientRect();
+        const x = Math.max(bounds.left, Math.min(event.clientX, bounds.right));
+        const y = Math.max(bounds.top, Math.min(event.clientY, bounds.bottom));
+        cropStart = { x, y, bounds };
+        cropOverlay.setPointerCapture?.(event.pointerId);
+        renderCropRect(cropStart, { x, y });
+        event.preventDefault();
+    });
+
+    cropOverlay?.addEventListener('pointermove', (event) => {
+        if (!cropStart) return;
+        const bounds = cropStart.bounds;
+        const x = Math.max(bounds.left, Math.min(event.clientX, bounds.right));
+        const y = Math.max(bounds.top, Math.min(event.clientY, bounds.bottom));
+        renderCropRect(cropStart, { x, y });
+    });
+
+    cropOverlay?.addEventListener('pointerup', (event) => {
+        if (!cropStart) return;
+        const bounds = cropStart.bounds;
+        const x = Math.max(bounds.left, Math.min(event.clientX, bounds.right));
+        const y = Math.max(bounds.top, Math.min(event.clientY, bounds.bottom));
+        renderCropRect(cropStart, { x, y });
+        finishCropDrag();
+    });
+
+    cropCancel?.addEventListener('click', stopCrop);
+    cropApply?.addEventListener('click', async () => {
+        const context = window.__erasureCropContext;
+        const image = context?.getImage();
+        if (!image?.naturalWidth || !cropRect || cropRect.width < 4 || cropRect.height < 4) {
+            alert('Drag to select a crop area first.');
+            return;
+        }
+        const bounds = image.getBoundingClientRect();
+        const scaleX = image.naturalWidth / bounds.width;
+        const scaleY = image.naturalHeight / bounds.height;
+        const sourceX = Math.max(0, Math.round((cropRect.left - bounds.left) * scaleX));
+        const sourceY = Math.max(0, Math.round((cropRect.top - bounds.top) * scaleY));
+        const width = Math.min(image.naturalWidth - sourceX, Math.round(cropRect.width * scaleX));
+        const height = Math.min(image.naturalHeight - sourceY, Math.round(cropRect.height * scaleY));
+        if (width < 2 || height < 2) {
+            alert('The selected crop area is too small.');
+            return;
+        }
+        try {
+            const composite = context.getCompositeCanvas();
+            const output = document.createElement('canvas');
+            output.width = width;
+            output.height = height;
+            const outputContext = output.getContext('2d');
+            outputContext.drawImage(composite, sourceX, sourceY, width, height, 0, 0, width, height);
+            const dataUrl = output.toDataURL('image/png');
+            const fileName = context.getFileName?.() || 'image.png';
+            context.captureAction?.();
+            context.resetLayers?.();
+            await context.setImage(dataUrl, fileName);
+            context.captureAction?.();
+            stopCrop();
+        } catch (error) {
+            console.error('Crop failed:', error);
+            alert(`Unable to crop this image: ${error?.message || 'unknown error'}`);
+        }
+    });
+})();
+</script>
+
 </body>
 </html>
-<!-- I am Bread -->
-	<!-- These are accumulation of different projects compiled into one, As of July 2026, Major Update: Overlay and Compressor was added into this compilation. This was a massive push.-->
